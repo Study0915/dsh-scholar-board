@@ -78,7 +78,7 @@ window.__ModuleLoader__.load({
     var exports = module.exports
     // 加载器给的 require 带一个 async：按需加载的分包经它去取（源码编辑器那一份，D2）。
     // 加载器不把这个 require 交给插件的 apply，只能在工厂执行时记下来。
-    globalThis.__dshWidgetBoardRequire = require`
+    globalThis.__dshScholarBoardRequire = require`
 const FACTORY_CLOSE = `    return module.exports
   },
 })`

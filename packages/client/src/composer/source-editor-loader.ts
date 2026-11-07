@@ -26,7 +26,7 @@ interface AsyncRequire {
  * 加载器不把它交给插件的 `apply`：插件是在工厂执行之后才被 cordis 调用的，那时它拿不到 require。
  * 构建脚本在工厂执行时把它记在这里，这里再取出来（D2）。
  */
-const REQUIRE_KEY = '__dshWidgetBoardRequire'
+const REQUIRE_KEY = '__dshScholarBoardRequire'
 
 /** 取加载器给的 require。 */
 function loaderRequire(): AsyncRequire | null {

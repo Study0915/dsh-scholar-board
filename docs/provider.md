@@ -91,12 +91,12 @@
 
 | 入口 | 是什么 | 怎么用 |
 |---|---|---|
-| `dsh-widget-board/service` | 只有类型的入口，导出条件只有 `types` | `import type` 取服务与注册的形状；编译时被抹掉，不产生模块请求 |
-| `dsh-widget-board/provider` | 纯值 SDK | 构造并校验入参对象：`defineProvider`、`providerRegistration`、`nativeProviderRegistration`、`sourceRegistration`、`actionRegistration`、`capabilityRegistration`、`marketRegistration`、`nativeRegistration` |
+| `dsh-scholar-board/service` | 只有类型的入口，导出条件只有 `types` | `import type` 取服务与注册的形状；编译时被抹掉，不产生模块请求 |
+| `dsh-scholar-board/provider` | 纯值 SDK | 构造并校验入参对象：`defineProvider`、`providerRegistration`、`nativeProviderRegistration`、`sourceRegistration`、`actionRegistration`、`capabilityRegistration`、`marketRegistration`、`nativeRegistration` |
 
 `./provider` 不导入宿主实现、不读全局状态，宿主进程与浏览器页面都能打包同一份入口；它返回的对象都是冻结的，要加字段就展开成新对象。SDK 负责把入参校验在一处做完，与看板通信仍然只经服务。
 
-有类型检查的提供方把本包加进开发依赖，用 `import type { WidgetBoardClientService } from 'dsh-widget-board/service'` 取类型，在自己包里 `declare module '@deepseek-ai/cordis'` 把服务挂到 `Context` 上。没有类型检查的纯 JS 提供方在自己包里写同形的声明。运行时不做值导入，也不为功能包添加 `dsh.client.external`。
+有类型检查的提供方把本包加进开发依赖，用 `import type { WidgetBoardClientService } from 'dsh-scholar-board/service'` 取类型，在自己包里 `declare module '@deepseek-ai/cordis'` 把服务挂到 `Context` 上。没有类型检查的纯 JS 提供方在自己包里写同形的声明。运行时不做值导入，也不为功能包添加 `dsh.client.external`。
 
 ## 组件 id 与作者域
 

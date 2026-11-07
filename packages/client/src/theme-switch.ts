@@ -38,7 +38,7 @@ const MOTION = tokens.motion as Record<string, string>
 let running = false
 
 /** 视图切换的根节点变量，只在一次转场期间存在。 */
-const VT_ATTRIBUTE = 'dshWidgetBoardVt'
+const VT_ATTRIBUTE = 'dshScholarBoardVt'
 const VT_X = '--dsh-scholar-board-vt-x'
 const VT_Y = '--dsh-scholar-board-vt-y'
 const VT_RADIUS = '--dsh-scholar-board-vt-r'
