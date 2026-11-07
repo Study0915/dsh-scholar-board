@@ -6,7 +6,7 @@
 
 ## 运行时依赖
 
-配置与表单的 schema 校验使用 **@deepseek-ai/schemastery 3.18.5**（MIT，https://github.com/deepseek-ai/deepseek-harness/tree/main/vendor/schemastery）。
+配置与表单的 schema 校验使用 **@deepseek-ai/schemastery 3.18.5**（MIT，https://github.com/deepseek-ai/deepseek-harness/tree/main/vendor/schemastery），它随包带上 **@deepseek-ai/cosmokit 1.8.6**（MIT，同一仓库的 `vendor/cosmokit`）与 **@standard-schema/spec 1.1.0**（MIT，https://github.com/standard-schema/standard-schema）。
 
 manifest 与能力参数的 JSON Schema 校验使用 **Ajv 8.20.0**（MIT，https://github.com/ajv-validator/ajv），构建时内联进宿主半边的产物。
 
@@ -14,7 +14,7 @@ manifest 与能力参数的 JSON Schema 校验使用 **Ajv 8.20.0**（MIT，http
 
 浏览器半边以 **React 18.3.1**（MIT，https://github.com/facebook/react）为 peer 依赖，由宿主页面提供，不随本插件打包。
 
-本地图片处理使用 **sharp 0.35.5**（Apache-2.0，https://github.com/lovell/sharp），依赖的 libvips 及平台二进制按其随附许可分发；不向外部服务上传图片。
+本地图片处理使用 **sharp 0.35.5**（Apache-2.0，https://github.com/lovell/sharp），依赖的 libvips 及平台二进制按其随附许可分发；不向外部服务上传图片。sharp 附带 **@img/colour 1.1.0**（MIT）、**detect-libc 2.1.2**（Apache-2.0）与按平台分发的二进制包（如 **@img/sharp-win32-x64 0.35.5**，Apache-2.0 AND LGPL-3.0-or-later），各自许可见其包内 LICENSE。
 
 校园事项的 IANA 时区及夏令时处理使用 **Luxon 3.7.2**（MIT，https://github.com/moment/luxon）。共享纯模型在构建时内联进标准校园组件；不请求外部时间服务。
 
@@ -30,7 +30,7 @@ manifest 与能力参数的 JSON Schema 校验使用 **Ajv 8.20.0**（MIT，http
 
 倒计时的IANA时区及夏令时处理使用 **Luxon 3.7.2**（MIT，https://github.com/moment/luxon），构建时内联进组件脚本，不请求外部时间服务。
 
-「月历」与「今日运势」两个内置组件随目录带一份 **lunar-javascript**（MIT License，https://github.com/6tail/lunar-javascript），放在各自的 `vendor/` 下，经 manifest 的 `scripts` 内联进组件文档；农历、节气、干支与宜忌都由它算。文件原样保留，未做修改。
+「月历」与「今日运势」两个内置组件随目录带一份 **lunar-javascript 1.7.7**（MIT License，https://github.com/6tail/lunar-javascript），放在各自的 `vendor/` 下，经 manifest 的 `scripts` 内联进组件文档；农历、节气、干支与宜忌都由它算。文件原样保留，未做修改。
 
 CSV 读取与导出使用 **Papa Parse 5.7.0**（MIT，https://github.com/mholt/PapaParse）；ICS 解析、重复规则与标准序列化使用 **ical.js 2.2.1**（MPL-2.0，https://github.com/kewisch/ical.js）。两者构建进宿主半边，保留各自许可声明；ical.js 源文件没有修改，源代码可从对应版本的上游仓库取得。
 

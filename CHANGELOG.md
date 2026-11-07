@@ -45,7 +45,7 @@
 
 ### 其他变更
 
-- 从 Nwflower/dsh-widget-board（MIT）分叉为独立插件 dsh-scholar-board：包名、子包 scope、插件行、样式类名与语义属性统一改名；安装改为 dsh plugin add github:Study0915/dsh-scholar-board。上游版权与许可声明完整保留，第三方依赖许可盘点补齐 Ajv、schemastery、semver 与 React。
+- 从 Nwflower/dsh-widget-board（MIT）分叉为独立插件 dsh-scholar-board：包名、子包 scope、插件行、样式类名与语义属性统一改名；安装改为 dsh plugin add github:Study0915/dsh-scholar-board。上游版权与许可声明完整保留，第三方依赖许可盘点补齐 Ajv、schemastery、semver、React，并为随组件目录带的 lunar-javascript 记上版本号，补入 sharp 与 schemastery 附带的传递依赖。
 
 <h3 id="en-unreleased">New Features</h3>
 
@@ -84,7 +84,7 @@
 
 ### Chores
 
-- Forked from Nwflower/dsh-widget-board (MIT) as the independent plugin dsh-scholar-board: package name, workspace scope, profile row, CSS class names and semantic attributes renamed; install via dsh plugin add github:Study0915/dsh-scholar-board. Upstream copyright and license notices are kept intact, and the third-party inventory adds Ajv, schemastery, semver and React.
+- Forked from Nwflower/dsh-widget-board (MIT) as the independent plugin dsh-scholar-board: package name, workspace scope, profile row, CSS class names and semantic attributes renamed; install via dsh plugin add github:Study0915/dsh-scholar-board. Upstream copyright and license notices are kept intact, and the third-party inventory adds Ajv, schemastery, semver and React, pins the vendored lunar-javascript to its version, and lists the transitive packages that ship with sharp and schemastery.
 
 ## [0.1.6] - 2026-10-26
 
