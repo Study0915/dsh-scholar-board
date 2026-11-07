@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import Ajv from 'ajv'
-import { MARKET_INDEX_SCHEMA } from '@dsh-widget-board/contracts'
+import { MARKET_INDEX_SCHEMA } from '@dsh-scholar-board/contracts'
 
 const INDEX = JSON.parse(readFileSync(new URL('../../../market/index.json', import.meta.url), 'utf8')) as Record<string, unknown>
 const validate = new Ajv({ allErrors: true, strict: true }).compile(MARKET_INDEX_SCHEMA)

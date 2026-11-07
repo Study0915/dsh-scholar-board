@@ -8,7 +8,7 @@
  */
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import type { Board, BoardEvent, BoardInstance, WidgetMinBox } from '@dsh-widget-board/contracts'
+import type { Board, BoardEvent, BoardInstance, WidgetMinBox } from '@dsh-scholar-board/contracts'
 import type { WidgetRecord } from './library'
 import { seedBoards } from './default-boards'
 import { StaleRevisionError, emptyBoard, readBoard, withLayouts, writeBoard } from './state'

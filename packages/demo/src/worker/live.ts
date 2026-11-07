@@ -5,7 +5,7 @@
  * `EventSource` 发起，响应是一条不结束的 `text/event-stream`；Service Worker 被浏览器回收时
  * 连接断开，页面的 `EventSource` 自己重连，重连时补的那条通知让页面重取快照。
  */
-import type { BoardEvent, BoardEventFrame } from '@dsh-widget-board/contracts'
+import type { BoardEvent, BoardEventFrame } from '@dsh-scholar-board/contracts'
 
 /** 心跳间隔：中间的代理会掐掉长时间没有字节的连接。 */
 const HEARTBEAT_MS = 20_000

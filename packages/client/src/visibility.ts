@@ -4,8 +4,8 @@
  * 宿主按全部观众的并集决定读哪几张卡，所以只有集合真的变了才发一次；按动画帧或按秒发，这条链路
  * 自己就成了流量。发不出去时把去重那道闸门打开，等下一次变化或重连再发（D11）。
  */
-import type { VisibilityReport } from '@dsh-widget-board/contracts'
-import { CLIENT_VISIBILITY_PATH } from '@dsh-widget-board/contracts'
+import type { VisibilityReport } from '@dsh-scholar-board/contracts'
+import { CLIENT_VISIBILITY_PATH } from '@dsh-scholar-board/contracts'
 import { viewerId } from './live'
 import { failureOf } from './snapshot'
 

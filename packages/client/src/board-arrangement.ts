@@ -1,7 +1,7 @@
 /** 看板排列切换：保存屏幕阅读顺序并沿用布局修订号。 */
 import { useCallback, type MutableRefObject } from 'react'
-import type { Arrangement, Board, WorkspaceSnapshot } from '@dsh-widget-board/contracts'
-import { readOrderOf, resolveLayout, type GridMetrics } from '@dsh-widget-board/model'
+import type { Arrangement, Board, WorkspaceSnapshot } from '@dsh-scholar-board/contracts'
+import { readOrderOf, resolveLayout, type GridMetrics } from '@dsh-scholar-board/model'
 import { groupCards, layoutItemsOf } from './group'
 import { saveBoardArrangement } from './snapshot'
 

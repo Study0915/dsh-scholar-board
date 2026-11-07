@@ -21,16 +21,16 @@ async function mediaPass(page, check) {
   let imported
   try {
     await openDockAction(page, 'create')
-    await page.locator('[data-dsh-widget-board-template="image"]').click()
-    await page.locator('[data-dsh-widget-board-media-field] input[type="file"]').setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png })
-    check('本地图片上传及预览', await waitFor(async () => await page.locator('[data-dsh-widget-board-media-field] img').count() === 1, 15000))
-    const previewImage = page.locator('[data-dsh-widget-board-image-preview] img')
+    await page.locator('[data-dsh-scholar-board-template="image"]').click()
+    await page.locator('[data-dsh-scholar-board-media-field] input[type="file"]').setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png })
+    check('本地图片上传及预览', await waitFor(async () => await page.locator('[data-dsh-scholar-board-media-field] img').count() === 1, 15000))
+    const previewImage = page.locator('[data-dsh-scholar-board-image-preview] img')
     check('编辑器右侧受控图片预览', await waitFor(async () => await previewImage.count() === 1 && await previewImage.evaluate(image => image.naturalWidth > 0), 10000))
-    await page.locator('[data-dsh-widget-board-field="alt"]').fill('媒体验收图片')
-    await page.locator('[data-dsh-widget-board-field="caption"]').fill('受限图片备份')
+    await page.locator('[data-dsh-scholar-board-field="alt"]').fill('媒体验收图片')
+    await page.locator('[data-dsh-scholar-board-field="caption"]').fill('受限图片备份')
     await page.screenshot({ path: path.join(evidence, 'image-editor.png') })
-    await page.locator('[data-dsh-widget-board-composer-submit]').click()
-    await page.locator('[data-dsh-widget-board-composer]').waitFor({ state: 'detached' })
+    await page.locator('[data-dsh-scholar-board-composer-submit]').click()
+    await page.locator('[data-dsh-scholar-board-composer]').waitFor({ state: 'detached' })
     const instance = await page.evaluate(async id => {
       const snapshot = await (await fetch('api/widget-board/boards')).json()
       return snapshot.boards.find(board => board.id === id).instances[0]
@@ -67,9 +67,9 @@ async function mediaPass(page, check) {
     await captureAppearance(page, evidence, 'image')
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.emulateMedia({ colorScheme: 'light' })
-    await page.locator(`[data-instance="${instance.id}"] [data-dsh-widget-board-handle="settings"]`).click()
-    await page.locator('[data-dsh-widget-board-editor-content]').click()
-    check('已有图片进入内容编辑可预览', await waitFor(async () => await page.locator('[data-dsh-widget-board-image-preview] img').count() === 1 && await page.locator('[data-dsh-widget-board-image-preview] img').evaluate(image => image.naturalWidth === 640), 10000))
+    await page.locator(`[data-instance="${instance.id}"] [data-dsh-scholar-board-handle="settings"]`).click()
+    await page.locator('[data-dsh-scholar-board-editor-content]').click()
+    check('已有图片进入内容编辑可预览', await waitFor(async () => await page.locator('[data-dsh-scholar-board-image-preview] img').count() === 1 && await page.locator('[data-dsh-scholar-board-image-preview] img').evaluate(image => image.naturalWidth === 640), 10000))
     const replacement = await sharp({ create: { width: 320, height: 180, channels: 3, background: '#647c65' } }).png().toBuffer()
     const changed = await page.evaluate(async ({ id, bytes }) => {
       const post = async (path, body) => {
@@ -87,11 +87,11 @@ async function mediaPass(page, check) {
       return uploaded.ref
     }, { id: instance.id, bytes: [...replacement] })
     instance.media.background = changed
-    await page.locator('[data-dsh-widget-board-field="caption"]').fill('未提交的本地说明')
-    await page.locator('[data-dsh-widget-board-content-save]').click()
-    await page.locator('[data-dsh-widget-board-content-reload]').click()
-    check('冲突重新读取后预览更新到新图片', await waitFor(async () => await page.locator('[data-dsh-widget-board-image-preview] img').evaluate(image => image.naturalWidth === 320), 10000))
-    await page.locator('[data-dsh-widget-board-content-close]').click()
+    await page.locator('[data-dsh-scholar-board-field="caption"]').fill('未提交的本地说明')
+    await page.locator('[data-dsh-scholar-board-content-save]').click()
+    await page.locator('[data-dsh-scholar-board-content-reload]').click()
+    check('冲突重新读取后预览更新到新图片', await waitFor(async () => await page.locator('[data-dsh-scholar-board-image-preview] img').evaluate(image => image.naturalWidth === 320), 10000))
+    await page.locator('[data-dsh-scholar-board-content-close]').click()
     await page.keyboard.press('Escape')
     const denied = await page.evaluate(async ({ board, ref }) => {
       const post = async (path, body) => await fetch(`api/widget-board/${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })

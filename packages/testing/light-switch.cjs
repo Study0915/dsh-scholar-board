@@ -10,7 +10,7 @@
 const { centerCard, frameOf } = require('./frames.cjs')
 
 /** 转场标记在根节点上的属性名；只在一次转场期间存在。 */
-const VT = 'data-dsh-widget-board-vt'
+const VT = 'data-dsh-scholar-board-vt'
 
 /**
  * 在一张真实的开关灯卡片上按一次开关。
@@ -19,7 +19,7 @@ const VT = 'data-dsh-widget-board-vt'
  * @param check - 记一条判据的函数。
  */
 async function lightSwitchPass(page, check) {
-  const frame = await frameOf(page, 'iframe.dsh-widget-board__frame[title="开关灯"]')
+  const frame = await frameOf(page, 'iframe.dsh-scholar-board__frame[title="开关灯"]')
   await centerCard(page, '开关灯')
   const before = await page.evaluate(() => document.body.hasAttribute('data-ds-dark-theme'))
   const drawn = await frame.evaluate(() => document.querySelector('.lamp')?.dataset.mode ?? '')
@@ -40,9 +40,9 @@ async function lightSwitchPass(page, check) {
       const on = root.hasAttribute(attribute)
       if (on && seen[seen.length - 1] !== 'on') {
         seen.push('on')
-        const box = document.querySelector('iframe.dsh-widget-board__frame[title="开关灯"]').getBoundingClientRect()
-        const xRaw = root.style.getPropertyValue('--dsh-widget-board-vt-x')
-        const yRaw = root.style.getPropertyValue('--dsh-widget-board-vt-y')
+        const box = document.querySelector('iframe.dsh-scholar-board__frame[title="开关灯"]').getBoundingClientRect()
+        const xRaw = root.style.getPropertyValue('--dsh-scholar-board-vt-x')
+        const yRaw = root.style.getPropertyValue('--dsh-scholar-board-vt-y')
         window.__lightSwitchOrigin = {
           x: Number.parseFloat(xRaw),
           y: Number.parseFloat(yRaw),

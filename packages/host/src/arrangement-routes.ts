@@ -1,5 +1,5 @@
 /** 看板排列偏好的提交，与自由布局共用修订号与字节上限。 */
-import type { Arrangement, BoardArrangementRequest } from '@dsh-widget-board/contracts'
+import type { Arrangement, BoardArrangementRequest } from '@dsh-scholar-board/contracts'
 import { LAYOUT_LIMIT, boardById, type Route } from './routes'
 import { isRecord } from './guards'
 import { isArrangement, StaleRevisionError, withBoardArrangement } from './state'

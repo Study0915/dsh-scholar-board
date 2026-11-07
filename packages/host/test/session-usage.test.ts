@@ -8,7 +8,7 @@
  */
 import { readFile } from 'node:fs/promises'
 import { describe, expect, it, vi } from 'vitest'
-import type { HostSessionEvent, HostSessions, InstanceFace } from '@dsh-widget-board/contracts'
+import type { HostSessionEvent, HostSessions, InstanceFace } from '@dsh-scholar-board/contracts'
 import type { UsageHistoryFetch, UsageHistoryProjection, UsageHistoryTally } from '../src/dsh-usage'
 import { USAGE_HISTORY_SOURCE, historyFailure } from '../src/dsh-usage'
 import type { SessionUsage, SessionUsageSnapshot } from '../src/session-usage'

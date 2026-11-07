@@ -5,7 +5,7 @@
  * PR 与坏条目怎么处理、被拒与网络故障各自回什么、缓存按什么分键。
  */
 import { describe, expect, it } from 'vitest'
-import type { HostCredentials, InstanceFace } from '@dsh-widget-board/contracts'
+import type { HostCredentials, InstanceFace } from '@dsh-scholar-board/contracts'
 import type { FetchLike } from '../src/http'
 import { GITHUB_CACHE_MS, GITHUB_ISSUES_CAPABILITY, GITHUB_PROVIDER, GITHUB_TOKEN_REF, githubIssuesCapability } from '../src/github'
 

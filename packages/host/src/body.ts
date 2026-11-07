@@ -4,7 +4,7 @@
  * 文本与字节走同一条读取循环，上限之外一律 413；JSON 解析失败是 400。放在一处，路由与分享导入
  * 共用同一套判定。
  */
-import type { HostRequest } from '@dsh-widget-board/contracts'
+import type { HostRequest } from '@dsh-scholar-board/contracts'
 import { Refusal } from './refusal'
 
 /**

@@ -5,7 +5,7 @@
  * `GET /drafts` 列出全部草稿的摘要。它们只操作插件自己的 `drafts/` 目录：客户端给的文件路径一律
  * 不接受。
  */
-import type { WidgetDraft } from '@dsh-widget-board/contracts'
+import type { WidgetDraft } from '@dsh-scholar-board/contracts'
 import { readJson } from '../body'
 import { isRecord } from '../guards'
 import { Refusal } from '../refusal'

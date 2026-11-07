@@ -4,9 +4,9 @@
  * 看板的布局与卡片状态写在这里，刷新之后还在。Service Worker 读不到 `localStorage`，页面和
  * Service Worker 都能打开同一个 IndexedDB，所以存储放在这一个键上，两边共用这几个函数。
  */
-import type { Board } from '@dsh-widget-board/contracts'
+import type { Board } from '@dsh-scholar-board/contracts'
 
-const DATABASE = 'dsh-widget-board-demo'
+const DATABASE = 'dsh-scholar-board-demo'
 const STORE = 'workspace'
 const KEY = 'current'
 

@@ -8,13 +8,13 @@
  * 模块的形状与构建产物一致：加载器按 `id` 取回 `factory` 的导出。
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-widget-board-test-provider-v3',
+  id: 'dsh-scholar-board-test-provider-v3',
   factory: (require) => {
     const module = { exports: {} }
     const exports = module.exports
     const React = require('react')
 
-    exports.name = 'dsh-widget-board-test-provider-v3'
+    exports.name = 'dsh-scholar-board-test-provider-v3'
     exports.inject = ['widgetBoard']
 
     /** 声明的用途：只写浏览器半边真做得到的项（D31）。 */

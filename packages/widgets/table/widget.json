@@ -8,7 +8,7 @@
     "zh": "几列紧凑表格：列名与对齐由 data 给出，行多时在卡片里滚动。",
     "en": "A compact table whose columns, alignment and rows come from data; it scrolls when rows grow."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 2, "h": 22 },

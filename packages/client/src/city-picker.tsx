@@ -116,17 +116,17 @@ export function CityPicker({ field, value, resolved, coordinates, disabled, loca
 
   if (collapsed && value !== '') {
     return (
-      <span className="dsh-widget-board__city" ref={root} data-dsh-widget-board-city={field.key}>
-        <span className="dsh-widget-board__city-picked">
-          <span className="dsh-widget-board__city-name">{summary === '' ? value : summary}</span>
-          <span className="dsh-widget-board__city-meta">
+      <span className="dsh-scholar-board__city" ref={root} data-dsh-scholar-board-city={field.key}>
+        <span className="dsh-scholar-board__city-picked">
+          <span className="dsh-scholar-board__city-name">{summary === '' ? value : summary}</span>
+          <span className="dsh-scholar-board__city-meta">
             {span === '' ? t('cityPicked') : `${t('cityPicked')} · ${span}`}
           </span>
         </span>
         <button
           type="button"
-          className="dsh-widget-board__editor-ghost"
-          data-dsh-widget-board-city-change={field.key}
+          className="dsh-scholar-board__editor-ghost"
+          data-dsh-scholar-board-city-change={field.key}
           disabled={disabled}
           onClick={() => { setCollapsed(false); setOpen(true) }}
         >
@@ -137,17 +137,17 @@ export function CityPicker({ field, value, resolved, coordinates, disabled, loca
   }
 
   return (
-    <span className="dsh-widget-board__city" ref={root} data-dsh-widget-board-city={field.key}>
-      <span className="dsh-widget-board__city-field">
+    <span className="dsh-scholar-board__city" ref={root} data-dsh-scholar-board-city={field.key}>
+      <span className="dsh-scholar-board__city-field">
         <input
-          className="dsh-widget-board__input"
+          className="dsh-scholar-board__input"
           type="text"
           role="combobox"
           aria-expanded={open}
           aria-autocomplete="list"
           autoComplete="off"
           spellCheck={false}
-          data-dsh-widget-board-field={field.key}
+          data-dsh-scholar-board-field={field.key}
           maxLength={field.maxLength}
           value={value}
           placeholder={typeof field.defaultValue === 'string' ? field.defaultValue : t('cityHint')}
@@ -180,8 +180,8 @@ export function CityPicker({ field, value, resolved, coordinates, disabled, loca
         />
         <button
           type="button"
-          className="dsh-widget-board__editor-ghost dsh-widget-board__locate"
-          data-dsh-widget-board-locate={field.key}
+          className="dsh-scholar-board__editor-ghost dsh-scholar-board__locate"
+          data-dsh-scholar-board-locate={field.key}
           disabled={disabled || locating}
           onClick={onLocate}
         >
@@ -190,14 +190,14 @@ export function CityPicker({ field, value, resolved, coordinates, disabled, loca
       </span>
       {open && value.trim() !== '' && items.length > 0
         ? (
-          <span className="dsh-widget-board__city-list" role="listbox" data-dsh-widget-board-city-list={field.key}>
+          <span className="dsh-scholar-board__city-list" role="listbox" data-dsh-scholar-board-city-list={field.key}>
             {items.map((candidate, index) => (
               <button
                 key={`${String(candidate.id ?? candidate.latitude)}:${candidate.en}`}
                 type="button"
                 role="option"
                 aria-selected={index === active}
-                className="dsh-widget-board__city-option"
+                className="dsh-scholar-board__city-option"
                 data-active={index === active ? 'true' : 'false'}
                 onMouseEnter={() => { setActive(index) }}
                 onMouseDown={(event) => { event.preventDefault() }}
@@ -207,8 +207,8 @@ export function CityPicker({ field, value, resolved, coordinates, disabled, loca
                   setCollapsed(true)
                 }}
               >
-                <span className="dsh-widget-board__city-name">{candidate.zh === candidate.en ? candidate.zh : `${candidate.zh} · ${candidate.en}`}</span>
-                <span className="dsh-widget-board__city-meta">
+                <span className="dsh-scholar-board__city-name">{candidate.zh === candidate.en ? candidate.zh : `${candidate.zh} · ${candidate.en}`}</span>
+                <span className="dsh-scholar-board__city-meta">
                   {candidate.detail === '' ? `${candidate.latitude.toFixed(2)}, ${candidate.longitude.toFixed(2)}` : candidate.detail}
                 </span>
               </button>
@@ -218,7 +218,7 @@ export function CityPicker({ field, value, resolved, coordinates, disabled, loca
         : null}
       {open && value.trim() !== '' && items.length === 0
         ? (
-          <span className="dsh-widget-board__city-tip" role="status">
+          <span className="dsh-scholar-board__city-tip" role="status">
             {searching ? t('citySearching') : failed ? t('cityLookupFailed') : t('cityNoMatch')}
           </span>
         )

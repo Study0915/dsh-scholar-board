@@ -8,7 +8,7 @@
     "zh": "折线、面积与柱状三种趋势图，共用一份采样点；适合请求量、耗时与配额。",
     "en": "Line, area and bar trends over one set of samples; for traffic, latency and quotas."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 2, "h": 22 },

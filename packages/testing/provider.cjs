@@ -7,7 +7,7 @@
  * 要权限的数据源与动作在授权前被拦下、组件声明的定时刷新自己往前走、停用插件之后它们从组件库与卡片上撤下、
  * 启用之后回来、撤下之后卡片能移除。
  *
- * 只查找插件自己写在节点上的标记（`data-dsh-widget-board-*`、`data-test-native-*`），宿主换了内部
+ * 只查找插件自己写在节点上的标记（`data-dsh-scholar-board-*`、`data-test-native-*`），宿主换了内部
  * 结构也不会让这些判据失真（D1）；停用与启用走设置页同一个插件开关。找插件页、开关插件、读数据这些动作
  * 与 `provider-v3.cjs` 共用 `providing.cjs`。
  */
@@ -19,7 +19,7 @@ const { openBoard } = require('./panel.cjs')
 const { addWidget, readSource, removeCard, removeCardsOf, runAction, setProviderEnabled } = require('./providing.cjs')
 
 /** 冒烟用的提供方的包名。 */
-const PROVIDER = 'dsh-widget-board-test-provider'
+const PROVIDER = 'dsh-scholar-board-test-provider'
 
 /** 它注册的动作：要权限的那一个。 */
 const GATED_ACTION = `${PROVIDER}:test.run`
@@ -41,7 +41,7 @@ async function providerPass(page, check, home) {
   await removeCardsOf(page, [WIDGET])
 
   await openLibrary(page)
-  await page.waitForSelector(`[data-dsh-widget-board-add="${WIDGET}"]`, { timeout: 15000 })
+  await page.waitForSelector(`[data-dsh-scholar-board-add="${WIDGET}"]`, { timeout: 15000 })
   check('插件提供的组件出现在组件库里', true)
   const id = await addWidget(page, WIDGET)
   check('插件提供的组件加到了看板上', id !== '')
@@ -79,8 +79,8 @@ async function providerPass(page, check, home) {
 
   // 要权限的动作：先被拦下，授权之后同一个按钮就通了（D6）。冒烟每轮用临时 `DSH_HOME`；先撤一次
   // 只是兜底，别让同一轮里前面的检查留下的授权让判据偏离「刚装上」。
-  const strip = `${card} .dsh-widget-board__failure-strip`
-  const ask = `${card} [data-dsh-widget-board-grant]`
+  const strip = `${card} .dsh-scholar-board__failure-strip`
+  const ask = `${card} [data-dsh-scholar-board-grant]`
   const run = `${card} [data-test-native-run]`
   await page.waitForSelector(run, { timeout: 10000 })
   await page.evaluate(async (arg) => {

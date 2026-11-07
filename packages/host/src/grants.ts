@@ -6,8 +6,8 @@
  */
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import type { ActionPermission, Grant, GrantKind } from '@dsh-widget-board/contracts'
-import { GRANT_KINDS, grantKey } from '@dsh-widget-board/contracts'
+import type { ActionPermission, Grant, GrantKind } from '@dsh-scholar-board/contracts'
+import { GRANT_KINDS, grantKey } from '@dsh-scholar-board/contracts'
 
 /** 授权表的格式版本。 */
 export const GRANTS_FORMAT = 1

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { Board } from '@dsh-widget-board/contracts'
-import { gridMetrics } from '@dsh-widget-board/model'
+import type { Board } from '@dsh-scholar-board/contracts'
+import { gridMetrics } from '@dsh-scholar-board/model'
 import { nextArrangementOf } from '../src/board-arrangement'
 
 const metrics = gridMetrics(1000, 16)

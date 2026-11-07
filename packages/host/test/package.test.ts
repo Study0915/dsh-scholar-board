@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { strToU8 } from 'fflate'
-import type { WidgetManifest } from '@dsh-widget-board/contracts'
+import type { WidgetManifest } from '@dsh-scholar-board/contracts'
 import { BOARD_PACKAGE_FORMAT, PACKAGE_MAX_FILES, packBoard, packWidget, unpackBoard, unpackWidget } from '../src/package'
 
 /** 一个最小的组件目录。 */

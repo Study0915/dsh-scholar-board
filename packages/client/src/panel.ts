@@ -12,7 +12,7 @@ import {
   SIDEBAR_PANELLIST_SLOT,
   WIDGET_BOARD_PANEL_ID,
   slotsOf,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { BoardPage } from './board'
 import { PanelIcon } from './panel-icon'
 import { BoardSettings } from './settings'

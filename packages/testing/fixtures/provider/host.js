@@ -9,7 +9,7 @@
  */
 import { join } from 'node:path'
 
-export const name = 'dsh-widget-board-test-provider'
+export const name = 'dsh-scholar-board-test-provider'
 
 export const inject = ['widgetBoard']
 

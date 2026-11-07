@@ -9,7 +9,7 @@
  * 注册随提供方的注册把手释放（`WidgetTypeHandle.dispose`）而撤下；提供方卸载后，指向它的卡片照旧
  * 留着，只是数据源、动作与能力不再存在，读取时报出「提供它的插件可能没有安装」。
  */
-import type { ActionRegistration, CapabilityRegistration, DataSourceRegistration, InstanceFace } from '@dsh-widget-board/contracts'
+import type { ActionRegistration, CapabilityRegistration, DataSourceRegistration, InstanceFace } from '@dsh-scholar-board/contracts'
 import type { ProviderHealth } from './provider-health'
 import { capabilityTimeoutOf, createProviderHealth } from './provider-health'
 

@@ -7,7 +7,7 @@
  */
 
 /* 菜单：贴着更多按钮或右键落点的一张小浮层。 */
-.dsh-widget-board__board-menu {
+.dsh-scholar-board__board-menu {
   position: fixed;
   z-index: 120;
   display: flex;
@@ -23,21 +23,21 @@
   box-shadow:
     0 1px 0 color-mix(in srgb, #fff 7%, transparent) inset,
     0 20px 48px -18px rgb(0 0 0 / 40%);
-  animation: dsh-widget-board-menu-in var(--w-motion-fast) var(--w-motion-ease-pop) both;
+  animation: dsh-scholar-board-menu-in var(--w-motion-fast) var(--w-motion-ease-pop) both;
 }
 
-.dsh-widget-board__board-menu-title {
+.dsh-scholar-board__board-menu-title {
   margin: 2px 6px 4px;
   overflow: hidden;
   color: var(--dsw-alias-label-secondary);
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: 10px;
   letter-spacing: 0.06em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.dsh-widget-board__board-menu-item {
+.dsh-scholar-board__board-menu-item {
   display: flex;
   align-items: center;
   padding: 7px 10px;
@@ -53,40 +53,40 @@
   transition: background-color var(--w-motion-fast) var(--w-motion-ease-standard), color var(--w-motion-fast) var(--w-motion-ease-standard);
 }
 
-.dsh-widget-board__board-menu-item[data-danger="true"] { color: var(--dsw-alias-state-error-primary); }
+.dsh-scholar-board__board-menu-item[data-danger="true"] { color: var(--dsw-alias-state-error-primary); }
 
 @media (hover: hover) and (pointer: fine) {
-  .dsh-widget-board__board-menu-item:hover {
+  .dsh-scholar-board__board-menu-item:hover {
     background: color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);
   }
 
-  .dsh-widget-board__board-menu-item[data-danger="true"]:hover {
+  .dsh-scholar-board__board-menu-item[data-danger="true"]:hover {
     background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 12%, transparent);
   }
 }
 
-.dsh-widget-board__board-menu-item:focus-visible {
+.dsh-scholar-board__board-menu-item:focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary);
   outline-offset: -1px;
 }
 
 /* 弹窗的层与背板：按看板页矩形定位，只盖看板内容。矩形在看板页挂上时就已知，第一帧之前已经量好。 */
-.dsh-widget-board__board-dialog-layer {
+.dsh-scholar-board__board-dialog-layer {
   position: fixed;
   z-index: 130;
   pointer-events: none;
 }
 
-.dsh-widget-board__board-dialog-backdrop {
+.dsh-scholar-board__board-dialog-backdrop {
   position: absolute;
   inset: 0;
   background: color-mix(in srgb, #000 38%, transparent);
   backdrop-filter: blur(5px) saturate(118%);
   pointer-events: auto;
-  animation: dsh-widget-board-dialog-fade var(--w-motion-fast) var(--w-motion-ease-standard) both;
+  animation: dsh-scholar-board-dialog-fade var(--w-motion-fast) var(--w-motion-ease-standard) both;
 }
 
-.dsh-widget-board__board-dialog {
+.dsh-scholar-board__board-dialog {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -106,11 +106,11 @@
   color: var(--dsw-alias-label-primary);
   pointer-events: auto;
   transform: translate(-50%, -50%);
-  animation: dsh-widget-board-dialog-rise var(--w-motion-base) var(--w-motion-ease-pop) both;
+  animation: dsh-scholar-board-dialog-rise var(--w-motion-base) var(--w-motion-ease-pop) both;
 }
 
 /* 题头：眉题与标题，与设置弹窗的题头同一层主色。 */
-.dsh-widget-board__board-dialog-head {
+.dsh-scholar-board__board-dialog-head {
   padding: 20px 24px 14px;
   border-bottom: 1px solid color-mix(in srgb, var(--dsw-alias-border-l1) 60%, transparent);
   background:
@@ -118,16 +118,16 @@
     var(--dsw-alias-bg-layer-1);
 }
 
-.dsh-widget-board__board-dialog-eyebrow {
+.dsh-scholar-board__board-dialog-eyebrow {
   margin: 0 0 6px;
   color: var(--dsw-alias-label-tertiary);
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.dsh-widget-board__board-dialog-title {
+.dsh-scholar-board__board-dialog-title {
   margin: 0;
   font-size: var(--w-type-title);
   font-weight: 600;
@@ -135,7 +135,7 @@
   line-height: 1.25;
 }
 
-.dsh-widget-board__board-dialog-body {
+.dsh-scholar-board__board-dialog-body {
   display: flex;
   min-height: 0;
   flex: 1;
@@ -145,12 +145,12 @@
   overflow: auto;
 }
 
-.dsh-widget-board__board-dialog-label {
+.dsh-scholar-board__board-dialog-label {
   color: var(--dsw-alias-label-secondary);
   font-size: var(--w-type-caption);
 }
 
-.dsh-widget-board__board-dialog-input {
+.dsh-scholar-board__board-dialog-input {
   padding: 8px 10px;
   border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 10px;
@@ -160,16 +160,16 @@
   font-size: var(--w-type-body);
 }
 
-.dsh-widget-board__board-dialog-input:focus-visible {
+.dsh-scholar-board__board-dialog-input:focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary);
   outline-offset: -1px;
 }
 
-.dsh-widget-board__board-dialog-input[aria-invalid="true"] {
+.dsh-scholar-board__board-dialog-input[aria-invalid="true"] {
   border-color: var(--dsw-alias-state-error-primary);
 }
 
-.dsh-widget-board__board-dialog-target {
+.dsh-scholar-board__board-dialog-target {
   display: -webkit-box;
   margin: 0;
   overflow: hidden;
@@ -181,7 +181,7 @@
   -webkit-line-clamp: 3;
 }
 
-.dsh-widget-board__board-dialog-counts {
+.dsh-scholar-board__board-dialog-counts {
   display: flex;
   margin: 0;
   gap: 10px;
@@ -189,23 +189,23 @@
   font-size: var(--w-type-caption);
 }
 
-.dsh-widget-board__board-dialog-counts span + span::before {
+.dsh-scholar-board__board-dialog-counts span + span::before {
   content: "·";
   margin-right: 10px;
   color: var(--dsw-alias-label-tertiary);
 }
 
-.dsh-widget-board__board-dialog-note {
+.dsh-scholar-board__board-dialog-note {
   margin: 0;
   color: var(--dsw-alias-label-tertiary);
   font-size: var(--w-type-caption);
   line-height: 1.6;
 }
 
-.dsh-widget-board__board-dialog-note[data-state="error"] { color: var(--dsw-alias-state-error-primary); }
+.dsh-scholar-board__board-dialog-note[data-state="error"] { color: var(--dsw-alias-state-error-primary); }
 
 /* 页脚：取消与确认并排，危险操作读错误色。 */
-.dsh-widget-board__board-dialog-foot {
+.dsh-scholar-board__board-dialog-foot {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -215,9 +215,9 @@
   background: color-mix(in srgb, var(--dsw-alias-bg-base) 45%, transparent);
 }
 
-.dsh-widget-board__board-dialog-primary,
-.dsh-widget-board__board-dialog-ghost,
-.dsh-widget-board__board-dialog-danger {
+.dsh-scholar-board__board-dialog-primary,
+.dsh-scholar-board__board-dialog-ghost,
+.dsh-scholar-board__board-dialog-danger {
   padding: 7px 16px;
   border-radius: 999px;
   cursor: pointer;
@@ -227,78 +227,78 @@
   transition: filter var(--w-motion-fast) var(--w-motion-ease-standard), background-color var(--w-motion-fast) var(--w-motion-ease-standard);
 }
 
-.dsh-widget-board__board-dialog-primary {
+.dsh-scholar-board__board-dialog-primary {
   border: 1px solid transparent;
   background: var(--dsw-alias-brand-primary);
   box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--dsw-alias-brand-primary) 80%, transparent);
   color: var(--dsw-alias-label-primary-inverted);
 }
 
-.dsh-widget-board__board-dialog-primary:hover:not(:disabled) { filter: brightness(1.06); }
+.dsh-scholar-board__board-dialog-primary:hover:not(:disabled) { filter: brightness(1.06); }
 
-.dsh-widget-board__board-dialog-ghost {
+.dsh-scholar-board__board-dialog-ghost {
   border: 1px solid color-mix(in srgb, var(--dsw-alias-border-l1) 85%, transparent);
   background: color-mix(in srgb, var(--dsw-alias-label-primary) 4%, transparent);
   color: var(--dsw-alias-label-secondary);
 }
 
-.dsh-widget-board__board-dialog-ghost:hover:not(:disabled) {
+.dsh-scholar-board__board-dialog-ghost:hover:not(:disabled) {
   background: color-mix(in srgb, var(--dsw-alias-label-primary) 9%, transparent);
   color: var(--dsw-alias-label-primary);
 }
 
 /* 删除按钮照宿主的危险样式：错误色写字、同色描边，按下时才铺一层很淡的同色底。
  * 填满错误色再压白字在深色主题里只有 3.7:1，读不清。 */
-.dsh-widget-board__board-dialog-danger {
+.dsh-scholar-board__board-dialog-danger {
   border: 1px solid color-mix(in srgb, var(--dsw-alias-state-error-primary) 30%, transparent);
   background: transparent;
   color: var(--dsw-alias-state-error-primary);
 }
 
-.dsh-widget-board__board-dialog-danger:hover:not(:disabled) {
+.dsh-scholar-board__board-dialog-danger:hover:not(:disabled) {
   border-color: color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, transparent);
   background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 8%, transparent);
 }
 
-.dsh-widget-board__board-dialog-primary:disabled,
-.dsh-widget-board__board-dialog-ghost:disabled,
-.dsh-widget-board__board-dialog-danger:disabled {
+.dsh-scholar-board__board-dialog-primary:disabled,
+.dsh-scholar-board__board-dialog-ghost:disabled,
+.dsh-scholar-board__board-dialog-danger:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.dsh-widget-board__board-dialog-primary:focus-visible,
-.dsh-widget-board__board-dialog-ghost:focus-visible,
-.dsh-widget-board__board-dialog-danger:focus-visible {
+.dsh-scholar-board__board-dialog-primary:focus-visible,
+.dsh-scholar-board__board-dialog-ghost:focus-visible,
+.dsh-scholar-board__board-dialog-danger:focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary);
   outline-offset: 1px;
 }
 
-@keyframes dsh-widget-board-menu-in {
+@keyframes dsh-scholar-board-menu-in {
   from { opacity: 0; transform: translateY(-4px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes dsh-widget-board-dialog-fade {
+@keyframes dsh-scholar-board-dialog-fade {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes dsh-widget-board-dialog-rise {
+@keyframes dsh-scholar-board-dialog-rise {
   from { opacity: 0; transform: translate(-50%, calc(-50% + 12px)) scale(0.985); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 @media (max-width: 720px) {
-  .dsh-widget-board__board-dialog { width: calc(100% - 16px); }
-  .dsh-widget-board__board-dialog-head { padding: 16px 16px 12px; }
-  .dsh-widget-board__board-dialog-body { padding: 14px 16px 16px; }
-  .dsh-widget-board__board-dialog-foot { padding: 12px 16px; }
+  .dsh-scholar-board__board-dialog { width: calc(100% - 16px); }
+  .dsh-scholar-board__board-dialog-head { padding: 16px 16px 12px; }
+  .dsh-scholar-board__board-dialog-body { padding: 14px 16px 16px; }
+  .dsh-scholar-board__board-dialog-foot { padding: 12px 16px; }
 }
 
 /* 减弱动效：菜单与弹窗直接出现（D10）。 */
 @media (prefers-reduced-motion: reduce) {
-  .dsh-widget-board__board-menu,
-  .dsh-widget-board__board-dialog,
-  .dsh-widget-board__board-dialog-backdrop { animation: none; }
+  .dsh-scholar-board__board-menu,
+  .dsh-scholar-board__board-dialog,
+  .dsh-scholar-board__board-dialog-backdrop { animation: none; }
 }

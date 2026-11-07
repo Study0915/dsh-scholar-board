@@ -6,8 +6,8 @@
  * 交回来；同一次调用有多个页面在显示时，先交回的那一份算数。没有页面接手、或页面没在时限内交回
  * 时，结论是 `unverified`——组件已经写下，只是没人看过它。
  */
-import type { SelfCheckBoxResult, SelfCheckJob, SelfCheckResult } from '@dsh-widget-board/contracts'
-import { SELF_CHECK_ROUTE, SELF_CHECK_TIMEOUT_MS, isSelfCheckBoxResults } from '@dsh-widget-board/contracts'
+import type { SelfCheckBoxResult, SelfCheckJob, SelfCheckResult } from '@dsh-scholar-board/contracts'
+import { SELF_CHECK_ROUTE, SELF_CHECK_TIMEOUT_MS, isSelfCheckBoxResults } from '@dsh-scholar-board/contracts'
 import { readJson } from './body'
 import { Refusal } from './refusal'
 import { json } from './response'

@@ -17,7 +17,7 @@ import type {
   WidgetBoardFeature,
   WidgetNativeProps,
   WidgetNativeProviderHandle,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import {
   WIDGET_BOARD_API_VERSION,
   WIDGET_BOARD_PROVIDER_API_VERSION,
@@ -26,7 +26,7 @@ import {
   requireFeatures,
   supportsFeature,
   versionMismatch,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 
 /** 一个原生组件。 */
 export interface NativeWidget {

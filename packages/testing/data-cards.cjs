@@ -23,8 +23,8 @@ const { metricsViewPass } = require('./metrics.cjs')
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const METRICS_FRAME = 'iframe.dsh-widget-board__frame[title="运行成本"]'
-const USAGE_FRAME = 'iframe.dsh-widget-board__frame[title="最近 Token 用量"]'
+const METRICS_FRAME = 'iframe.dsh-scholar-board__frame[title="运行成本"]'
+const USAGE_FRAME = 'iframe.dsh-scholar-board__frame[title="最近 Token 用量"]'
 /** 离开视口时停到的那张卡：它在画廊里排在运行成本之前，滚过去就把运行成本顶出视口。 */
 const OTHER_FRAME = '看板题头'
 /** 场景注入的会话结算：一眼看得出数字来自哪一条事件。 */
@@ -43,7 +43,7 @@ function prepareCardsProbe() {
   const dir = join(root, 'session-event-probe')
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, 'package.json'), JSON.stringify({
-    name: 'dsh-widget-board-session-event-probe',
+    name: 'dsh-scholar-board-session-event-probe',
     version: '0.0.0',
     private: true,
     description: '数据卡场景用：用宿主自己的会话 API 追加带用量的结算。',
@@ -59,11 +59,11 @@ function prepareCardsProbe() {
     '# 数据卡场景用：向 web profile 插一行，随宿主一起启动。',
     '- insert:',
     '    - id: widget-board-session-event-probe',
-    "      name: 'dsh-widget-board-session-event-probe'",
+    "      name: 'dsh-scholar-board-session-event-probe'",
     '',
   ].join('\n'))
   writeFileSync(join(dir, 'host.js'), [
-    "export const name = 'dsh-widget-board-session-event-probe'",
+    "export const name = 'dsh-scholar-board-session-event-probe'",
     "export const inject = ['sessions']",
     '',
     '// 场景按这一段认会话 id 的前 8 位。',
@@ -197,7 +197,7 @@ async function metricsPass(page, check) {
   check('白名单之外的源在读取之前就被拒绝', typeof refusal === 'string' && refusal.includes('没有声明数据源') && !refusal.includes('调用失败'), String(refusal))
   await frame.evaluate((message) => { window.widget.reportError(message) }, String(refusal))
   const strip = await poll(
-    () => page.evaluate(() => Array.from(document.querySelectorAll('.dsh-widget-board__failure-strip')).map((node) => node.textContent ?? '')),
+    () => page.evaluate(() => Array.from(document.querySelectorAll('.dsh-scholar-board__failure-strip')).map((node) => node.textContent ?? '')),
     (list) => list.some((text) => text.includes('没有声明数据源')),
     5000,
     '卡片上的可见失败',

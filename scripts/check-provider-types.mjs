@@ -21,7 +21,7 @@ const VALUE_FIXTURE = path.join(FIXTURES, 'provider-values')
 const TSC = path.join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc')
 
 /** 提供方 SDK 的产物里不该出现的东西：宿主实现、模块系统、全局状态。 */
-const FORBIDDEN = ['node:', '@dsh-widget-board/host', '@dsh-widget-board/client', '@dsh-widget-board/runtime', 'dsh-widget-board/service', 'process.', 'globalThis', 'window.', 'document.']
+const FORBIDDEN = ['node:', '@dsh-scholar-board/host', '@dsh-scholar-board/client', '@dsh-scholar-board/runtime', 'dsh-scholar-board/service', 'process.', 'globalThis', 'window.', 'document.']
 
 /** 只挂在把手与旧入口上的批量资源：`registerProvider` 的入参里不该出现这些字段。 */
 const BULK = ['directories', 'sources', 'actions', 'capabilities', 'markets', 'widgets']
@@ -80,14 +80,14 @@ function expectEqual(label, actual, expected) {
 
 typecheckFixture(TYPE_FIXTURE)
 const typesCode = await bundle(path.join(TYPE_FIXTURE, 'provider.ts'))
-rejectNeedles(typesCode, ['dsh-widget-board/service'], '类型导入没有被抹掉')
+rejectNeedles(typesCode, ['dsh-scholar-board/service'], '类型导入没有被抹掉')
 
 typecheckFixture(VALUE_FIXTURE)
 const valuesCode = await bundle(path.join(VALUE_FIXTURE, 'provider.ts'))
 rejectNeedles(valuesCode, FORBIDDEN, '提供方 SDK 只能构造形状（D31）')
 
 const sdk = await import('data:text/javascript;base64,' + Buffer.from(valuesCode).toString('base64'))
-expectEqual('注册的提供方', sdk.registration.provider, 'dsh-widget-board-provider-values')
+expectEqual('注册的提供方', sdk.registration.provider, 'dsh-scholar-board-provider-values')
 expectEqual('注册的版本', sdk.registration.apiVersion, 3)
 expectEqual('宿主侧注册只报身份与用途', BULK.some((field) => field in sdk.registration), false)
 expectEqual('浏览器侧注册只报身份与用途', BULK.some((field) => field in sdk.nativeRegistrationValue), false)

@@ -1,5 +1,5 @@
-import type { BoardInstance, CardLayout, WidgetLibraryEntry } from '@dsh-widget-board/contracts'
-import { FLIP_GROUP_ID } from '@dsh-widget-board/contracts'
+import type { BoardInstance, CardLayout, WidgetLibraryEntry } from '@dsh-scholar-board/contracts'
+import { FLIP_GROUP_ID } from '@dsh-scholar-board/contracts'
 
 /** 看板上的一格：普通卡片，或一组翻面卡。 */
 export type BoardCard =

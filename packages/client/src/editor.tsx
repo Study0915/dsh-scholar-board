@@ -17,8 +17,8 @@ import type {
   WidgetLibraryEntry,
   WidgetSummary,
   WorkspaceSnapshot,
-} from '@dsh-widget-board/contracts'
-import { FLIP_GROUP_ID } from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
+import { FLIP_GROUP_ID } from '@dsh-scholar-board/contracts'
 import { sourceLabel, t, textOf } from './copy'
 import { AboutPanel } from './editor-panels'
 import { ConfigPanel } from './fields'
@@ -365,24 +365,24 @@ export function CardEditorDialog({
 
   return (
     <div
-      className="dsh-widget-board__editor-layer"
+      className="dsh-scholar-board__editor-layer"
       style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}
       onKeyDown={onKeyDown}
     >
-      <div className="dsh-widget-board__editor-backdrop" onPointerDown={requestClose} />
+      <div className="dsh-scholar-board__editor-backdrop" onPointerDown={requestClose} />
       <div
         ref={dialogRef}
-        className="dsh-widget-board__editor"
-        data-dsh-widget-board-editor=""
+        className="dsh-scholar-board__editor"
+        data-dsh-scholar-board-editor=""
         role="dialog"
-        aria-labelledby="dsh-widget-board-editor-title"
+        aria-labelledby="dsh-scholar-board-editor-title"
       >
-        <header className="dsh-widget-board__editor-head">
+        <header className="dsh-scholar-board__editor-head">
           <div>
-            <p className="dsh-widget-board__editor-eyebrow">{eyebrow}</p>
-            <h2 id="dsh-widget-board-editor-title" className="dsh-widget-board__editor-title">{title}</h2>
+            <p className="dsh-scholar-board__editor-eyebrow">{eyebrow}</p>
+            <h2 id="dsh-scholar-board-editor-title" className="dsh-scholar-board__editor-title">{title}</h2>
             {source === undefined || settings === null ? null : (
-              <p className="dsh-widget-board__editor-source">
+              <p className="dsh-scholar-board__editor-source">
                 {sourceLabel(source)}
                 {settings.widget.provider === undefined ? '' : ` · ${settings.widget.provider}`}
               </p>
@@ -391,8 +391,8 @@ export function CardEditorDialog({
           <button
             ref={closeRef}
             type="button"
-            className="dsh-widget-board__editor-close"
-            data-dsh-widget-board-editor-close=""
+            className="dsh-scholar-board__editor-close"
+            data-dsh-scholar-board-editor-close=""
             onClick={requestClose}
             title={t('close')}
           >
@@ -402,17 +402,17 @@ export function CardEditorDialog({
 
         {mode === 'picker'
           ? (
-            <div className="dsh-widget-board__editor-picker">
-              <div className="dsh-widget-board__editor-picker-head">
-                <button ref={backRef} type="button" className="dsh-widget-board__editor-ghost" onClick={requestClose}>
+            <div className="dsh-scholar-board__editor-picker">
+              <div className="dsh-scholar-board__editor-picker-head">
+                <button ref={backRef} type="button" className="dsh-scholar-board__editor-ghost" onClick={requestClose}>
                   {t('back')}
                 </button>
                 <div>
-                  <h3 className="dsh-widget-board__editor-heading">{t('pickWidget')}</h3>
-                  <p className="dsh-widget-board__editor-empty">{t('pickHint')}</p>
+                  <h3 className="dsh-scholar-board__editor-heading">{t('pickWidget')}</h3>
+                  <p className="dsh-scholar-board__editor-empty">{t('pickHint')}</p>
                 </div>
               </div>
-              <div className="dsh-widget-board__editor-picker-body">
+              <div className="dsh-scholar-board__editor-picker-body">
                 <WidgetGrid
                   entries={pickable}
                   widgets={widgets}
@@ -431,26 +431,26 @@ export function CardEditorDialog({
               {pending === null
                 ? null
                 : (
-                  <div className="dsh-widget-board__editor-confirm">
+                  <div className="dsh-scholar-board__editor-confirm">
                     <p>
                       {currentTitle}
                       {' → '}
                       {pendingTitle}
                     </p>
-                    <p className="dsh-widget-board__editor-empty">{t('replaceWarning')}</p>
-                    {grows ? <p className="dsh-widget-board__editor-note">{t('minBoxWarning')}</p> : null}
-                    {pickerError === null ? null : <p className="dsh-widget-board__editor-error" role="alert">{pickerError}</p>}
-                    <div className="dsh-widget-board__editor-actions">
+                    <p className="dsh-scholar-board__editor-empty">{t('replaceWarning')}</p>
+                    {grows ? <p className="dsh-scholar-board__editor-note">{t('minBoxWarning')}</p> : null}
+                    {pickerError === null ? null : <p className="dsh-scholar-board__editor-error" role="alert">{pickerError}</p>}
+                    <div className="dsh-scholar-board__editor-actions">
                       <button
                         type="button"
-                        className="dsh-widget-board__editor-primary"
-                        data-dsh-widget-board-slot-confirm=""
+                        className="dsh-scholar-board__editor-primary"
+                        data-dsh-scholar-board-slot-confirm=""
                         disabled={writing}
                         onClick={() => { void replaceWidget() }}
                       >
                         {writing ? t('saving') : t('replaceConfirm')}
                       </button>
-                      <button type="button" className="dsh-widget-board__editor-ghost" onClick={() => { setPending(null) }}>
+                      <button type="button" className="dsh-scholar-board__editor-ghost" onClick={() => { setPending(null) }}>
                         {t('cancel')}
                       </button>
                     </div>
@@ -462,7 +462,7 @@ export function CardEditorDialog({
             <>
               {group
                 ? (
-                  <div className="dsh-widget-board__slots" role="group" aria-label={t('groupSlots')}>
+                  <div className="dsh-scholar-board__slots" role="group" aria-label={t('groupSlots')}>
                     {slots.map((entry) => {
                       const entrySide = entry.group?.side
                       if (entrySide === undefined) return null
@@ -471,8 +471,8 @@ export function CardEditorDialog({
                         <button
                           key={entrySide}
                           type="button"
-                          className="dsh-widget-board__slot"
-                          data-dsh-widget-board-slot={entrySide}
+                          className="dsh-scholar-board__slot"
+                          data-dsh-scholar-board-slot={entrySide}
                           aria-pressed={entrySide === side}
                           disabled={dirty || writing}
                           title={dirty ? t('unsaved') : undefined}
@@ -484,16 +484,16 @@ export function CardEditorDialog({
                             setPending(null)
                           }}
                         >
-                          <span className="dsh-widget-board__slot-copy">
-                            <span className="dsh-widget-board__slot-side">{sideLabel(entrySide)}</span>
-                            <span className="dsh-widget-board__slot-name">
+                          <span className="dsh-scholar-board__slot-copy">
+                            <span className="dsh-scholar-board__slot-side">{sideLabel(entrySide)}</span>
+                            <span className="dsh-scholar-board__slot-name">
                               {summary === undefined ? entry.widget : textOf(summary.title)}
                             </span>
                           </span>
                           {summary === undefined
-                            ? <span className="dsh-widget-board__slot-missing">{entry.widget}</span>
+                            ? <span className="dsh-scholar-board__slot-missing">{entry.widget}</span>
                             : (
-                              <span className="dsh-widget-board__slot-preview">
+                              <span className="dsh-scholar-board__slot-preview">
                                 <WidgetPreview
                                   id={`slot:${entry.id}`}
                                   widgetId={entry.widget}
@@ -509,8 +509,8 @@ export function CardEditorDialog({
                     })}
                     <button
                       type="button"
-                      className="dsh-widget-board__slot-change"
-                      data-dsh-widget-board-slot-change=""
+                      className="dsh-scholar-board__slot-change"
+                      data-dsh-scholar-board-slot-change=""
                       disabled={dirty || writing || slot === undefined}
                       title={dirty ? t('unsaved') : undefined}
                       onClick={() => {
@@ -525,15 +525,15 @@ export function CardEditorDialog({
                 )
                 : null}
 
-              <div className="dsh-widget-board__editor-tabs" role="tablist" aria-label={t('cardSettings')}>
+              <div className="dsh-scholar-board__editor-tabs" role="tablist" aria-label={t('cardSettings')}>
                 {(['config', 'log', 'about'] as EditorTab[]).map((candidate) => (
                   <button
                     key={candidate}
                     type="button"
                     role="tab"
                     aria-selected={tab === candidate}
-                    data-dsh-widget-board-tab={candidate}
-                    className="dsh-widget-board__editor-tab"
+                    data-dsh-scholar-board-tab={candidate}
+                    className="dsh-scholar-board__editor-tab"
                     data-warning={candidate === 'about' && settings !== null
                       && (settings.sourceError !== undefined
                         || (settings.source !== undefined && settings.source.permission !== undefined && !settings.source.granted)
@@ -548,14 +548,14 @@ export function CardEditorDialog({
                 ))}
               </div>
 
-              <div className="dsh-widget-board__editor-body">
+              <div className="dsh-scholar-board__editor-body">
                 {settingsError !== null
                   ? (
-                    <div className="dsh-widget-board__editor-failure">
+                    <div className="dsh-scholar-board__editor-failure">
                       <p role="alert">{`${t('editorFailed')}：${settingsError}`}</p>
                       <button
                         type="button"
-                        className="dsh-widget-board__editor-ghost"
+                        className="dsh-scholar-board__editor-ghost"
                         onClick={() => { setRefreshKey((key) => key + 1) }}
                       >
                         {t('refreshNow')}
@@ -563,9 +563,9 @@ export function CardEditorDialog({
                     </div>
                   )
                   : slot === undefined
-                    ? <p className="dsh-widget-board__editor-empty">{group ? t('editorGroupMissing') : t('editorInstanceMissing')}</p>
+                    ? <p className="dsh-scholar-board__editor-empty">{group ? t('editorGroupMissing') : t('editorInstanceMissing')}</p>
                     : loading && settings === null
-                      ? <p className="dsh-widget-board__editor-empty">{t('editorLoading')}</p>
+                      ? <p className="dsh-scholar-board__editor-empty">{t('editorLoading')}</p>
                       : settings === null
                         ? null
                         : (
@@ -603,21 +603,21 @@ export function CardEditorDialog({
         {mode === 'settings'
           ? confirmClose
             ? (
-              <footer className="dsh-widget-board__editor-foot">
-                <p className="dsh-widget-board__editor-note">{t('unsaved')}</p>
-                <div className="dsh-widget-board__editor-actions">
+              <footer className="dsh-scholar-board__editor-foot">
+                <p className="dsh-scholar-board__editor-note">{t('unsaved')}</p>
+                <div className="dsh-scholar-board__editor-actions">
                   <button
                     type="button"
-                    className="dsh-widget-board__editor-ghost"
-                    data-dsh-widget-board-editor-keep=""
+                    className="dsh-scholar-board__editor-ghost"
+                    data-dsh-scholar-board-editor-keep=""
                     onClick={() => { setConfirmClose(false) }}
                   >
                     {t('keepEditing')}
                   </button>
                   <button
                     type="button"
-                    className="dsh-widget-board__editor-primary"
-                    data-dsh-widget-board-editor-discard=""
+                    className="dsh-scholar-board__editor-primary"
+                    data-dsh-scholar-board-editor-discard=""
                     onClick={onClose}
                   >
                     {t('discard')}
@@ -626,13 +626,13 @@ export function CardEditorDialog({
               </footer>
             )
             : (
-              <footer className="dsh-widget-board__editor-foot">
+              <footer className="dsh-scholar-board__editor-foot">
                 {editable && slot !== undefined && onEditContent !== undefined
                   ? (
                     <button
                       type="button"
-                      className="dsh-widget-board__editor-ghost"
-                      data-dsh-widget-board-editor-content=""
+                      className="dsh-scholar-board__editor-ghost"
+                      data-dsh-scholar-board-editor-content=""
                       disabled={writing}
                       onClick={() => { onEditContent(slot.id) }}
                     >
@@ -640,11 +640,11 @@ export function CardEditorDialog({
                     </button>
                   )
                   : null}
-                <span className="dsh-widget-board__editor-spacer" />
+                <span className="dsh-scholar-board__editor-spacer" />
                 <button
                   type="button"
-                  className="dsh-widget-board__editor-primary"
-                  data-dsh-widget-board-editor-done=""
+                  className="dsh-scholar-board__editor-primary"
+                  data-dsh-scholar-board-editor-done=""
                   onClick={requestClose}
                 >
                   {t('done')}

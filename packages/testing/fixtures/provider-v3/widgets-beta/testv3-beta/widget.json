@@ -8,7 +8,7 @@
     "zh": "新把手第二个目录里的沙箱组件：与组件甲声明同一份能力面、同一份数据源白名单，用来核对两种写法的语义是否一致。",
     "en": "The sandbox widget in the new handle's second directory: the same capability surface and source whitelist as alpha, so both ways of writing a widget can be compared."
   },
-  "author": "dsh-widget-board-test-provider-v3",
+  "author": "dsh-scholar-board-test-provider-v3",
   "version": "0.3.0",
   "requires": {
     "serviceApiVersion": 3

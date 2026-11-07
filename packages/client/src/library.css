@@ -5,15 +5,15 @@
  * （transitions.dev）：上移距离、交叉虚化、时长与曲线全部由同一层上的 --w-motion-* 给出（D10、D17）。
  */
 
-.dsh-widget-board__library {
+.dsh-scholar-board__library {
   position: fixed;
-  top: var(--dsh-widget-board-top, 0);
-  left: var(--dsh-widget-board-left, 0);
+  top: var(--dsh-scholar-board-top, 0);
+  left: var(--dsh-scholar-board-left, 0);
   z-index: 90;
   display: flex;
   box-sizing: border-box;
-  width: var(--dsh-widget-board-width, 100%);
-  height: var(--dsh-widget-board-height, 100%);
+  width: var(--dsh-scholar-board-width, 100%);
+  height: var(--dsh-scholar-board-height, 100%);
   flex-direction: column;
   padding: 0;
   overflow: hidden;
@@ -31,7 +31,7 @@
   will-change: transform, opacity, filter;
 }
 
-.dsh-widget-board__library[data-open="true"] {
+.dsh-scholar-board__library[data-open="true"] {
   transform: translateY(0);
   opacity: 1;
   filter: blur(0);
@@ -42,7 +42,7 @@
     filter var(--w-motion-panel-open) var(--w-motion-ease-smooth);
 }
 
-.dsh-widget-board__library-head {
+.dsh-scholar-board__library-head {
   display: flex;
   flex: none;
   align-items: flex-start;
@@ -54,7 +54,7 @@
   background: var(--dsw-alias-bg-layer-1);
 }
 
-.dsh-widget-board__library-body {
+.dsh-scholar-board__library-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
@@ -62,7 +62,7 @@
   overscroll-behavior: contain;
 }
 
-.dsh-widget-board__library-title {
+.dsh-scholar-board__library-title {
   margin: 0;
   color: var(--dsw-alias-label-primary);
   font-size: 20px;
@@ -70,14 +70,14 @@
   letter-spacing: -0.01em;
 }
 
-.dsh-widget-board__library-hint {
+.dsh-scholar-board__library-hint {
   margin: 5px 0 0;
   color: var(--dsw-alias-label-tertiary);
   font-size: 12px;
   line-height: 18px;
 }
 
-.dsh-widget-board__library-close {
+.dsh-scholar-board__library-close {
   padding: 4px 10px;
   border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 999px;
@@ -89,15 +89,15 @@
 }
 
 /* 导入与关闭并排：导入是一个隐藏的 file input 套着标签（D8）。 */
-.dsh-widget-board__library-actions {
+.dsh-scholar-board__library-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.dsh-widget-board__library-create,
-.dsh-widget-board__library-import,
-.dsh-widget-board__library-export {
+.dsh-scholar-board__library-create,
+.dsh-scholar-board__library-import,
+.dsh-scholar-board__library-export {
   padding: 4px 10px;
   border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 999px;
@@ -109,7 +109,7 @@
   text-decoration: none;
 }
 
-.dsh-widget-board__library-import input {
+.dsh-scholar-board__library-import input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -117,18 +117,18 @@
   pointer-events: none;
 }
 
-.dsh-widget-board__library-create:hover,
-.dsh-widget-board__library-import:hover,
-.dsh-widget-board__library-export:hover {
+.dsh-scholar-board__library-create:hover,
+.dsh-scholar-board__library-import:hover,
+.dsh-scholar-board__library-export:hover {
   color: var(--dsw-alias-label-primary);
 }
 
 /* 导出挂在每一格的右上角，压在缩略画面上：缩略画面不接指针，所以这一格仍然整块可拖。 */
-.dsh-widget-board__library-item {
+.dsh-scholar-board__library-item {
   position: relative;
 }
 
-.dsh-widget-board__library-export {
+.dsh-scholar-board__library-export {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -137,51 +137,51 @@
   transition: opacity 120ms ease;
 }
 
-.dsh-widget-board__library-item:hover .dsh-widget-board__library-export,
-.dsh-widget-board__library-export:focus-visible {
+.dsh-scholar-board__library-item:hover .dsh-scholar-board__library-export,
+.dsh-scholar-board__library-export:focus-visible {
   opacity: 1;
 }
 
-.dsh-widget-board__library-section { margin-top: 22px; }
+.dsh-scholar-board__library-section { margin-top: 22px; }
 
-.dsh-widget-board__library-section:first-child { margin-top: 0; }
+.dsh-scholar-board__library-section:first-child { margin-top: 0; }
 
-.dsh-widget-board__library-source {
+.dsh-scholar-board__library-source {
   margin: 0 0 4px;
   color: var(--dsw-alias-label-tertiary);
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.dsh-widget-board__library-section-hint {
+.dsh-scholar-board__library-section-hint {
   margin: 0 0 10px;
   color: var(--dsw-alias-label-tertiary);
   font-size: 12px;
 }
 
 /* 区与小节标题后面的条目数：不抢标题，跟着基线走。 */
-.dsh-widget-board__library-count {
+.dsh-scholar-board__library-count {
   margin-left: 6px;
   color: var(--dsw-alias-label-tertiary);
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
 
-.dsh-widget-board__library-subgroup { margin-top: 14px; }
+.dsh-scholar-board__library-subgroup { margin-top: 14px; }
 
-.dsh-widget-board__library-subsource {
+.dsh-scholar-board__library-subsource {
   margin: 0 0 8px;
   color: var(--dsw-alias-label-secondary);
   font-size: 12px;
   font-weight: 500;
 }
 
-.dsh-widget-board__library-market-empty {
+.dsh-scholar-board__library-market-empty {
   margin: 0;
   padding: 14px;
   border: 1px dashed var(--dsw-alias-border-l1);
@@ -191,7 +191,7 @@
   text-align: center;
 }
 
-.dsh-widget-board__library-list {
+.dsh-scholar-board__library-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
   gap: 12px;
@@ -201,7 +201,7 @@
 }
 
 /* 一格：上面是组件自己的画面，下面一行名字与一句说明。 */
-.dsh-widget-board__library-add {
+.dsh-scholar-board__library-add {
   display: flex;
   height: 100%;
   flex-direction: column;
@@ -221,32 +221,32 @@
     box-shadow var(--w-motion-fast) var(--w-motion-ease-standard);
 }
 
-.dsh-widget-board__library-add:hover {
+.dsh-scholar-board__library-add:hover {
   border-color: color-mix(in srgb, var(--dsw-alias-brand-primary) 55%, transparent);
   background: color-mix(in srgb, var(--dsw-alias-brand-primary) 4%, var(--dsw-alias-bg-base));
   box-shadow: 0 10px 24px color-mix(in srgb, #000 10%, transparent);
   transform: translateY(-2px);
 }
 
-.dsh-widget-board__library-add:active {
+.dsh-scholar-board__library-add:active {
   cursor: grabbing;
   transform: translateY(-1px) scale(0.995);
 }
 
-.dsh-widget-board__library-add:focus-visible {
+.dsh-scholar-board__library-add:focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary);
   outline-offset: 2px;
 }
 
 /* 换槽的网格里轻点就是选中，没有拖动；当前这个槽里的组件加一圈边框。 */
-.dsh-widget-board__library-add[data-mode="pick"] { cursor: pointer; }
+.dsh-scholar-board__library-add[data-mode="pick"] { cursor: pointer; }
 
-.dsh-widget-board__library-add[data-current="true"] {
+.dsh-scholar-board__library-add[data-current="true"] {
   border-color: var(--dsw-alias-brand-primary);
   box-shadow: 0 0 0 1px var(--dsw-alias-brand-primary);
 }
 
-.dsh-widget-board__library-current {
+.dsh-scholar-board__library-current {
   padding: 1px 6px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--dsw-alias-brand-primary) 12%, transparent);
@@ -255,9 +255,9 @@
   line-height: 15px;
 }
 
-.dsh-widget-board__library-add[data-unavailable] { cursor: not-allowed; }
+.dsh-scholar-board__library-add[data-unavailable] { cursor: not-allowed; }
 
-.dsh-widget-board__library-add[data-unavailable]:hover {
+.dsh-scholar-board__library-add[data-unavailable]:hover {
   border-color: var(--dsw-alias-border-l1);
   background: var(--dsw-alias-bg-base);
   box-shadow: none;
@@ -265,7 +265,7 @@
 }
 
 /* 缩略画面：组件按这一格的像素盒排版；画面本身不接指针，按住整格就是拖动。 */
-.dsh-widget-board__library-preview {
+.dsh-scholar-board__library-preview {
   position: relative;
   box-sizing: border-box;
   width: 100%;
@@ -279,15 +279,15 @@
   pointer-events: none;
 }
 
-.dsh-widget-board__library-preview-surface {
+.dsh-scholar-board__library-preview-surface {
   position: absolute;
   inset: 0;
 }
 
 /* 缩略画面里的原生组件：底色交给缩略格子，没有数据时露出的也是点阵，而不是一张白卡。 */
-.dsh-widget-board__library-preview .dsh-widget-board__native { background: transparent; }
+.dsh-scholar-board__library-preview .dsh-scholar-board__native { background: transparent; }
 
-.dsh-widget-board__library-preview--empty {
+.dsh-scholar-board__library-preview--empty {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -299,14 +299,14 @@
   color: var(--dsw-alias-label-tertiary);
 }
 
-.dsh-widget-board__library-preview-id {
+.dsh-scholar-board__library-preview-id {
   overflow-wrap: anywhere;
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: 10px;
   letter-spacing: 0.04em;
 }
 
-.dsh-widget-board__library-preview-mark {
+.dsh-scholar-board__library-preview-mark {
   display: grid;
   width: 20px;
   height: 20px;
@@ -317,7 +317,7 @@
   place-items: center;
 }
 
-.dsh-widget-board__library-flip {
+.dsh-scholar-board__library-flip {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -333,7 +333,7 @@
   place-items: center;
 }
 
-.dsh-widget-board__library-copy {
+.dsh-scholar-board__library-copy {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -341,7 +341,7 @@
   padding: 9px 11px 11px;
 }
 
-.dsh-widget-board__library-name {
+.dsh-scholar-board__library-name {
   display: flex;
   min-width: 0;
   align-items: baseline;
@@ -351,7 +351,7 @@
   line-height: 18px;
 }
 
-.dsh-widget-board__library-label {
+.dsh-scholar-board__library-label {
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -359,13 +359,13 @@
   white-space: nowrap;
 }
 
-.dsh-widget-board__library-provider {
+.dsh-scholar-board__library-provider {
   flex: 0 1 auto;
   max-width: 45%;
   min-width: 0;
   overflow: hidden;
   color: var(--dsw-alias-label-secondary);
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: 9px;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -373,8 +373,8 @@
   white-space: nowrap;
 }
 
-.dsh-widget-board__library-desc,
-.dsh-widget-board__library-error {
+.dsh-scholar-board__library-desc,
+.dsh-scholar-board__library-error {
   display: -webkit-box;
   overflow: hidden;
   color: var(--dsw-alias-label-tertiary);
@@ -384,8 +384,8 @@
   -webkit-line-clamp: 2;
 }
 
-.dsh-widget-board__library-error { color: var(--dsw-alias-state-error-primary); }
+.dsh-scholar-board__library-error { color: var(--dsw-alias-state-error-primary); }
 
 @media (prefers-reduced-motion: reduce) {
-  .dsh-widget-board__library { transition: none !important; }
+  .dsh-scholar-board__library { transition: none !important; }
 }

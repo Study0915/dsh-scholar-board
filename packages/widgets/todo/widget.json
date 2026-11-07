@@ -8,7 +8,7 @@
     "zh": "一张卡片上的待办清单：勾掉做完的，写一条回车就加上。",
     "en": "A to-do list on a card: tick what is done, press Enter to add an item."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 22 },

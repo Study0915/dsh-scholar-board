@@ -5,7 +5,7 @@
  * 重取整份快照，卡片与看板的增删、组件库变化返回原快照，调用处据此重取。合并只认通知里带来的
  * 字段，缺的字段保留原值；卡片 id 全工作区唯一，所以状态与数据的事件不必带看板。
  */
-import type { Arrangement, BoardEventFrame, BoardInstance, CardLayout, WorkspaceSnapshot } from '@dsh-widget-board/contracts'
+import type { Arrangement, BoardEventFrame, BoardInstance, CardLayout, WorkspaceSnapshot } from '@dsh-scholar-board/contracts'
 import { mergeState } from './state-merge'
 
 /**

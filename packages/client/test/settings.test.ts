@@ -6,7 +6,7 @@
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import type { WidgetProviderHealth, WorkspaceSnapshot } from '@dsh-widget-board/contracts'
+import type { WidgetProviderHealth, WorkspaceSnapshot } from '@dsh-scholar-board/contracts'
 import { t } from '../src/copy'
 import { ProviderHealthTable, providerHealthOf } from '../src/settings'
 
@@ -67,8 +67,8 @@ describe('提供方健康表', () => {
     for (const key of ['provider', 'providerState', 'providerFeatures', 'providerRegistrations', 'providerFailures', 'providerTimeouts', 'providerLastError'] as const) {
       expect(markup).toContain('>' + t(key) + '<')
     }
-    expect(markup.match(/data-dsh-widget-board-provider="/g)).toHaveLength(2)
-    expect(markup).toContain('data-dsh-widget-board-provider="acme.widgets"')
+    expect(markup.match(/data-dsh-scholar-board-provider="/g)).toHaveLength(2)
+    expect(markup).toContain('data-dsh-scholar-board-provider="acme.widgets"')
     expect(markup).toContain('>acme.widgets<')
     expect(markup).toContain('>pushData<')
     expect(markup).toContain('>marketProvider<')
@@ -80,15 +80,15 @@ describe('提供方健康表', () => {
 
   it('没有提供方时画空状态，不画表', () => {
     const markup = markupOf([])
-    expect(markup).toContain('data-dsh-widget-board-provider-health=""')
-    expect(markup).toContain('data-dsh-widget-board-provider-health-empty=""')
+    expect(markup).toContain('data-dsh-scholar-board-provider-health=""')
+    expect(markup).toContain('data-dsh-scholar-board-provider-health-empty=""')
     expect(markup).toContain(t('providerHealthEmpty'))
     expect(markup).not.toContain('<table')
   })
 
   it('不可用的提供方、它的最后错误与没声明用途都看得见', () => {
     const markup = markupOf(ROWS)
-    const broken = markup.slice(markup.indexOf('data-dsh-widget-board-provider="broken.widgets"'))
+    const broken = markup.slice(markup.indexOf('data-dsh-scholar-board-provider="broken.widgets"'))
     expect(broken).toContain('data-available="false"')
     expect(broken).toContain(t('providerUnavailable'))
     expect(broken).toContain('读取超时：15000ms 内没有答复')
@@ -100,8 +100,8 @@ describe('提供方健康表', () => {
   it('可用的那一行没有错误时，最后错误那一格是短横线', () => {
     const markup = markupOf(ROWS)
     const healthy = markup.slice(
-      markup.indexOf('data-dsh-widget-board-provider="acme.widgets"'),
-      markup.indexOf('data-dsh-widget-board-provider="broken.widgets"'),
+      markup.indexOf('data-dsh-scholar-board-provider="acme.widgets"'),
+      markup.indexOf('data-dsh-scholar-board-provider="broken.widgets"'),
     )
     expect(healthy).toContain('data-available="true"')
     expect(healthy).toContain('>—<')

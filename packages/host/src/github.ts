@@ -10,8 +10,8 @@
  * 刷新时传 `refresh` 跳过缓存，剩下的请求次数用在真的想知道的时候。
  */
 import { createHash } from 'node:crypto'
-import type { CapabilityRegistration, HostCredentials, InstanceFace } from '@dsh-widget-board/contracts'
-import { WIDGET_BOARD_API_VERSION } from '@dsh-widget-board/contracts'
+import type { CapabilityRegistration, HostCredentials, InstanceFace } from '@dsh-scholar-board/contracts'
+import { WIDGET_BOARD_API_VERSION } from '@dsh-scholar-board/contracts'
 import type { FetchLike } from './http'
 import { HTTP_TIMEOUT_MS, readJsonBody } from './http'
 import type { Registries } from './sources'
@@ -172,7 +172,7 @@ async function githubJson(path: string, token: string, signal: AbortSignal, fetc
       headers: {
         accept: 'application/vnd.github+json',
         authorization: `Bearer ${token}`,
-        'user-agent': 'dsh-widget-board',
+        'user-agent': 'dsh-scholar-board',
         'x-github-api-version': '2022-11-28',
       },
       redirect: 'error',

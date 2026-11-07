@@ -4,8 +4,8 @@
  * 两条路由共用「观众是谁」这一个参数，所以放在一处；路由表本身留在 `routes.ts`（它还接近停止线，
  * 见 AGENTS.md 的 750 行）。通知的持有者仍是 `Live`，这里只做路由。
  */
-import { EVENTS_PATH, VISIBILITY_LIMIT, VISIBILITY_MAX_ID_LENGTH, VISIBILITY_MAX_IDS, VISIBILITY_PATH, VIEWER_MAX_LENGTH, VIEWER_QUERY, isVisibilityReport } from '@dsh-widget-board/contracts'
-import type { HostRequest } from '@dsh-widget-board/contracts'
+import { EVENTS_PATH, VISIBILITY_LIMIT, VISIBILITY_MAX_ID_LENGTH, VISIBILITY_MAX_IDS, VISIBILITY_PATH, VIEWER_MAX_LENGTH, VIEWER_QUERY, isVisibilityReport } from '@dsh-scholar-board/contracts'
+import type { HostRequest } from '@dsh-scholar-board/contracts'
 import { readJson } from './body'
 import { Refusal } from './refusal'
 import { json } from './response'

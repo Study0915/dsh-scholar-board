@@ -4,8 +4,8 @@
  * 组件跑在不透明来源的 iframe 里，宿主的 `--dsw-*` 变量传不过去，所以外壳把它们解析成字面值，
  * 握手时递进去，之后宿主换主题、换语言或系统改动画偏好时再推一次。解析在一处，推给每张卡片。
  */
-import type { MotionLevel } from '@dsh-widget-board/contracts'
-import tokens from '@dsh-widget-board/contracts/tokens.json'
+import type { MotionLevel } from '@dsh-scholar-board/contracts'
+import tokens from '@dsh-scholar-board/contracts/tokens.json'
 import { activeLang } from './copy'
 
 /** 一次解析的结果。 */

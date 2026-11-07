@@ -6,7 +6,7 @@
  * 写一次状态，带上它就是把全部看板的卡片表重算一遍。
  */
 import { describe, expect, it } from 'vitest'
-import type { BoardEvent } from '@dsh-widget-board/contracts'
+import type { BoardEvent } from '@dsh-scholar-board/contracts'
 import { resyncsSources } from '../src/index'
 
 describe('变更通知驱动的重算', () => {

@@ -132,7 +132,7 @@ function emitServiceTypes() {
  * @param code - `lib/provider.js` 的文本。
  */
 function checkProviderSdk(code) {
-  const forbidden = ['node:', '@dsh-widget-board/host', '@dsh-widget-board/client', '@dsh-widget-board/runtime', 'process.', 'globalThis', 'window.', 'document.']
+  const forbidden = ['node:', '@dsh-scholar-board/host', '@dsh-scholar-board/client', '@dsh-scholar-board/runtime', 'process.', 'globalThis', 'window.', 'document.']
   for (const needle of forbidden) {
     if (code.includes(needle)) throw new Error(`build: lib/provider.js 里出现了 ${needle}；提供方 SDK 只构造形状（D31）`)
   }

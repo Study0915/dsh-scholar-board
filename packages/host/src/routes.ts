@@ -33,10 +33,10 @@ import type {
   InstanceStateRequest,
   WidgetLibraryEntry,
   WidgetRoot,
-} from '@dsh-widget-board/contracts'
-import { FLIP_GROUP_BACK, FLIP_GROUP_FRONT, PLUGIN_ROUTE, withRequestSignal } from '@dsh-widget-board/contracts'
-import { BOARD_TITLE_LIMIT, boardTitleProblem } from '@dsh-widget-board/contracts'
-import type { BoardTitleProblem } from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
+import { FLIP_GROUP_BACK, FLIP_GROUP_FRONT, PLUGIN_ROUTE, withRequestSignal } from '@dsh-scholar-board/contracts'
+import { BOARD_TITLE_LIMIT, boardTitleProblem } from '@dsh-scholar-board/contracts'
+import type { BoardTitleProblem } from '@dsh-scholar-board/contracts'
 import type { VersionStore } from './blobs'
 import { buildDocument, contentSecurityPolicy, freshNonce } from './document'
 import { groupRoutes } from './groups'
@@ -62,7 +62,7 @@ import { propsError } from './schema'
 import { settingsRoutes } from './settings'
 import { workspaceSnapshot } from './snapshot'
 import type { Registries } from './sources'
-import { isCardLayout } from '@dsh-widget-board/model'
+import { isCardLayout } from '@dsh-scholar-board/model'
 import { readJson } from './body'
 import { Refusal } from './refusal'
 import { shareRoutes } from './share'

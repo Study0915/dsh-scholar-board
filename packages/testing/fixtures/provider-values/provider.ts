@@ -1,5 +1,5 @@
 /**
- * 提供方 SDK 的取值判据（D31）：`dsh-widget-board/provider` 在编译期取得值，打出来的产物里只剩下
+ * 提供方 SDK 的取值判据（D31）：`dsh-scholar-board/provider` 在编译期取得值，打出来的产物里只剩下
  * 形状构造。
  *
  * 这个文件不进临时宿主：`scripts/check-provider-types.mjs` 先类型检查它，再把它打成一份 ESM，
@@ -14,14 +14,14 @@ import {
   nativeRegistration,
   providerRegistration,
   sourceRegistration,
-} from 'dsh-widget-board/provider'
-import type { InstanceFace, WidgetBoardClientService, WidgetBoardHostService } from 'dsh-widget-board/service'
+} from 'dsh-scholar-board/provider'
+import type { InstanceFace, WidgetBoardClientService, WidgetBoardHostService } from 'dsh-scholar-board/service'
 
-export * from 'dsh-widget-board/provider'
+export * from 'dsh-scholar-board/provider'
 
 /** 提供方身份：功能名重复报一次，产物里应当只剩一份。 */
 export const identity = defineProvider({
-  provider: 'dsh-widget-board-provider-values',
+  provider: 'dsh-scholar-board-provider-values',
   features: ['capabilityMetadata', 'marketProvider', 'marketProvider'],
 })
 
@@ -52,7 +52,7 @@ export const market = marketRegistration({
 })
 
 /** 一份原生组件。 */
-export const nativeWidget = nativeRegistration({ id: 'dsh-widget-board-provider-values.test-native', component: () => null })
+export const nativeWidget = nativeRegistration({ id: 'dsh-scholar-board-provider-values.test-native', component: () => null })
 
 /** 宿主侧一次注册的入参：身份与用途，资源随后经把手挂上。 */
 export const registration = providerRegistration(identity)
@@ -68,7 +68,7 @@ export const nativeRegistrationValue = nativeProviderRegistration(identity)
 export async function apply(service: WidgetBoardHostService): Promise<void> {
   if (service.registerProvider === undefined) throw new Error('宿主侧的 widgetBoard 服务没有 registerProvider')
   const handle = await service.registerProvider(registration)
-  const second = await handle.registerWidgets({ directory: '/tmp/dsh-widget-board-provider-values/second' })
+  const second = await handle.registerWidgets({ directory: '/tmp/dsh-scholar-board-provider-values/second' })
   handle.registerDataSource(sourceRegistration({ id: 'count', read: () => 0 }))
   handle.registerAction(actionRegistration({ id: 'touch', run: (instance: InstanceFace) => instance.id }))
   handle.registerCapability(capabilityRegistration({ id: 'ping', call: () => 'pong' }))
@@ -84,6 +84,6 @@ export async function apply(service: WidgetBoardHostService): Promise<void> {
 export function applyClient(service: WidgetBoardClientService): void {
   if (service.registerProvider === undefined) throw new Error('浏览器侧的 widgetBoard 服务没有 registerProvider')
   const handle = service.registerProvider(nativeRegistrationValue)
-  handle.registerNativeWidget(nativeRegistration({ id: 'dsh-widget-board-provider-values.test-native-second', component: () => null }))
+  handle.registerNativeWidget(nativeRegistration({ id: 'dsh-scholar-board-provider-values.test-native-second', component: () => null }))
   if (!handle.supports('eventData')) handle.dispose()
 }

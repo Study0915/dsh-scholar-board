@@ -1,7 +1,7 @@
-import type { CampusItem } from '@dsh-widget-board/contracts/campus'
-import type { ImportDecision, ItemImportRow } from '@dsh-widget-board/contracts/item-import'
-import type { CampusState } from '@dsh-widget-board/model/campus/types'
-import { campusState } from '@dsh-widget-board/model/campus/model'
+import type { CampusItem } from '@dsh-scholar-board/contracts/campus'
+import type { ImportDecision, ItemImportRow } from '@dsh-scholar-board/contracts/item-import'
+import type { CampusState } from '@dsh-scholar-board/model/campus/types'
+import { campusState } from '@dsh-scholar-board/model/campus/model'
 import { duplicateKey } from './common'
 
 export function matchRows(rows: ItemImportRow[], state: CampusState): ItemImportRow[] {

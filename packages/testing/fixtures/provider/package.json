@@ -1,5 +1,5 @@
 {
-  "name": "dsh-widget-board-test-provider",
+  "name": "dsh-scholar-board-test-provider",
   "version": "0.0.0",
   "private": true,
   "description": "冒烟用的提供方：注册一个原生组件、一个数据源与一个动作，证明 widgetBoard 服务面可用。",

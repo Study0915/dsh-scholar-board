@@ -4,7 +4,7 @@
  * 单张卡的读取与校验在 `instance-operations.ts` 的 `loadData` 里；这里只负责把一批结果按看板分组并合成
  * 一次 `workspace.save`，读失败的卡只影响自己。放进单独的文件，路由表不再跟着批处理变长。
  */
-import type { Board } from '@dsh-widget-board/contracts'
+import type { Board } from '@dsh-scholar-board/contracts'
 import type { ReadOutcome } from './refresh'
 import { loadData } from './instance-operations'
 import type { RouteContext } from './routes'

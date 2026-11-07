@@ -67,9 +67,9 @@ async function waitLayout(page, id, done) {
  */
 async function columnStep(page) {
   return page.evaluate(() => {
-    const view = document.querySelector('[data-dsh-widget-board-view]')
-    const flow = document.querySelector('.dsh-widget-board__flow')
-    const columns = Number(view?.getAttribute('data-dsh-widget-board-columns') ?? 0)
+    const view = document.querySelector('[data-dsh-scholar-board-view]')
+    const flow = document.querySelector('.dsh-scholar-board__flow')
+    const columns = Number(view?.getAttribute('data-dsh-scholar-board-columns') ?? 0)
     const gap = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.75
     return (flow.getBoundingClientRect().width - gap * (columns - 1)) / columns + gap
   })

@@ -4,7 +4,7 @@
  * 观众是一条长连接，替身因此只需要「被写过什么」与「能手动断开」；调度器读的并集直接问 `Live`。
  */
 import { describe, expect, it } from 'vitest'
-import type { BoardEventFrame, HostResponse } from '@dsh-widget-board/contracts'
+import type { BoardEventFrame, HostResponse } from '@dsh-scholar-board/contracts'
 import type { DocumentAssets } from '../src/document'
 import type { VisibleCards } from '../src/live'
 import { createLive } from '../src/live'

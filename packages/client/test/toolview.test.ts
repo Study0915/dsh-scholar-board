@@ -6,7 +6,7 @@
  */
 import { describe, expect, it, vi } from 'vitest'
 import type { Context } from '@deepseek-ai/cordis'
-import { TOOL_VIEW_SLOT, WIDGET_TOOL_NAMES } from '@dsh-widget-board/contracts'
+import { TOOL_VIEW_SLOT, WIDGET_TOOL_NAMES } from '@dsh-scholar-board/contracts'
 import { showOf, textOf } from '../src/inline-value'
 import { registerToolView } from '../src/toolview'
 

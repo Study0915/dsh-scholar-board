@@ -8,7 +8,7 @@
     "zh": "列出自己维护的仓库里还开着的 issue：一行一条，左边状态点，中间是仓库、编号与标签，右边是最后一次更新的时间，点一行就开对应的页；令牌在卡片设置里填。",
     "en": "Lists the open issues on the repositories you maintain, one per row: a state dot, the repository, number and labels, and the last update on the right; click a row to open it. The token goes in the card settings."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "capabilities": ["github.issues"],

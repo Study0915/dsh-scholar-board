@@ -19,7 +19,7 @@ import {
   onSessionEvent,
   sessionsOf,
   workspaceRegistryOf,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 const manifest = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'))

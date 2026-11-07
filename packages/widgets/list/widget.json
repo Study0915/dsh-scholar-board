@@ -8,7 +8,7 @@
     "zh": "带状态点的行列表：标题、右侧次要信息与一行说明，内容多时在卡片里滚动。",
     "en": "A row list with status dots, a title, right-aligned meta and scrolling when the list grows."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 20 },

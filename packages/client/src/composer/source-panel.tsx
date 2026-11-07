@@ -9,8 +9,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { WidgetSourceModel, WidgetDraftSummary } from '@dsh-widget-board/contracts'
-import { instanceSourcePath } from '@dsh-widget-board/contracts'
+import type { WidgetSourceModel, WidgetDraftSummary } from '@dsh-scholar-board/contracts'
+import { instanceSourcePath } from '@dsh-scholar-board/contracts'
 import { t } from '../copy'
 import type { ShellTheme } from '../theme'
 import { defineWidget, fetchWidgetSource, SourceConflictError } from './source-api'
@@ -291,25 +291,25 @@ export function SourceEditorPanel({ widgetId, instanceId, theme, onSaved, onFile
 
   if (loadError !== null) {
     return (
-      <div className="dsh-widget-board__source" data-dsh-widget-board-source="">
-        <p className="dsh-widget-board__editor-error" role="alert">{loadError}</p>
+      <div className="dsh-scholar-board__source" data-dsh-scholar-board-source="">
+        <p className="dsh-scholar-board__editor-error" role="alert">{loadError}</p>
       </div>
     )
   }
 
   return (
-    <div className="dsh-widget-board__source" data-dsh-widget-board-source="">
-      <header className="dsh-widget-board__source-head">
-        <span className="dsh-widget-board__source-title">
+    <div className="dsh-scholar-board__source" data-dsh-scholar-board-source="">
+      <header className="dsh-scholar-board__source-head">
+        <span className="dsh-scholar-board__source-title">
           {model === null ? t('sourceLoading') : `${model.id} · ${model.hash.slice(0, 12)}`}
         </span>
-        <span className="dsh-widget-board__source-origin" data-dsh-widget-board-source-origin={model?.source ?? ''}>
+        <span className="dsh-scholar-board__source-origin" data-dsh-scholar-board-source-origin={model?.source ?? ''}>
           {model === null ? '' : writable ? t('sourceWritable') : t('sourceReadOnly')}
         </span>
         <button
           type="button"
-          className="dsh-widget-board__editor-close"
-          data-dsh-widget-board-source-close=""
+          className="dsh-scholar-board__editor-close"
+          data-dsh-scholar-board-source-close=""
           onClick={requestClose}
           title={t('close')}
         >
@@ -317,7 +317,7 @@ export function SourceEditorPanel({ widgetId, instanceId, theme, onSaved, onFile
         </button>
       </header>
 
-      <div className="dsh-widget-board__source-tabs" role="tablist">
+      <div className="dsh-scholar-board__source-tabs" role="tablist">
         {[...new Set([...FILES, ...Object.keys(files)])].map((file) => {
           const present = files[file] !== undefined
           if (!present && file !== 'widget.json' && file !== 'main.js' && file !== 'samples.json') return null
@@ -326,8 +326,8 @@ export function SourceEditorPanel({ widgetId, instanceId, theme, onSaved, onFile
               key={file}
               type="button"
               role="tab"
-              className="dsh-widget-board__source-tab"
-              data-dsh-widget-board-source-tab={file}
+              className="dsh-scholar-board__source-tab"
+              data-dsh-scholar-board-source-tab={file}
               aria-selected={active === file}
               onClick={() => { if (!present) setFiles((current) => ({ ...current, [file]: file === 'samples.json' ? '{}' : '' })); setActive(file) }}
             >
@@ -339,11 +339,11 @@ export function SourceEditorPanel({ widgetId, instanceId, theme, onSaved, onFile
 
       {model !== null
         ? (
-          <p className="dsh-widget-board__source-note">
+          <p className="dsh-scholar-board__source-note">
             {t('sourceSaveAs')}
             <input
-              className="dsh-widget-board__input dsh-widget-board__source-id"
-              data-dsh-widget-board-source-id=""
+              className="dsh-scholar-board__input dsh-scholar-board__source-id"
+              data-dsh-scholar-board-source-id=""
               value={targetId}
               disabled={updateAll}
               onChange={(event) => { setTargetId(event.target.value) }}
@@ -352,40 +352,40 @@ export function SourceEditorPanel({ widgetId, instanceId, theme, onSaved, onFile
         )
         : null}
 
-      {writable ? <label className="dsh-widget-board__source-note"><input type="checkbox" data-dsh-widget-board-source-update-all="" checked={updateAll} onChange={(event) => { setUpdateAll(event.target.checked) }} />更新全部实例：{model?.usage?.map((entry) => `${entry.title}（${entry.count}）`).join('、') || '暂无实例'}</label> : null}
-      {drafts.length === 0 ? null : <div className="dsh-widget-board__source-note" data-dsh-widget-board-source-drafts="">{drafts.map((entry) => <span key={entry.draftId}><button type="button" className="dsh-widget-board__editor-ghost" onClick={() => { void restoreDraft(entry.draftId) }}>{entry.target.kind === 'widget' ? entry.target.widgetId : entry.target.instanceId} · {entry.updatedAt}</button><button type="button" className="dsh-widget-board__editor-ghost" onClick={() => { void removeDraftRequest(entry.draftId).then(() => { setDrafts((items) => items.filter((item) => item.draftId !== entry.draftId)) }, (caught: Error) => { setError(caught.message) }) }}>删除草稿</button></span>)}</div>}
+      {writable ? <label className="dsh-scholar-board__source-note"><input type="checkbox" data-dsh-scholar-board-source-update-all="" checked={updateAll} onChange={(event) => { setUpdateAll(event.target.checked) }} />更新全部实例：{model?.usage?.map((entry) => `${entry.title}（${entry.count}）`).join('、') || '暂无实例'}</label> : null}
+      {drafts.length === 0 ? null : <div className="dsh-scholar-board__source-note" data-dsh-scholar-board-source-drafts="">{drafts.map((entry) => <span key={entry.draftId}><button type="button" className="dsh-scholar-board__editor-ghost" onClick={() => { void restoreDraft(entry.draftId) }}>{entry.target.kind === 'widget' ? entry.target.widgetId : entry.target.instanceId} · {entry.updatedAt}</button><button type="button" className="dsh-scholar-board__editor-ghost" onClick={() => { void removeDraftRequest(entry.draftId).then(() => { setDrafts((items) => items.filter((item) => item.draftId !== entry.draftId)) }, (caught: Error) => { setError(caught.message) }) }}>删除草稿</button></span>)}</div>}
 
-      <div className="dsh-widget-board__source-editor" ref={hostRef} data-dsh-widget-board-source-editor={active} />
+      <div className="dsh-scholar-board__source-editor" ref={hostRef} data-dsh-scholar-board-source-editor={active} />
 
       {model !== null && model.assets.length > 0
         ? (
-          <p className="dsh-widget-board__source-note">
+          <p className="dsh-scholar-board__source-note">
             {t('sourceAssets')}
             {model.assets.map((asset) => `${asset.path}（${String(asset.bytes)}）`).join('、')}
           </p>
         )
         : null}
 
-      {error === null ? null : <p className="dsh-widget-board__editor-error" role="alert">{error}</p>}
+      {error === null ? null : <p className="dsh-scholar-board__editor-error" role="alert">{error}</p>}
 
       {/* 关闭时先问一句：存草稿、放弃还是继续编辑（C13）。 */}
       {confirmClose
         ? (
-          <footer className="dsh-widget-board__source-foot" data-dsh-widget-board-source-close-choice="">
-            <p className="dsh-widget-board__editor-note">{t('draftUnsaved')}</p>
-            <div className="dsh-widget-board__editor-actions">
+          <footer className="dsh-scholar-board__source-foot" data-dsh-scholar-board-source-close-choice="">
+            <p className="dsh-scholar-board__editor-note">{t('draftUnsaved')}</p>
+            <div className="dsh-scholar-board__editor-actions">
               <button
                 type="button"
-                className="dsh-widget-board__editor-ghost"
-                data-dsh-widget-board-source-keep=""
+                className="dsh-scholar-board__editor-ghost"
+                data-dsh-scholar-board-source-keep=""
                 onClick={() => { setConfirmClose(false) }}
               >
                 {t('formKeepEditing')}
               </button>
               <button
                 type="button"
-                className="dsh-widget-board__editor-ghost"
-                data-dsh-widget-board-source-draft=""
+                className="dsh-scholar-board__editor-ghost"
+                data-dsh-scholar-board-source-draft=""
                 onClick={() => {
                   void saveDraft().then((id) => {
                     if (id === null) return
@@ -397,8 +397,8 @@ export function SourceEditorPanel({ widgetId, instanceId, theme, onSaved, onFile
               </button>
               <button
                 type="button"
-                className="dsh-widget-board__editor-primary"
-                data-dsh-widget-board-source-discard=""
+                className="dsh-scholar-board__editor-primary"
+                data-dsh-scholar-board-source-discard=""
                 onClick={onClose}
               >
                 {t('formDiscard')}
@@ -407,11 +407,11 @@ export function SourceEditorPanel({ widgetId, instanceId, theme, onSaved, onFile
           </footer>
         )
         : (
-          <footer className="dsh-widget-board__source-foot">
+          <footer className="dsh-scholar-board__source-foot">
             <button
               type="button"
-              className="dsh-widget-board__editor-ghost"
-              data-dsh-widget-board-source-draft-save=""
+              className="dsh-scholar-board__editor-ghost"
+              data-dsh-scholar-board-source-draft-save=""
               disabled={model === null || !changed}
               onClick={() => { void saveDraft() }}
             >
@@ -422,29 +422,29 @@ export function SourceEditorPanel({ widgetId, instanceId, theme, onSaved, onFile
               : (
                 <button
                   type="button"
-                  className="dsh-widget-board__editor-ghost"
-                  data-dsh-widget-board-source-draft-restore=""
+                  className="dsh-scholar-board__editor-ghost"
+                  data-dsh-scholar-board-source-draft-restore=""
                   onClick={() => { void restoreDraft() }}
                 >
                   {t('draftRestore')}
                 </button>
               )}
             {draftSaved
-              ? <span className="dsh-widget-board__editor-ok">{t('draftSaved')}</span>
+              ? <span className="dsh-scholar-board__editor-ok">{t('draftSaved')}</span>
               : null}
-            <span className="dsh-widget-board__editor-spacer" />
+            <span className="dsh-scholar-board__editor-spacer" />
             <button
               type="button"
-              className="dsh-widget-board__editor-ghost"
-              data-dsh-widget-board-source-cancel=""
+              className="dsh-scholar-board__editor-ghost"
+              data-dsh-scholar-board-source-cancel=""
               onClick={requestClose}
             >
               {t('cancel')}
             </button>
             <button
               type="button"
-              className="dsh-widget-board__editor-primary"
-              data-dsh-widget-board-source-save=""
+              className="dsh-scholar-board__editor-primary"
+              data-dsh-scholar-board-source-save=""
               disabled={saving || model === null || !changed}
               onClick={() => { void save() }}
             >

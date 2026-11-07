@@ -8,7 +8,7 @@
  * 一位观众可以同时接几条连接（看板页与设置页各一条，重连时旧的还会迟到一步关掉），这一份
  * 可见集合跟着观众走，最后一条连接断开才清掉。
  */
-import type { BoardEvent, BoardEventFrame, HostResponse } from '@dsh-widget-board/contracts'
+import type { BoardEvent, BoardEventFrame, HostResponse } from '@dsh-scholar-board/contracts'
 import type { DocumentAssets } from './document'
 
 /**

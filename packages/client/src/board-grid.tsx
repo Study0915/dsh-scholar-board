@@ -17,8 +17,8 @@ import type {
   WidgetNotification,
   WidgetSummary,
   WorkspaceSnapshot,
-} from '@dsh-widget-board/contracts'
-import type { AlignedPlacement, GridLayout, GridMetrics, GridPlacement } from '@dsh-widget-board/model'
+} from '@dsh-scholar-board/contracts'
+import type { AlignedPlacement, GridLayout, GridMetrics, GridPlacement } from '@dsh-scholar-board/model'
 import {
   DEFAULT_HEIGHT_REM,
   MAX_COLUMNS,
@@ -31,7 +31,7 @@ import {
   snapCardHeight,
   snapCardY,
   tidyLayout,
-} from '@dsh-widget-board/model'
+} from '@dsh-scholar-board/model'
 import type { CardControls } from './card'
 import { WidgetCard } from './card'
 import { CARD_RADIUS } from './card-shell'
@@ -569,20 +569,20 @@ export function BoardGrid({
   return (
     <div
       ref={setFlow}
-      className="dsh-widget-board__flow"
-      data-dsh-widget-board-board={board.id}
+      className="dsh-scholar-board__flow"
+      data-dsh-scholar-board-board={board.id}
       data-arrangement={board.arrangement?.mode ?? 'free'}
       data-active={active ? 'true' : 'false'}
       data-dragging={drag === null ? undefined : 'true'}
       style={metrics === null || cards.length === 0 ? undefined : { height: contentHeight }}
     >
-      {cards.length === 0 ? <div className="dsh-widget-board__notice">{t('empty')}</div> : null}
+      {cards.length === 0 ? <div className="dsh-scholar-board__notice">{t('empty')}</div> : null}
       {ghost === undefined
         ? null
         : (
           <div
-            className="dsh-widget-board__ghost"
-            data-dsh-widget-board-ghost=""
+            className="dsh-scholar-board__ghost"
+            data-dsh-scholar-board-ghost=""
             style={{ left: ghost.x, top: ghost.y, width: ghost.width, height: ghost.height }}
           />
         )}
@@ -630,16 +630,16 @@ export function BoardGrid({
               return (
                 <div
                   key={instance.id}
-                  className="dsh-widget-board__cell dsh-widget-board__cell--missing"
+                  className="dsh-scholar-board__cell dsh-scholar-board__cell--missing"
                   data-instance={instance.id}
                   data-unavailable={instance.widget}
                   data-exiting={exiting.has(instance.id) ? 'true' : undefined}
                   style={{ left: target.x, top: target.y, width: target.width, height: target.height, borderRadius: CARD_RADIUS }}
                 >
-                  <p className="dsh-widget-board__missing-title">{t('unavailable')}</p>
-                  <p className="dsh-widget-board__missing-name">{instance.widget}</p>
-                  {entry?.error === undefined ? null : <p className="dsh-widget-board__missing-reason">{entry.error}</p>}
-                  <button type="button" className="dsh-widget-board__missing-remove" onClick={() => onRemove(instance.id)}>
+                  <p className="dsh-scholar-board__missing-title">{t('unavailable')}</p>
+                  <p className="dsh-scholar-board__missing-name">{instance.widget}</p>
+                  {entry?.error === undefined ? null : <p className="dsh-scholar-board__missing-reason">{entry.error}</p>}
+                  <button type="button" className="dsh-scholar-board__missing-remove" onClick={() => onRemove(instance.id)}>
                     {t('remove')}
                   </button>
                 </div>

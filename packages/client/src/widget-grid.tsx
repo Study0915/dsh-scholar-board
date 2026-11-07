@@ -6,9 +6,9 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
-import type { BoardInstance, MarketListing, MarketSectionSnapshot, WidgetLibraryEntry, WidgetSummary } from '@dsh-widget-board/contracts'
-import { FLIP_GROUP_BACK, FLIP_GROUP_FRONT, FLIP_GROUP_ID, libraryWidgetExportPath } from '@dsh-widget-board/contracts'
-import type { GridPlacement } from '@dsh-widget-board/model'
+import type { BoardInstance, MarketListing, MarketSectionSnapshot, WidgetLibraryEntry, WidgetSummary } from '@dsh-scholar-board/contracts'
+import { FLIP_GROUP_BACK, FLIP_GROUP_FRONT, FLIP_GROUP_ID, libraryWidgetExportPath } from '@dsh-scholar-board/contracts'
+import type { GridPlacement } from '@dsh-scholar-board/model'
 import { CardSurface } from './card-surface'
 import { sourceLabel, t, textOf } from './copy'
 import type { FrameHost } from './frame-host'
@@ -106,8 +106,8 @@ export function WidgetPreview({
   useEffect(() => { inertRef.current?.setAttribute('inert', '') }, [])
 
   return (
-    <div ref={boxRef} className="dsh-widget-board__library-preview" aria-hidden="true">
-      <div ref={inertRef} className="dsh-widget-board__library-preview-surface">
+    <div ref={boxRef} className="dsh-scholar-board__library-preview" aria-hidden="true">
+      <div ref={inertRef} className="dsh-scholar-board__library-preview-surface">
         {placement === null
           ? null
           : (
@@ -124,7 +124,7 @@ export function WidgetPreview({
             />
           )}
       </div>
-      {flip ? <span className="dsh-widget-board__library-flip">⇄</span> : null}
+      {flip ? <span className="dsh-scholar-board__library-flip">⇄</span> : null}
     </div>
   )
 }
@@ -132,9 +132,9 @@ export function WidgetPreview({
 /** 读不出组件时的画面：虚线格子里写它是哪一个。 */
 function EmptyPreview({ entry }: { entry: WidgetLibraryEntry }): ReactNode {
   return (
-    <div className="dsh-widget-board__library-preview dsh-widget-board__library-preview--empty" aria-hidden="true">
-      <span className="dsh-widget-board__library-preview-id">{entry.id}</span>
-      {entry.error === undefined ? null : <span className="dsh-widget-board__library-preview-mark">!</span>}
+    <div className="dsh-scholar-board__library-preview dsh-scholar-board__library-preview--empty" aria-hidden="true">
+      <span className="dsh-scholar-board__library-preview-id">{entry.id}</span>
+      {entry.error === undefined ? null : <span className="dsh-scholar-board__library-preview-mark">!</span>}
     </div>
   )
 }
@@ -183,10 +183,10 @@ function WidgetTile({
   }
 
   return (
-    <li className="dsh-widget-board__library-item" data-current={selected ? 'true' : undefined}>
+    <li className="dsh-scholar-board__library-item" data-current={selected ? 'true' : undefined}>
       <div
-        className="dsh-widget-board__library-add"
-        data-dsh-widget-board-add={entry.id}
+        className="dsh-scholar-board__library-add"
+        data-dsh-scholar-board-add={entry.id}
         data-mode={mode}
         data-current={selected ? 'true' : undefined}
         data-unavailable={unavailable ? '' : undefined}
@@ -218,22 +218,22 @@ function WidgetTile({
               flip={entry.id === FLIP_GROUP_ID}
             />
           )}
-        <span className="dsh-widget-board__library-copy">
-          <span className="dsh-widget-board__library-name">
-            <span className="dsh-widget-board__library-label">{textOf(entry.title)}</span>
-            {selected ? <span className="dsh-widget-board__library-current">{t('current')}</span> : null}
-            {entry.provider === undefined ? null : <span className="dsh-widget-board__library-provider">{entry.provider}</span>}
+        <span className="dsh-scholar-board__library-copy">
+          <span className="dsh-scholar-board__library-name">
+            <span className="dsh-scholar-board__library-label">{textOf(entry.title)}</span>
+            {selected ? <span className="dsh-scholar-board__library-current">{t('current')}</span> : null}
+            {entry.provider === undefined ? null : <span className="dsh-scholar-board__library-provider">{entry.provider}</span>}
           </span>
           {entry.error === undefined
-            ? description === undefined ? null : <span className="dsh-widget-board__library-desc">{description}</span>
-            : <span className="dsh-widget-board__library-error">{entry.error}</span>}
+            ? description === undefined ? null : <span className="dsh-scholar-board__library-desc">{description}</span>
+            : <span className="dsh-scholar-board__library-error">{entry.error}</span>}
         </span>
       </div>
       {mode === 'add' && !unavailable && entry.id !== FLIP_GROUP_ID
         ? (
           <a
-            className="dsh-widget-board__library-export"
-            data-dsh-widget-board-export={entry.id}
+            className="dsh-scholar-board__library-export"
+            data-dsh-scholar-board-export={entry.id}
             href={exportPathOf(entry.id)}
             download={`${entry.id}.dshw`}
             onPointerDown={(event) => { event.stopPropagation() }}
@@ -297,19 +297,19 @@ function MarketTile({
   for (const host of latest?.declares?.hosts ?? []) declares.push(host)
 
   return (
-    <li className="dsh-widget-board__market-item" data-dsh-widget-market={listing.id}>
-      <div className="dsh-widget-board__market-copy">
-        <span className="dsh-widget-board__library-name">
-          <span className="dsh-widget-board__library-label">{textOf(listing.title)}</span>
-          <span className="dsh-widget-board__library-provider">{listing.author.name}</span>
-          {listing.license === undefined ? null : <span className="dsh-widget-board__library-provider">{listing.license}</span>}
+    <li className="dsh-scholar-board__market-item" data-dsh-widget-market={listing.id}>
+      <div className="dsh-scholar-board__market-copy">
+        <span className="dsh-scholar-board__library-name">
+          <span className="dsh-scholar-board__library-label">{textOf(listing.title)}</span>
+          <span className="dsh-scholar-board__library-provider">{listing.author.name}</span>
+          {listing.license === undefined ? null : <span className="dsh-scholar-board__library-provider">{listing.license}</span>}
         </span>
-        {listing.description === undefined ? null : <span className="dsh-widget-board__library-desc">{textOf(listing.description)}</span>}
+        {listing.description === undefined ? null : <span className="dsh-scholar-board__library-desc">{textOf(listing.description)}</span>}
         {declares.length === 0 ? null : (
-          <span className="dsh-widget-board__market-declares">{t('marketDeclares')}：{declares.join('、')}</span>
+          <span className="dsh-scholar-board__market-declares">{t('marketDeclares')}：{declares.join('、')}</span>
         )}
         {latest === undefined ? null : (
-          <span className="dsh-widget-board__market-version">
+          <span className="dsh-scholar-board__market-version">
             {latest.version}
             {installed ? ` · ${t('marketInstalled')}` : ''}
           </span>
@@ -320,7 +320,7 @@ function MarketTile({
         : (
           <button
             type="button"
-            className="dsh-widget-board__market-install"
+            className="dsh-scholar-board__market-install"
             disabled={busy}
             onClick={() => { onInstall(provider, listing, latest.version) }}
           >
@@ -338,15 +338,15 @@ function MarketSection({ sections, entries, busy, onInstall }: {
   busy: boolean
   onInstall?: (provider: string, listing: MarketListing, version: string) => void
 }): ReactNode {
-  if (sections.length === 0) return <p className="dsh-widget-board__library-market-empty">{t('libraryMarketEmpty')}</p>
+  if (sections.length === 0) return <p className="dsh-scholar-board__library-market-empty">{t('libraryMarketEmpty')}</p>
   return (
     <>
       {sections.map((section) => (
-        <div key={section.provider} className="dsh-widget-board__market-provider">
-          <h4 className="dsh-widget-board__library-subsource">{textOf(section.title)}</h4>
-          {section.error === undefined ? null : <p className="dsh-widget-board__library-error" role="status">{section.error}</p>}
-          {section.errors.map((error) => <p key={error} className="dsh-widget-board__library-error" role="status">{error}</p>)}
-          <ul className="dsh-widget-board__market-list">
+        <div key={section.provider} className="dsh-scholar-board__market-provider">
+          <h4 className="dsh-scholar-board__library-subsource">{textOf(section.title)}</h4>
+          {section.error === undefined ? null : <p className="dsh-scholar-board__library-error" role="status">{section.error}</p>}
+          {section.errors.map((error) => <p key={error} className="dsh-scholar-board__library-error" role="status">{error}</p>)}
+          <ul className="dsh-scholar-board__market-list">
             {section.listings.map((listing) => {
               const installed = entries.some((entry) => entry.id === listing.id && entry.source === 'market')
               return (
@@ -386,7 +386,7 @@ function WidgetList({
 }: WidgetGridProps & { items: readonly WidgetLibraryEntry[] }): ReactNode {
   const resolvedBusy = busy ?? false
   return (
-    <ul className="dsh-widget-board__library-list">
+    <ul className="dsh-scholar-board__library-list">
       {items.map((entry) => {
         const preview = previewOf(entry, widgets)
         return (
@@ -425,44 +425,44 @@ export function WidgetGrid(props: WidgetGridProps): ReactNode {
     .filter((group) => group.items.length > 0)
 
   if (examples.length === 0 && installed.length === 0) {
-    return <p className="dsh-widget-board__notice">{t('libraryEmpty')}</p>
+    return <p className="dsh-scholar-board__notice">{t('libraryEmpty')}</p>
   }
   return (
     <>
       {examples.length === 0 ? null : (
-        <section className="dsh-widget-board__library-section" data-dsh-widget-section="example">
-          <h3 className="dsh-widget-board__library-source">
+        <section className="dsh-scholar-board__library-section" data-dsh-widget-section="example">
+          <h3 className="dsh-scholar-board__library-source">
             {t('libraryExamples')}
-            <span className="dsh-widget-board__library-count">{examples.length}</span>
+            <span className="dsh-scholar-board__library-count">{examples.length}</span>
           </h3>
-          <p className="dsh-widget-board__library-section-hint">{t('libraryExamplesHint')}</p>
+          <p className="dsh-scholar-board__library-section-hint">{t('libraryExamplesHint')}</p>
           <WidgetList {...props} items={examples} />
         </section>
       )}
       {installed.length === 0 ? null : (
-        <section className="dsh-widget-board__library-section" data-dsh-widget-section="installed">
-          <h3 className="dsh-widget-board__library-source">
+        <section className="dsh-scholar-board__library-section" data-dsh-widget-section="installed">
+          <h3 className="dsh-scholar-board__library-source">
             {t('libraryBuiltin')}
-            <span className="dsh-widget-board__library-count">{installed.reduce((total, group) => total + group.items.length, 0)}</span>
+            <span className="dsh-scholar-board__library-count">{installed.reduce((total, group) => total + group.items.length, 0)}</span>
           </h3>
-          <p className="dsh-widget-board__library-section-hint">{t('libraryBuiltinHint')}</p>
+          <p className="dsh-scholar-board__library-section-hint">{t('libraryBuiltinHint')}</p>
           {installed.map((group) => (
-            <div key={group.source} className="dsh-widget-board__library-subgroup">
-              <h4 className="dsh-widget-board__library-subsource">
+            <div key={group.source} className="dsh-scholar-board__library-subgroup">
+              <h4 className="dsh-scholar-board__library-subsource">
                 {sourceLabel(group.source)}
-                <span className="dsh-widget-board__library-count">{group.items.length}</span>
+                <span className="dsh-scholar-board__library-count">{group.items.length}</span>
               </h4>
               <WidgetList {...props} items={group.items} />
             </div>
           ))}
         </section>
       )}
-      <section className="dsh-widget-board__library-section" data-dsh-widget-section="market">
-        <h3 className="dsh-widget-board__library-source">
+      <section className="dsh-scholar-board__library-section" data-dsh-widget-section="market">
+        <h3 className="dsh-scholar-board__library-source">
           {t('libraryMarket')}
-          <span className="dsh-widget-board__library-count">{(props.market ?? []).reduce((total, section) => total + section.listings.length, 0)}</span>
+          <span className="dsh-scholar-board__library-count">{(props.market ?? []).reduce((total, section) => total + section.listings.length, 0)}</span>
         </h3>
-        <p className="dsh-widget-board__library-section-hint">{t('libraryMarketHint')}</p>
+        <p className="dsh-scholar-board__library-section-hint">{t('libraryMarketHint')}</p>
         <MarketSection sections={props.market ?? []} entries={entries} busy={props.busy ?? false} {...(props.onMarketInstall === undefined ? {} : { onInstall: props.onMarketInstall })} />
       </section>
     </>

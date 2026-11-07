@@ -27,7 +27,7 @@ import type {
   InstanceStateRequest,
   RequestLogEntry,
   WorkspaceSnapshot,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import {
   boardActivatePath,
   boardArrangementPath,
@@ -52,7 +52,7 @@ import {
   instanceSettingsPath,
   instanceStatePath,
   refreshPath,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 
 import type { ContentIssueSubject } from './snapshot-content'
 

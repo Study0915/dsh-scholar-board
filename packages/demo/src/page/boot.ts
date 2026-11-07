@@ -2,7 +2,7 @@
  * 启动演示宿主：注册 Service Worker，等它接管页面，再把插件的浏览器半边装进演示页（D25）。
  */
 import type { Context } from '@deepseek-ai/cordis'
-import { apply } from '@dsh-widget-board/client'
+import { apply } from '@dsh-scholar-board/client'
 import { createHost } from './host'
 import type { DemoHost } from './host'
 

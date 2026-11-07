@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { MediaBinding } from '@dsh-widget-board/contracts'
+import type { MediaBinding } from '@dsh-scholar-board/contracts'
 import { ImageField } from './media-field'
 const ignorePreview = (): void => {}
 export function CampusMedia({ target, value, onChange, disabled, onBusy }: { target: string, value: MediaBinding, onChange: (value: MediaBinding) => void, disabled: boolean, onBusy: (busy: boolean) => void }): ReactNode {

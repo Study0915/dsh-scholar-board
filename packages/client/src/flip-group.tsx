@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
-import type { BoardInstance, WidgetNotification, WidgetSummary } from '@dsh-widget-board/contracts'
-import type { GridPlacement } from '@dsh-widget-board/model'
+import type { BoardInstance, WidgetNotification, WidgetSummary } from '@dsh-scholar-board/contracts'
+import type { GridPlacement } from '@dsh-scholar-board/model'
 import type { CardControls } from './card'
 import { CardShell } from './card-shell'
 import { CardSurface } from './card-surface'
@@ -38,7 +38,7 @@ export interface FlipGroupCardProps {
 /** 一层画面没有对应的组件时露出的占位。 */
 function MissingFace({ instance }: { instance: BoardInstance }): ReactNode {
   return (
-    <div className="dsh-widget-board__flip-missing">
+    <div className="dsh-scholar-board__flip-missing">
       <p>{t('unavailable')}</p>
       <p>{instance.widget}</p>
     </div>
@@ -111,13 +111,13 @@ export function FlipGroupCard({
       onDragCancel={onDragCancel}
     >
       <div
-        className="dsh-widget-board__flip-group"
-        data-dsh-widget-board-flip-group={front.group?.id}
+        className="dsh-scholar-board__flip-group"
+        data-dsh-scholar-board-flip-group={front.group?.id}
         data-flipped={flipped ? 'true' : undefined}
       >
-        <div className={`dsh-widget-board__flip-inner${flipped ? ' is-flipped' : ''}`}>
+        <div className={`dsh-scholar-board__flip-inner${flipped ? ' is-flipped' : ''}`}>
           <div
-            className="dsh-widget-board__flip-face dsh-widget-board__flip-face--front"
+            className="dsh-scholar-board__flip-face dsh-scholar-board__flip-face--front"
             aria-hidden={flipped}
             ref={inertWhen(flipped)}
             onFocusCapture={() => setFocusWithin(true)}
@@ -139,7 +139,7 @@ export function FlipGroupCard({
               )}
           </div>
           <div
-            className="dsh-widget-board__flip-face dsh-widget-board__flip-face--back"
+            className="dsh-scholar-board__flip-face dsh-scholar-board__flip-face--back"
             aria-hidden={!flipped}
             ref={inertWhen(!flipped)}
             onFocusCapture={() => setFocusWithin(true)}
@@ -165,8 +165,8 @@ export function FlipGroupCard({
       {/* 触屏与键盘的翻面入口：点一下换到另一面，再点一下换回来。 */}
       <button
         type="button"
-        className="dsh-widget-board__flip-toggle"
-        data-dsh-widget-board-handle="flip"
+        className="dsh-scholar-board__flip-toggle"
+        data-dsh-scholar-board-handle="flip"
         title={showBack ? t('flipFront') : t('flipBack')}
         aria-label={showBack ? t('flipFront') : t('flipBack')}
         aria-pressed={showBack}

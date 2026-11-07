@@ -6,8 +6,8 @@
  * 拖动把手与尺寸读数只画外壳自己的节点，不碰组件画面。
  */
 
-.dsh-widget-board {
-  --dsh-widget-board-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+.dsh-scholar-board {
+  --dsh-scholar-board-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   position: relative;
   display: flex;
   height: 100%;
@@ -24,7 +24,7 @@
   font-family: var(--dsw-font-family);
 }
 
-.dsh-widget-board__dot {
+.dsh-scholar-board__dot {
   display: inline-block;
   flex: none;
   width: 6px;
@@ -34,7 +34,7 @@
 }
 
 /* 卡片都是这一层的子节点，位置用绝对定位给出；宽度变化只改坐标，不重建 iframe（D16）。 */
-.dsh-widget-board__flow {
+.dsh-scholar-board__flow {
   position: relative;
   flex: none;
   width: 100%;
@@ -42,13 +42,13 @@
 
 /* 多块看板同时挂载（D21）：每块看板一层，只有选中的那一层参与排版与滚动；其余保持布局与画面、
  * 只是看不见，切回来不必重挂，里面的组件也一直在跑。 */
-.dsh-widget-board__boards {
+.dsh-scholar-board__boards {
   position: relative;
   flex: none;
   width: 100%;
 }
 
-.dsh-widget-board__flow[data-active="false"] {
+.dsh-scholar-board__flow[data-active="false"] {
   position: absolute;
   inset: 0;
   /* 不可见的那几块看板比选中的高时，它们行内给的高度与溢出的卡片不能把看板的可滚动区域撑出一段空白。 */
@@ -60,7 +60,7 @@
 
 /* 卡片的投影是外壳的事：组件只管画画面，圆角由 cards 内联的令牌给（D10、D16）。
  * 不描边：卡片的边由它自己的画面收口。投影用黑色低透明度，深色配色下明亮的前景当投影会变成光晕。 */
-.dsh-widget-board__cell {
+.dsh-scholar-board__cell {
   position: absolute;
   box-shadow: 0 5px 22px -8px rgb(0 0 0 / 18%);
   transition:
@@ -74,41 +74,41 @@
 }
 
 /* 删卡：磁贴的入场反过来放一遍——淡出并缩到 0.85。退场期间只画动画，指针不再接。 */
-.dsh-widget-board__cell[data-exiting="true"] {
+.dsh-scholar-board__cell[data-exiting="true"] {
   pointer-events: none;
-  animation: dsh-widget-board-card-out var(--w-motion-base) var(--w-motion-ease-decel) both;
+  animation: dsh-scholar-board-card-out var(--w-motion-base) var(--w-motion-ease-decel) both;
 }
 
-@keyframes dsh-widget-board-card-out {
+@keyframes dsh-scholar-board-card-out {
   from { opacity: 1; transform: scale(1); }
   to { opacity: 0; transform: scale(0.85); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dsh-widget-board__cell[data-exiting="true"] {
+  .dsh-scholar-board__cell[data-exiting="true"] {
     animation: none;
     opacity: 0;
   }
 }
 
-:root[data-motion="reduced"] .dsh-widget-board__cell[data-exiting="true"] {
+:root[data-motion="reduced"] .dsh-scholar-board__cell[data-exiting="true"] {
   animation: none;
   opacity: 0;
 }
 
-.dsh-widget-board__cell:hover {
+.dsh-scholar-board__cell:hover {
   box-shadow: 0 10px 34px -10px rgb(0 0 0 / 24%);
 }
 
 /* 被拖动的那一张跟手，不补间；其他卡片按新位置滑过去。 */
-.dsh-widget-board__cell[data-gesture] {
+.dsh-scholar-board__cell[data-gesture] {
   z-index: 3;
   box-shadow: 0 18px 48px -12px rgb(0 0 0 / 30%);
   transition: none;
 }
 
 /* 松手后的落点：一个虚线虚影，卡片自己浮在指针下面。 */
-.dsh-widget-board__ghost {
+.dsh-scholar-board__ghost {
   position: absolute;
   z-index: 0;
   box-sizing: border-box;
@@ -123,7 +123,7 @@
     height var(--w-motion-fast) var(--w-motion-ease-standard);
 }
 
-.dsh-widget-board__frame {
+.dsh-scholar-board__frame {
   display: block;
   width: 100%;
   height: 100%;
@@ -132,7 +132,7 @@
 }
 
 /* 原生组件画的卡片：它自己画满这一块，外壳只给盒子与裁剪。 */
-.dsh-widget-board__native {
+.dsh-scholar-board__native {
   position: relative;
   box-sizing: border-box;
   width: 100%;
@@ -144,12 +144,12 @@
 }
 
 /* 拖动时指针归外壳：iframe 不接收悬停与按下，否则拖动到卡片上方会断掉。 */
-.dsh-widget-board__flow[data-dragging="true"] .dsh-widget-board__frame {
+.dsh-scholar-board__flow[data-dragging="true"] .dsh-scholar-board__frame {
   pointer-events: none;
 }
 
 /* 顶部的拖动把手：悬停或拖动时出现，压在组件的画面上。 */
-.dsh-widget-board__grip {
+.dsh-scholar-board__grip {
   position: absolute;
   top: 6px;
   left: 50%;
@@ -165,7 +165,7 @@
   touch-action: none;
 }
 
-.dsh-widget-board__grip::after {
+.dsh-scholar-board__grip::after {
   content: "";
   position: absolute;
   top: 6px;
@@ -176,23 +176,23 @@
   background: color-mix(in srgb, var(--dsw-alias-label-primary) 60%, transparent);
 }
 
-.dsh-widget-board__cell:hover .dsh-widget-board__grip,
-.dsh-widget-board__cell[data-gesture="move"] .dsh-widget-board__grip {
+.dsh-scholar-board__cell:hover .dsh-scholar-board__grip,
+.dsh-scholar-board__cell[data-gesture="move"] .dsh-scholar-board__grip {
   opacity: 1;
 }
 
-.dsh-widget-board__cell[data-gesture="move"] .dsh-widget-board__grip {
+.dsh-scholar-board__cell[data-gesture="move"] .dsh-scholar-board__grip {
   background: color-mix(in srgb, var(--dsw-alias-brand-primary) 26%, transparent);
   cursor: grabbing;
 }
 
-.dsh-widget-board__cell[data-gesture="move"] .dsh-widget-board__grip::after {
+.dsh-scholar-board__cell[data-gesture="move"] .dsh-scholar-board__grip::after {
   background: var(--dsw-alias-brand-primary);
 }
 
 /* 右下角的缩放手柄：一段贴着卡片圆角的弧，加一个圆点。
  * 静置时不画，悬停时半透明，拖动时完整露出来。 */
-.dsh-widget-board__resize {
+.dsh-scholar-board__resize {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -208,7 +208,7 @@
 
 /* 弧的方框是看得见的圆角的两倍宽：圆心落在那个圆角的中心，路径半径就是裁剪圆角，
  * 描边压在卡片看得见的边上，画出来的弧与卡片的边是同一条曲线。 */
-.dsh-widget-board__resize-arc {
+.dsh-scholar-board__resize-arc {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -222,9 +222,9 @@
   pointer-events: none;
 }
 
-.dsh-widget-board__resize-arc path { vector-effect: non-scaling-stroke; }
+.dsh-scholar-board__resize-arc path { vector-effect: non-scaling-stroke; }
 
-.dsh-widget-board__resize::after {
+.dsh-scholar-board__resize::after {
   content: "";
   position: absolute;
   /* 圆点的圆心落在弧的 45° 处，圆弧从圆点中间穿过去。 */
@@ -237,16 +237,16 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--dsw-alias-brand-primary) 16%, transparent);
 }
 
-.dsh-widget-board__cell:hover .dsh-widget-board__resize {
+.dsh-scholar-board__cell:hover .dsh-scholar-board__resize {
   opacity: 0.55;
 }
 
-.dsh-widget-board__cell[data-gesture="resize"] .dsh-widget-board__resize {
+.dsh-scholar-board__cell[data-gesture="resize"] .dsh-scholar-board__resize {
   opacity: 1;
 }
 
 /* 改变大小时，尺寸读数铺成盖住整张卡的遮罩：组件被压暗，读数居中。 */
-.dsh-widget-board__mask {
+.dsh-scholar-board__mask {
   position: absolute;
   inset: 0;
   z-index: 4;
@@ -263,15 +263,15 @@
   pointer-events: none;
   /* 读数的字号跟着遮罩宽度走：卡片缩到一列窄时，数字与提示不会撑出遮罩。 */
   container-type: inline-size;
-  animation: dsh-widget-board-mask-in var(--w-motion-fast) var(--w-motion-ease-standard);
+  animation: dsh-scholar-board-mask-in var(--w-motion-fast) var(--w-motion-ease-standard);
 }
 
-@keyframes dsh-widget-board-mask-in {
+@keyframes dsh-scholar-board-mask-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-.dsh-widget-board__mask-readout {
+.dsh-scholar-board__mask-readout {
   display: flex;
   max-width: calc(100% - 32px);
   flex-direction: column;
@@ -284,29 +284,29 @@
   box-shadow: 0 18px 50px -22px rgb(0 0 0 / 40%);
 }
 
-.dsh-widget-board__mask-readout .dsh-widget-board__measure-size {
+.dsh-scholar-board__mask-readout .dsh-scholar-board__measure-size {
   font-size: clamp(17px, 7cqi, 34px);
   line-height: 1.1;
 }
 
-.dsh-widget-board__mask-readout .dsh-widget-board__measure-hint {
+.dsh-scholar-board__mask-readout .dsh-scholar-board__measure-hint {
   font-size: clamp(9px, 2.1cqi, 10px);
   line-height: 1.3;
 }
 
 @container (max-width: 190px) {
-  .dsh-widget-board__mask-readout .dsh-widget-board__measure-hint { display: none; }
+  .dsh-scholar-board__mask-readout .dsh-scholar-board__measure-hint { display: none; }
 }
 
 /* 触屏没有悬停：拖动把手与右上角的两枚按钮一直露着；缩放的弧在触屏上只在拖动中出现。 */
 @media (hover: none) {
-  .dsh-widget-board__grip,
-  .dsh-widget-board__remove,
-  .dsh-widget-board__settings { opacity: 0.85; }
+  .dsh-scholar-board__grip,
+  .dsh-scholar-board__remove,
+  .dsh-scholar-board__settings { opacity: 0.85; }
 }
 
 /* 尺寸读数：只在外壳拿着指针时出现，压在卡片左下角。 */
-.dsh-widget-board__measure {
+.dsh-scholar-board__measure {
   position: absolute;
   left: 12px;
   bottom: 12px;
@@ -323,9 +323,9 @@
   pointer-events: none;
 }
 
-.dsh-widget-board__measure-size {
+.dsh-scholar-board__measure-size {
   color: var(--dsw-alias-label-primary);
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: 22px;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -334,40 +334,40 @@
   white-space: nowrap;
 }
 
-.dsh-widget-board__measure-size i {
+.dsh-scholar-board__measure-size i {
   color: var(--dsw-alias-label-tertiary);
   font-style: normal;
   font-weight: 400;
 }
 
-.dsh-widget-board__measure-hint {
+.dsh-scholar-board__measure-hint {
   display: flex;
   align-items: center;
   gap: 6px;
   color: var(--dsw-alias-label-tertiary);
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: 9px;
   letter-spacing: 0.12em;
   line-height: 12px;
   text-transform: uppercase;
 }
 
-.dsh-widget-board__measure-hint .dsh-widget-board__dot {
+.dsh-scholar-board__measure-hint .dsh-scholar-board__dot {
   width: 5px;
   height: 5px;
 }
 
-.dsh-widget-board__notice {
+.dsh-scholar-board__notice {
   margin: auto;
   padding: 24px;
   color: var(--dsw-alias-label-tertiary);
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: var(--dsw-font-xs-13-font-size);
   line-height: var(--dsw-font-xs-13-line-height);
   text-align: center;
 }
 
-.dsh-widget-board__failure-strip {
+.dsh-scholar-board__failure-strip {
   position: absolute;
   right: 8px;
   bottom: 8px;
@@ -383,7 +383,7 @@
 }
 
 /* 缺授权时卡片上的那一个按钮：授权只由人给出，所以入口画在出错的那张卡上（D6）。 */
-.dsh-widget-board__grant {
+.dsh-scholar-board__grant {
   position: absolute;
   right: 8px;
   bottom: 8px;
@@ -397,24 +397,24 @@
   cursor: pointer;
 }
 
-.dsh-widget-board__grant:hover {
+.dsh-scholar-board__grant:hover {
   background: var(--dsw-alias-bg-layer-2);
 }
 
 /* 失败原因与「允许」同时出现时，按钮压在原因条上面。 */
-.dsh-widget-board__failure-strip ~ .dsh-widget-board__grant {
+.dsh-scholar-board__failure-strip ~ .dsh-scholar-board__grant {
   bottom: 44px;
 }
 
 /* 翻面组：一个外壳里两层画面，只有内层转，卡片自己的盒子不动（D19）。 */
-.dsh-widget-board__flip-group {
+.dsh-scholar-board__flip-group {
   position: absolute;
   inset: 0;
   border-radius: inherit;
   perspective: 1200px;
 }
 
-.dsh-widget-board__flip-inner {
+.dsh-scholar-board__flip-inner {
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -422,11 +422,11 @@
   transition: transform var(--w-motion-base) var(--w-motion-ease-standard);
 }
 
-.dsh-widget-board__flip-inner.is-flipped {
+.dsh-scholar-board__flip-inner.is-flipped {
   transform: rotateY(180deg);
 }
 
-.dsh-widget-board__flip-face {
+.dsh-scholar-board__flip-face {
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -436,11 +436,11 @@
   -webkit-backface-visibility: hidden;
 }
 
-.dsh-widget-board__flip-face--back {
+.dsh-scholar-board__flip-face--back {
   transform: rotateY(180deg);
 }
 
-.dsh-widget-board__flip-missing {
+.dsh-scholar-board__flip-missing {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -453,11 +453,11 @@
   line-height: var(--dsw-font-xs-13-line-height);
 }
 
-:root[data-motion="reduced"] .dsh-widget-board__flip-inner { transition: none; }
-:root[data-motion="reduced"] .dsh-widget-board__mask { animation: none; }
+:root[data-motion="reduced"] .dsh-scholar-board__flip-inner { transition: none; }
+:root[data-motion="reduced"] .dsh-scholar-board__mask { animation: none; }
 
 /* 组件不可用的卡片：保留盒子与位置，写明是哪个组件与为什么。 */
-.dsh-widget-board__cell--missing {
+.dsh-scholar-board__cell--missing {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -467,26 +467,26 @@
   overflow: auto;
 }
 
-.dsh-widget-board__missing-title {
+.dsh-scholar-board__missing-title {
   margin: 0;
   color: var(--dsw-alias-label-primary);
   font-size: 13px;
   font-weight: 600;
 }
 
-.dsh-widget-board__missing-name,
-.dsh-widget-board__missing-reason {
+.dsh-scholar-board__missing-name,
+.dsh-scholar-board__missing-reason {
   margin: 0;
   color: var(--dsw-alias-label-tertiary);
-  font-family: var(--dsh-widget-board-mono);
+  font-family: var(--dsh-scholar-board-mono);
   font-size: 11px;
   line-height: 16px;
   overflow-wrap: anywhere;
 }
 
-.dsh-widget-board__missing-reason { color: var(--dsw-alias-state-error-primary); }
+.dsh-scholar-board__missing-reason { color: var(--dsw-alias-state-error-primary); }
 
-.dsh-widget-board__missing-remove {
+.dsh-scholar-board__missing-remove {
   align-self: flex-start;
   margin-top: 6px;
   padding: 4px 10px;
@@ -500,9 +500,9 @@
 }
 
 /* 右上角的三枚小按钮：设置、移除与翻面，悬停卡片时一起露出来。 */
-.dsh-widget-board__remove,
-.dsh-widget-board__settings,
-.dsh-widget-board__flip-toggle {
+.dsh-scholar-board__remove,
+.dsh-scholar-board__settings,
+.dsh-scholar-board__flip-toggle {
   position: absolute;
   top: 6px;
   z-index: 2;
@@ -518,13 +518,13 @@
   transition: opacity var(--w-motion-fast) var(--w-motion-ease-standard);
 }
 
-.dsh-widget-board__remove {
+.dsh-scholar-board__remove {
   right: 6px;
   font-size: 13px;
   line-height: 16px;
 }
 
-.dsh-widget-board__settings {
+.dsh-scholar-board__settings {
   right: 30px;
   display: grid;
   place-items: center;
@@ -534,34 +534,34 @@
  * 翻面按钮是组卡唯一的翻面入口，所以它一直露着：指针停在卡片上时两张画面各自要接自己的点击，
  * 接指针的悬停层会把这些点击吃掉，翻面因此不挂在悬停上（D19）。
  */
-.dsh-widget-board__flip-toggle {
+.dsh-scholar-board__flip-toggle {
   right: 54px;
   display: grid;
   place-items: center;
   opacity: 0.9;
 }
 
-.dsh-widget-board__settings svg,
-.dsh-widget-board__flip-toggle svg {
+.dsh-scholar-board__settings svg,
+.dsh-scholar-board__flip-toggle svg {
   display: block;
   pointer-events: none;
 }
 
-.dsh-widget-board__cell:hover .dsh-widget-board__remove,
-.dsh-widget-board__cell:hover .dsh-widget-board__settings,
-.dsh-widget-board__remove:focus-visible,
-.dsh-widget-board__settings:focus-visible,
-.dsh-widget-board__flip-toggle:focus-visible,
-.dsh-widget-board__flip-toggle:hover {
+.dsh-scholar-board__cell:hover .dsh-scholar-board__remove,
+.dsh-scholar-board__cell:hover .dsh-scholar-board__settings,
+.dsh-scholar-board__remove:focus-visible,
+.dsh-scholar-board__settings:focus-visible,
+.dsh-scholar-board__flip-toggle:focus-visible,
+.dsh-scholar-board__flip-toggle:hover {
   opacity: 1;
 }
 
 /* 缩放时遮罩是唯一的前景：拖动、设置、移除与翻面的把手收起来，松开后再回来。
  * 与上面的悬停规则同样具体，所以这条必须排在它们后面。 */
-.dsh-widget-board__cell[data-gesture="resize"] .dsh-widget-board__grip,
-.dsh-widget-board__cell[data-gesture="resize"] .dsh-widget-board__settings,
-.dsh-widget-board__cell[data-gesture="resize"] .dsh-widget-board__flip-toggle,
-.dsh-widget-board__cell[data-gesture="resize"] .dsh-widget-board__remove {
+.dsh-scholar-board__cell[data-gesture="resize"] .dsh-scholar-board__grip,
+.dsh-scholar-board__cell[data-gesture="resize"] .dsh-scholar-board__settings,
+.dsh-scholar-board__cell[data-gesture="resize"] .dsh-scholar-board__flip-toggle,
+.dsh-scholar-board__cell[data-gesture="resize"] .dsh-scholar-board__remove {
   opacity: 0;
   pointer-events: none;
 }
@@ -570,28 +570,28 @@
  * 主题切换的整页圆点揭示（D29）。
  *
  * 浏览器把切换前后各拍成一层快照；旧的那层原地不动，新的那层从组件报来的圆心展开。只动
- * `clip-path`，不重排页面，也不让组件逐帧重画。`data-dsh-widget-board-vt` 只在这一段转场期间挂在
+ * `clip-path`，不重排页面，也不让组件逐帧重画。`data-dsh-scholar-board-vt` 只在这一段转场期间挂在
  * 根节点上，宿主自己的 View Transition 不受影响；变量由 `theme-switch.ts` 按令牌写进来，圆心与半径
  * 都是百分比——快照层的坐标按设备像素缩放，写 px 会在 1.5 倍屏上缩到左上角。动画结束就摘掉。
  */
-@keyframes dsh-widget-board-theme-circle {
-  from { clip-path: circle(0% at var(--dsh-widget-board-vt-x) var(--dsh-widget-board-vt-y)); }
-  to { clip-path: circle(var(--dsh-widget-board-vt-r) at var(--dsh-widget-board-vt-x) var(--dsh-widget-board-vt-y)); }
+@keyframes dsh-scholar-board-theme-circle {
+  from { clip-path: circle(0% at var(--dsh-scholar-board-vt-x) var(--dsh-scholar-board-vt-y)); }
+  to { clip-path: circle(var(--dsh-scholar-board-vt-r) at var(--dsh-scholar-board-vt-x) var(--dsh-scholar-board-vt-y)); }
 }
 
-html[data-dsh-widget-board-vt]::view-transition-group(root) { animation: none; }
+html[data-dsh-scholar-board-vt]::view-transition-group(root) { animation: none; }
 
-html[data-dsh-widget-board-vt]::view-transition-old(root) {
+html[data-dsh-scholar-board-vt]::view-transition-old(root) {
   animation: none;
   mix-blend-mode: normal;
   opacity: 1;
 }
 
-html[data-dsh-widget-board-vt]::view-transition-new(root) {
-  animation: dsh-widget-board-theme-circle var(--dsh-widget-board-vt-duration) var(--dsh-widget-board-vt-ease) both;
+html[data-dsh-scholar-board-vt]::view-transition-new(root) {
+  animation: dsh-scholar-board-theme-circle var(--dsh-scholar-board-vt-duration) var(--dsh-scholar-board-vt-ease) both;
   mix-blend-mode: normal;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-dsh-widget-board-vt]::view-transition-new(root) { animation: none; }
+  html[data-dsh-scholar-board-vt]::view-transition-new(root) { animation: none; }
 }

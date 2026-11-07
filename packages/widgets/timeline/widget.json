@@ -8,7 +8,7 @@
     "zh": "按时间排的事件：时间、标题、细节与状态，适合提交、发布与事故记录。",
     "en": "Events in time order with time, title, detail and status; for commits, releases and incidents."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 18 },

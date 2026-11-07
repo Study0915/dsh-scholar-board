@@ -5,7 +5,7 @@
  * 发限制因此只有一处。超时与并发交给 `provider-health.ts` 的执行器；提供方的数据不合组件 schema 算它
  * 的一次失败，记在这条读取路径上，写入路径不再重复计数。
  */
-import type { Board, BoardInstance } from '@dsh-widget-board/contracts'
+import type { Board, BoardInstance } from '@dsh-scholar-board/contracts'
 import { faceOf, grantFacts, locate } from './lookup'
 import { requireGrant } from './permissions'
 import { ProviderCallError } from './provider-health'

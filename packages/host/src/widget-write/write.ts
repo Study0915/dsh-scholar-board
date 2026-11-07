@@ -11,7 +11,7 @@
 import { mkdir, rename, rm } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import type { WidgetManifest, WidgetRoot, WidgetSource } from '@dsh-widget-board/contracts'
+import type { WidgetManifest, WidgetRoot, WidgetSource } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
 import { manifestProblem, readWidget, writeTree } from '../library'
 import type { WidgetRecord } from '../library'

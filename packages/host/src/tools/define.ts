@@ -8,9 +8,9 @@
  * 来源保护、并发核对与目录交换都在共享的写入服务里（技术契约 4）：工具、页面里的高级源码编辑与
  * `.dshw` 导入走同一条路，不会各写一套。
  */
-import type { DefineValue, SelfCheckResult, WidgetToolSpec } from '@dsh-widget-board/contracts'
-import { PARENT_MESSAGE_LIMIT, WIDGET_TOOL_NAMES, ToolRefusal, selfCheckBoxes, withinLimit } from '@dsh-widget-board/contracts'
-import { DEFAULT_HEIGHT_REM, snapCardHeight } from '@dsh-widget-board/model'
+import type { DefineValue, SelfCheckResult, WidgetToolSpec } from '@dsh-scholar-board/contracts'
+import { PARENT_MESSAGE_LIMIT, WIDGET_TOOL_NAMES, ToolRefusal, selfCheckBoxes, withinLimit } from '@dsh-scholar-board/contracts'
+import { DEFAULT_HEIGHT_REM, snapCardHeight } from '@dsh-scholar-board/model'
 import { isRecord } from '../guards'
 import type { ToolContext } from './index'
 import { checkWidgetFiles, normalizeWidgetPath, writeWidgetType } from '../widget-write/write'

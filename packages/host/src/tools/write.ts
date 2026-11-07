@@ -4,9 +4,9 @@
  * 三个都只经 `ToolContext.save` 改看板，与界面走同一条写入链：宿主是唯一权威，写入串行（D5）。放卡
  * 与移除会让布局修订号前进；推数据不会，所以会话在推数据的同时用户还能拖动。
  */
-import type { BoardInstance, CardLayout, PlaceValue, WidgetToolSpec } from '@dsh-widget-board/contracts'
-import { WIDGET_TOOL_NAMES, ToolRefusal } from '@dsh-widget-board/contracts'
-import { nextCardLayout } from '@dsh-widget-board/model'
+import type { BoardInstance, CardLayout, PlaceValue, WidgetToolSpec } from '@dsh-scholar-board/contracts'
+import { WIDGET_TOOL_NAMES, ToolRefusal } from '@dsh-scholar-board/contracts'
+import { nextCardLayout } from '@dsh-scholar-board/model'
 import { isRecord } from '../guards'
 import { loadData } from '../instance-operations'
 import { defaultBoxOf, withGroupRemoved, withInstanceAdded, withInstancePatched, withInstanceRemoved } from '../state'

@@ -1,6 +1,6 @@
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
-import type { GridPlacement } from '@dsh-widget-board/model'
-import tokens from '@dsh-widget-board/contracts/tokens.json'
+import type { GridPlacement } from '@dsh-scholar-board/model'
+import tokens from '@dsh-scholar-board/contracts/tokens.json'
 import { t } from './copy'
 
 /**
@@ -60,20 +60,20 @@ export function CardShell({
   }
   const readout = (
     <>
-      <span className="dsh-widget-board__measure-size">
+      <span className="dsh-scholar-board__measure-size">
         {Math.round(placement.width)}
         <i> × </i>
         {Math.round(placement.height)}
       </span>
-      <span className="dsh-widget-board__measure-hint">
-        <span className="dsh-widget-board__dot" />
+      <span className="dsh-scholar-board__measure-hint">
+        <span className="dsh-scholar-board__dot" />
         {gesture === 'resize' ? t('resizeHint') : t('moveHint')}
       </span>
     </>
   )
   return (
     <div
-      className="dsh-widget-board__cell"
+      className="dsh-scholar-board__cell"
       data-instance={id}
       data-gesture={gesture ?? undefined}
       data-exiting={exiting ? 'true' : undefined}
@@ -81,8 +81,8 @@ export function CardShell({
     >
       {children}
       <div
-        className="dsh-widget-board__grip"
-        data-dsh-widget-board-handle="move"
+        className="dsh-scholar-board__grip"
+        data-dsh-scholar-board-handle="move"
         title={t('move')}
         onPointerDown={(event) => onDragStart(event, id, 'move')}
         {...dragProps}
@@ -92,8 +92,8 @@ export function CardShell({
         : (
           <button
             type="button"
-            className="dsh-widget-board__settings"
-            data-dsh-widget-board-handle="settings"
+            className="dsh-scholar-board__settings"
+            data-dsh-scholar-board-handle="settings"
             title={t('cardSettings')}
             aria-label={t('cardSettings')}
             disabled={exiting}
@@ -110,8 +110,8 @@ export function CardShell({
         )}
       <button
         type="button"
-        className="dsh-widget-board__remove"
-        data-dsh-widget-board-handle="remove"
+        className="dsh-scholar-board__remove"
+        data-dsh-scholar-board-handle="remove"
         title={t('remove')}
         aria-label={t('remove')}
         disabled={exiting}
@@ -121,13 +121,13 @@ export function CardShell({
         ×
       </button>
       <div
-        className="dsh-widget-board__resize"
-        data-dsh-widget-board-handle="resize"
+        className="dsh-scholar-board__resize"
+        data-dsh-scholar-board-handle="resize"
         title={t('resize')}
         onPointerDown={(event) => onDragStart(event, id, 'resize')}
         {...dragProps}
       >
-        <svg className="dsh-widget-board__resize-arc" viewBox="0 0 48 48" aria-hidden="true">
+        <svg className="dsh-scholar-board__resize-arc" viewBox="0 0 48 48" aria-hidden="true">
           <path d="M24 48A24 24 0 0 0 48 24" />
         </svg>
       </div>
@@ -135,12 +135,12 @@ export function CardShell({
         ? null
         : gesture === 'resize'
           ? (
-            <div className="dsh-widget-board__mask" data-dsh-widget-board-measure="" aria-hidden="true">
-              <div className="dsh-widget-board__mask-readout">{readout}</div>
+            <div className="dsh-scholar-board__mask" data-dsh-scholar-board-measure="" aria-hidden="true">
+              <div className="dsh-scholar-board__mask-readout">{readout}</div>
             </div>
           )
           : (
-            <div className="dsh-widget-board__measure" data-dsh-widget-board-measure="" aria-hidden="true">
+            <div className="dsh-scholar-board__measure" data-dsh-scholar-board-measure="" aria-hidden="true">
               {readout}
             </div>
           )}

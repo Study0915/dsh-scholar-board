@@ -8,7 +8,7 @@
     "zh": "一组键值对，适合版本、主机、配置摘要与运行状态。",
     "en": "A set of key-value pairs for versions, hosts, config summaries and runtime state."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 18 },

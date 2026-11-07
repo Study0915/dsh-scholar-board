@@ -11,13 +11,13 @@
 
 const { frameOf } = require('./frames.cjs')
 
-const TABS = '[data-dsh-widget-board-tabs]'
-const TAB = '[data-dsh-widget-board-tab]'
-const NEW_TAB = '[data-dsh-widget-board-tab-new]'
-const PILL = '[data-dsh-widget-board-tabs-pill]'
-const FLOW = '.dsh-widget-board__flow'
+const TABS = '[data-dsh-scholar-board-tabs]'
+const TAB = '[data-dsh-scholar-board-tab]'
+const NEW_TAB = '[data-dsh-scholar-board-tab-new]'
+const PILL = '[data-dsh-scholar-board-tabs-pill]'
+const FLOW = '.dsh-scholar-board__flow'
 const CARD = '[data-instance]'
-const POMODORO_FRAME = 'iframe.dsh-widget-board__frame[title="番茄钟"]'
+const POMODORO_FRAME = 'iframe.dsh-scholar-board__frame[title="番茄钟"]'
 
 /**
  * 读一次标签条与卡片的状态。
@@ -47,7 +47,7 @@ async function stripState(page) {
     return {
       tabs: buttons.length,
       controls: strip === null ? 0 : strip.querySelectorAll('button').length,
-      selected: buttons.filter((button) => button.getAttribute('aria-selected') === 'true').map((button) => button.getAttribute('data-dsh-widget-board-tab')),
+      selected: buttons.filter((button) => button.getAttribute('aria-selected') === 'true').map((button) => button.getAttribute('data-dsh-scholar-board-tab')),
       labels: buttons.map((button) => (button.textContent ?? '').trim()),
       pill: pillNode !== null,
       visibleFlows: visible.length,
@@ -114,7 +114,7 @@ async function tabsPass(page, { check }) {
 
   // 新建：多一个标签、它成为选中、它那块是空的，原来那块看板的卡片已经不在文档里。
   await page.locator(NEW_TAB).click()
-  await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`).length === count + 1, { tabs: TABS, count: before.tabs }, { timeout: 10000 })
+  await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`).length === count + 1, { tabs: TABS, count: before.tabs }, { timeout: 10000 })
   const created = await stripState(page)
   try {
     check('新建之后多一个标签并选中它', created.tabs === 2 && created.selected.length === 1 && created.selected[0] !== firstId, JSON.stringify(created.selected))
@@ -126,8 +126,8 @@ async function tabsPass(page, { check }) {
     check('宿主记住了选中的那块看板', stored.active === created.selected[0], String(stored.active))
 
     // 切回来：番茄钟的文档是新挂的，记号回到 1。
-    await page.locator(`[data-dsh-widget-board-tab="${firstId}"]`).click()
-    await page.waitForFunction(({ tabs, id }) => document.querySelector(`${tabs} [data-dsh-widget-board-tab="${id}"]`)?.getAttribute('aria-selected') === 'true', { tabs: TABS, id: firstId }, { timeout: 10000 })
+    await page.locator(`[data-dsh-scholar-board-tab="${firstId}"]`).click()
+    await page.waitForFunction(({ tabs, id }) => document.querySelector(`${tabs} [data-dsh-scholar-board-tab="${id}"]`)?.getAttribute('aria-selected') === 'true', { tabs: TABS, id: firstId }, { timeout: 10000 })
     const back = await markPomodoro(page)
     // 记号数的是「这份文档被标过几次」：重挂之后是新文档，回到 1；没有重挂才会是 2。
     check('切回原来的看板时组件重新挂载', back === 1, `${back} / ${marker}`)
@@ -140,7 +140,7 @@ async function tabsPass(page, { check }) {
         await fetch(`api/widget-board/boards/${encodeURIComponent(id)}/remove`, { method: 'POST' })
       }, created.selected[0])
     }
-    await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`).length <= count, { tabs: TABS, count: before.tabs }, { timeout: 10000 })
+    await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`).length <= count, { tabs: TABS, count: before.tabs }, { timeout: 10000 })
   }
   check('移除之后回到一个标签', true)
 }

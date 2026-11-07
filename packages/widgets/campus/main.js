@@ -1,7 +1,7 @@
 /* 构建将共享纯模型内联到本组件脚本，导出的组件无需仓库外模块。 */
-import { campusProps, campusState, campusSummary } from '@dsh-widget-board/model/campus/model'
-import { dueLabel, dueTone } from '@dsh-widget-board/model/campus/time'
-import { DEGREES, SCHOOLS } from '@dsh-widget-board/model/campus/presets'
+import { campusProps, campusState, campusSummary } from '@dsh-scholar-board/model/campus/model'
+import { dueLabel, dueTone } from '@dsh-scholar-board/model/campus/time'
+import { DEGREES, SCHOOLS } from '@dsh-scholar-board/model/campus/presets'
 import { createCampusReminders } from './reminders'
 
 const widget = window.widget

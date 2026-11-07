@@ -5,8 +5,8 @@
  */
 import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
-import type { Board, BoardInstance, CardLayout } from '@dsh-widget-board/contracts'
-import { gridMetrics, isCardLayout, resolveLayout } from '@dsh-widget-board/model'
+import type { Board, BoardInstance, CardLayout } from '@dsh-scholar-board/contracts'
+import { gridMetrics, isCardLayout, resolveLayout } from '@dsh-scholar-board/model'
 import { GALLERY_BOARD_TITLE, MY_BOARD_TITLE, seedBoards } from '../src/default-boards'
 import { loadLibrary } from '../src/library'
 import type { WidgetRecord } from '../src/library'

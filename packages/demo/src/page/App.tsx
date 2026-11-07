@@ -15,9 +15,9 @@ import type { CopyKey, Lang } from './copy'
 import { FilesFigure, ProviderFigure, SandboxFigure } from './figures'
 import type { DemoHost } from './host'
 
-const REPOSITORY = 'https://github.com/Nwflower/dsh-widget-board'
-const REGISTRY = 'https://www.npmjs.com/package/dsh-widget-board'
-const INSTALL_COMMAND = 'dsh plugin add dsh-widget-board'
+const REPOSITORY = 'https://github.com/Nwflower/dsh-scholar-board'
+const REGISTRY = 'https://www.npmjs.com/package/dsh-scholar-board'
+const INSTALL_COMMAND = 'dsh plugin add dsh-scholar-board'
 
 type Theme = 'light' | 'dark'
 
@@ -160,8 +160,8 @@ function Install({ lang }: { lang: Lang }): ReactNode {
         <button type="button" onClick={copy}>{copied ? text('copied', lang) : text('copy', lang)}</button>
       </div>
       <p className="demo-links">
-        <a href={REGISTRY} target="_blank" rel="noreferrer">{text('package', lang)} · npmjs.com/package/dsh-widget-board</a>
-        <a href={REPOSITORY} target="_blank" rel="noreferrer">{text('repository', lang)} · github.com/Nwflower/dsh-widget-board</a>
+        <a href={REGISTRY} target="_blank" rel="noreferrer">{text('package', lang)} · npmjs.com/package/dsh-scholar-board</a>
+        <a href={REPOSITORY} target="_blank" rel="noreferrer">{text('repository', lang)} · github.com/Nwflower/dsh-scholar-board</a>
         <span>{text('license', lang)}</span>
       </p>
     </section>

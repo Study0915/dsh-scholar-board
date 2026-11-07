@@ -7,14 +7,14 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { DefineValue, InspectionReport, SelfCheckBoxResult } from '@dsh-widget-board/contracts'
-import type { ToolViewProps } from '@dsh-widget-board/contracts'
+import type { DefineValue, InspectionReport, SelfCheckBoxResult } from '@dsh-scholar-board/contracts'
+import type { ToolViewProps } from '@dsh-scholar-board/contracts'
 import {
   SELF_CHECK_COLUMN_REM,
   SELF_CHECK_GAP_REM,
   SELF_CHECK_TIMEOUT_MS,
   selfCheckPath,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { t } from './copy'
 import { frameHostOf } from './page-frames'
 import { SnapshotSurface } from './snapshot-surface'
@@ -74,25 +74,25 @@ export function DefineView({ phase, callId, block, context }: ToolViewProps & { 
   const gallery = useSelfCheck(phase === 'start' ? callId : null, theme)
   if (failed) {
     const text = block.content.filter((part) => part.type === 'text').map((part) => part.text ?? '').join('\n')
-    return <p className="dsh-widget-board-tool__note">{text || t('defineName')}</p>
+    return <p className="dsh-scholar-board-tool__note">{text || t('defineName')}</p>
   }
   if (value === undefined) {
     return (
       <>
-        <p className="dsh-widget-board-tool__note" role="status">{gallery.line}</p>
+        <p className="dsh-scholar-board-tool__note" role="status">{gallery.line}</p>
         {gallery.node}
       </>
     )
   }
   return (
-    <div ref={ref} className="dsh-widget-board-tool" data-dsh-widget-board-tool="define">
-      <p className="dsh-widget-board-tool__head">
+    <div ref={ref} className="dsh-scholar-board-tool" data-dsh-scholar-board-tool="define">
+      <p className="dsh-scholar-board-tool__head">
         <strong>{value.title.zh}</strong>
         <code>{value.id}</code>
         <span>{checkLabel(value)}</span>
       </p>
       {value.check.problems.length === 0 ? null : (
-        <ul className="dsh-widget-board-tool__problems">
+        <ul className="dsh-scholar-board-tool__problems">
           {value.check.problems.map((problem) => <li key={problem}>{problem}</li>)}
         </ul>
       )}
@@ -218,7 +218,7 @@ function useSelfCheck(callId: string | null, theme: ReturnType<typeof useTheme>)
     ? t('checkWaiting')
     : state === 'done' ? t('checkFinished') : `${t('checkRunning')} ${String(results.size)}/${String(total)}`
   const node = job === null || state === 'done' ? null : (
-    <div className="dsh-widget-board-tool__gallery" aria-hidden="true">
+    <div className="dsh-scholar-board-tool__gallery" aria-hidden="true">
       {job.boxes.map((box, index) => (
         <GalleryBox
           key={`${String(index)}-${String(box.cols)}x${String(box.h)}`}

@@ -4,7 +4,7 @@
  * 这个文件不进临时宿主；它证明有类型检查的提供方可以按包名取到 `./service` 的类型。
  */
 import type { Context } from '@deepseek-ai/cordis'
-import type { WidgetBoardClientService } from 'dsh-widget-board/service'
+import type { WidgetBoardClientService } from 'dsh-scholar-board/service'
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -21,7 +21,7 @@ export function apply(ctx: Context): void {
   const service = ctx.widgetBoard
   ctx.effect(() => service.registerWidgetType({
     apiVersion: service.apiVersion,
-    provider: 'dsh-widget-board-provider-types',
+    provider: 'dsh-scholar-board-provider-types',
     id: 'test-native',
     component: () => null,
   }))

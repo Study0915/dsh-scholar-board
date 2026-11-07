@@ -5,7 +5,7 @@
  * 卡片增删与布局提交才让 `layoutRevision` 加一，带着过期的布局修订号来的提交被拒绝。区别只在
  * 落点：真实宿主写磁盘上的文件，这里写浏览器里的一个键。
  */
-import type { Board, BoardEvent, BoardInstance, WorkspaceSnapshot } from '@dsh-widget-board/contracts'
+import type { Board, BoardEvent, BoardInstance, WorkspaceSnapshot } from '@dsh-scholar-board/contracts'
 import { StaleRevisionError } from '../../../host/src/state'
 import type { SaveOptions } from '../../../host/src/workspace'
 import type { HostData } from '../data'

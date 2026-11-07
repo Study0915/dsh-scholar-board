@@ -2,7 +2,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { lstat, mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { MEDIA_CHUNK_BYTES, MEDIA_TOTAL_BYTES, type InstanceMedia, type MediaBinding, type MediaChunk, type MediaRole, type MediaUploaded } from '@dsh-widget-board/contracts'
+import { MEDIA_CHUNK_BYTES, MEDIA_TOTAL_BYTES, type InstanceMedia, type MediaBinding, type MediaChunk, type MediaRole, type MediaUploaded } from '@dsh-scholar-board/contracts'
 import { Refusal } from '../refusal'
 import type { Workspace } from '../workspace'
 import { processImage } from './process'

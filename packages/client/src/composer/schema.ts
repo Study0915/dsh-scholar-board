@@ -5,7 +5,7 @@
  * manifest 的 `text` 里取。以 object 与 array 为递归边界，最多展开四层；更深的写法、`$ref`、联合
  * schema 之类不展开的写法给一个显式的 JSON 编辑入口与原因（C03、C04）。
  */
-import type { LocalizedText } from '@dsh-widget-board/contracts'
+import type { LocalizedText } from '@dsh-scholar-board/contracts'
 import { isChinese } from '../copy'
 
 /** 递归展开的层数上限；再深的写法只给 JSON 编辑（C03）。 */

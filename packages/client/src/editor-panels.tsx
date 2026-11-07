@@ -6,7 +6,7 @@
  */
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import type { ActionPermission, CardSettings, GrantKind, LocalizedText } from '@dsh-widget-board/contracts'
+import type { ActionPermission, CardSettings, GrantKind, LocalizedText } from '@dsh-scholar-board/contracts'
 import { sourceLabel, t, textOf } from './copy'
 
 /** 一份权限里的主机与命令；没有声明权限时是空表。 */
@@ -17,17 +17,17 @@ function PermissionChips({ permission }: { permission: ActionPermission | undefi
   const commands = permission.commands ?? []
   if (hosts.length === 0 && commands.length === 0) return null
   return (
-    <div className="dsh-widget-board__permission-list">
+    <div className="dsh-scholar-board__permission-list">
       {hosts.length === 0 ? null : (
         <p>
-          <span className="dsh-widget-board__permission-label">{t('permissionHosts')}</span>
-          {hosts.map((host) => <span key={host} className="dsh-widget-board__chip">{host}</span>)}
+          <span className="dsh-scholar-board__permission-label">{t('permissionHosts')}</span>
+          {hosts.map((host) => <span key={host} className="dsh-scholar-board__chip">{host}</span>)}
         </p>
       )}
       {commands.length === 0 ? null : (
         <p>
-          <span className="dsh-widget-board__permission-label">{t('permissionCommands')}</span>
-          {commands.map((command) => <span key={command} className="dsh-widget-board__chip">{command}</span>)}
+          <span className="dsh-scholar-board__permission-label">{t('permissionCommands')}</span>
+          {commands.map((command) => <span key={command} className="dsh-scholar-board__chip">{command}</span>)}
         </p>
       )}
     </div>
@@ -85,11 +85,11 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
   const capabilities = settings.capabilities
 
   return (
-    <div className="dsh-widget-board__about">
-      <section className="dsh-widget-board__about-card">
-        <h3 className="dsh-widget-board__editor-heading">{textOf(widget.title)}</h3>
-        {description === undefined ? null : <p className="dsh-widget-board__about-desc">{textOf(description)}</p>}
-        <dl className="dsh-widget-board__facts">
+    <div className="dsh-scholar-board__about">
+      <section className="dsh-scholar-board__about-card">
+        <h3 className="dsh-scholar-board__editor-heading">{textOf(widget.title)}</h3>
+        {description === undefined ? null : <p className="dsh-scholar-board__about-desc">{textOf(description)}</p>}
+        <dl className="dsh-scholar-board__facts">
           <div>
             <dt>{t('widgetSource')}</dt>
             <dd>{sourceLabel(widget.source)}{widget.provider === undefined ? '' : ` · ${widget.provider}`}</dd>
@@ -100,7 +100,7 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
           </div>
           <div>
             <dt>hash</dt>
-            <dd className="dsh-widget-board__facts-hash" title={widget.hash}>{widget.hash.slice(0, 12)}</dd>
+            <dd className="dsh-scholar-board__facts-hash" title={widget.hash}>{widget.hash.slice(0, 12)}</dd>
           </div>
           <div>
             <dt>{t('refreshPolicy')}</dt>
@@ -109,15 +109,15 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
         </dl>
       </section>
 
-      <section className="dsh-widget-board__about-card">
-        <h3 className="dsh-widget-board__editor-heading">{t('dataAndPermissions')}</h3>
-        {settings.sourceError === undefined ? null : <p className="dsh-widget-board__editor-error" role="status">{settings.sourceError}</p>}
+      <section className="dsh-scholar-board__about-card">
+        <h3 className="dsh-scholar-board__editor-heading">{t('dataAndPermissions')}</h3>
+        {settings.sourceError === undefined ? null : <p className="dsh-scholar-board__editor-error" role="status">{settings.sourceError}</p>}
 
         {source === undefined
           ? null
           : (
             <>
-              <dl className="dsh-widget-board__facts">
+              <dl className="dsh-scholar-board__facts">
                 <div>
                   <dt>{t('source')}</dt>
                   <dd>{source.id}</dd>
@@ -132,13 +132,13 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
                 </div>
               </dl>
               <PermissionChips permission={source.permission} />
-              <div className="dsh-widget-board__about-actions">
+              <div className="dsh-scholar-board__about-actions">
                 {source.permission !== undefined && !source.granted
                   ? (
                     <button
                       type="button"
-                      className="dsh-widget-board__editor-primary"
-                      data-dsh-widget-board-grant-source=""
+                      className="dsh-scholar-board__editor-primary"
+                      data-dsh-scholar-board-grant-source=""
                       disabled={working !== null || busy}
                       onClick={() => { void run('source-grant', () => onGrant('source', source.id)) }}
                     >
@@ -150,7 +150,7 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
                   ? (
                     <button
                       type="button"
-                      className="dsh-widget-board__editor-ghost"
+                      className="dsh-scholar-board__editor-ghost"
                       disabled={working !== null || busy}
                       onClick={() => { void run('source-revoke', () => onRevoke('source', source.id)) }}
                     >
@@ -160,8 +160,8 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
                   : null}
                 <button
                   type="button"
-                  className="dsh-widget-board__editor-ghost"
-                  data-dsh-widget-board-refresh=""
+                  className="dsh-scholar-board__editor-ghost"
+                  data-dsh-scholar-board-refresh=""
                   disabled={working !== null || busy}
                   onClick={() => { void run('refresh', onRefresh, true) }}
                 >
@@ -175,10 +175,10 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
           const label = capability.title === undefined ? capability.id : textOf(capability.title)
           const needsGrant = capability.permission !== undefined
           return (
-            <div key={capability.id} className="dsh-widget-board__about-block">
-              <h4 className="dsh-widget-board__about-subheading">{label}</h4>
-              {capability.description === undefined ? null : <p className="dsh-widget-board__about-desc">{textOf(capability.description)}</p>}
-              <dl className="dsh-widget-board__facts">
+            <div key={capability.id} className="dsh-scholar-board__about-block">
+              <h4 className="dsh-scholar-board__about-subheading">{label}</h4>
+              {capability.description === undefined ? null : <p className="dsh-scholar-board__about-desc">{textOf(capability.description)}</p>}
+              <dl className="dsh-scholar-board__facts">
                 <div>
                   <dt>{t('provider')}</dt>
                   <dd>{capability.provider === '' ? '—' : capability.provider}</dd>
@@ -188,15 +188,15 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
                   <dd>{capability.unavailable !== undefined ? '—' : needsGrant ? (capability.granted ? t('granted') : t('notGranted')) : t('permissionNone')}</dd>
                 </div>
               </dl>
-              {capability.unavailable === undefined ? null : <p className="dsh-widget-board__editor-error" role="status">{capability.unavailable}</p>}
+              {capability.unavailable === undefined ? null : <p className="dsh-scholar-board__editor-error" role="status">{capability.unavailable}</p>}
               <PermissionChips permission={capability.permission} />
-              <div className="dsh-widget-board__about-actions">
+              <div className="dsh-scholar-board__about-actions">
                 {needsGrant && capability.unavailable === undefined && !capability.granted
                   ? (
                     <button
                       type="button"
-                      className="dsh-widget-board__editor-primary"
-                      data-dsh-widget-board-grant-capability={capability.id}
+                      className="dsh-scholar-board__editor-primary"
+                      data-dsh-scholar-board-grant-capability={capability.id}
                       disabled={working !== null || busy}
                       onClick={() => { void run(`capability-grant:${capability.id}`, () => onGrant('capability', capability.id)) }}
                     >
@@ -208,7 +208,7 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
                   ? (
                     <button
                       type="button"
-                      className="dsh-widget-board__editor-ghost"
+                      className="dsh-scholar-board__editor-ghost"
                       disabled={working !== null || busy}
                       onClick={() => { void run(`capability-revoke:${capability.id}`, () => onRevoke('capability', capability.id)) }}
                     >
@@ -222,10 +222,10 @@ export function AboutPanel({ settings, busy, onGrant, onRevoke, onRefresh }: Abo
         })}
 
         {source === undefined && capabilities.length === 0
-          ? <p className="dsh-widget-board__editor-empty">{t('noSource')}</p>
+          ? <p className="dsh-scholar-board__editor-empty">{t('noSource')}</p>
           : null}
-        {refreshed ? <p className="dsh-widget-board__editor-ok" role="status">{t('refreshed')}</p> : null}
-        {error === null ? null : <p className="dsh-widget-board__editor-error" role="alert">{error}</p>}
+        {refreshed ? <p className="dsh-scholar-board__editor-ok" role="status">{t('refreshed')}</p> : null}
+        {error === null ? null : <p className="dsh-scholar-board__editor-error" role="alert">{error}</p>}
       </section>
     </div>
   )

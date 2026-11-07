@@ -7,8 +7,8 @@
  * 每一页带一个观众身份接上：宿主按它记住这一页看得见哪些卡片（D6 的单卡可见性）。重连沿用同一
  * 个 id，宿主把这些连接归到同一位观众名下共用一份上报，最后一条断开才清掉。
  */
-import type { BoardEventFrame } from '@dsh-widget-board/contracts'
-import { eventsPath, isBoardEventFrame } from '@dsh-widget-board/contracts'
+import type { BoardEventFrame } from '@dsh-scholar-board/contracts'
+import { eventsPath, isBoardEventFrame } from '@dsh-scholar-board/contracts'
 
 /**
  * 这个页面的观众身份。

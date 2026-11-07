@@ -8,7 +8,7 @@
     "zh": "通用全息卡模板：彩虹渐变与高光跟着指针走，文案由 props 填入。",
     "en": "A reusable holographic-card template: a rainbow sheen and highlight follow the pointer; props fill the copy."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 18 },

@@ -6,7 +6,7 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, RefObject } from 'react'
-import type { Board } from '@dsh-widget-board/contracts'
+import type { Board } from '@dsh-scholar-board/contracts'
 import { t } from '../copy'
 
 /** 菜单贴着触发器的那一侧。 */
@@ -121,20 +121,20 @@ export function BoardMenu({ board, anchor, trigger, onRename, onDelete, onClose 
   return (
     <div
       ref={menuRef}
-      className="dsh-widget-board__board-menu"
-      data-dsh-widget-board-board-menu={board.id}
+      className="dsh-scholar-board__board-menu"
+      data-dsh-scholar-board-board-menu={board.id}
       role="menu"
       aria-label={t('boardMenuTitle')}
       style={place === null ? { visibility: 'hidden' } : { left: `${String(place.left)}px`, top: `${String(place.top)}px` }}
       onKeyDown={onKeyDown}
       onContextMenu={(event) => { event.preventDefault() }}
     >
-      <p className="dsh-widget-board__board-menu-title">{board.title}</p>
+      <p className="dsh-scholar-board__board-menu-title">{board.title}</p>
       <button
         type="button"
         role="menuitem"
-        className="dsh-widget-board__board-menu-item"
-        data-dsh-widget-board-board-menu-action="rename"
+        className="dsh-scholar-board__board-menu-item"
+        data-dsh-scholar-board-board-menu-action="rename"
         onClick={onRename}
       >
         {t('rename')}
@@ -142,8 +142,8 @@ export function BoardMenu({ board, anchor, trigger, onRename, onDelete, onClose 
       <button
         type="button"
         role="menuitem"
-        className="dsh-widget-board__board-menu-item"
-        data-dsh-widget-board-board-menu-action="remove"
+        className="dsh-scholar-board__board-menu-item"
+        data-dsh-scholar-board-board-menu-action="remove"
         data-danger="true"
         onClick={onDelete}
       >

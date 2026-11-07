@@ -5,8 +5,8 @@
  * 这里只认 DSH 的 Host 侧账户服务：值没有 token，卡片拿到的只是钱包数组。能力本身仍然向人问一次
  * 授权（`permission: {}`），跟数据源与动作一样绑在组件的当前版本上（D6）。
  */
-import type { AccountBalance, CapabilityRegistration, InstanceFace } from '@dsh-widget-board/contracts'
-import { WIDGET_BOARD_API_VERSION, accountOf } from '@dsh-widget-board/contracts'
+import type { AccountBalance, CapabilityRegistration, InstanceFace } from '@dsh-scholar-board/contracts'
+import { WIDGET_BOARD_API_VERSION, accountOf } from '@dsh-scholar-board/contracts'
 import type { Registries } from './sources'
 
 /** 余额能力的名字；组件 manifest 用它声明（D24）。 */

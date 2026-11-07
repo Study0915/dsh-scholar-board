@@ -2,7 +2,7 @@
  * 卡片栅格的单元测试（D16）：列数、位置、重叠推开与确定性。
  */
 import { describe, expect, it } from 'vitest'
-import type { CardLayout } from '@dsh-widget-board/contracts'
+import type { CardLayout } from '@dsh-scholar-board/contracts'
 import {
   DEFAULT_HEIGHT_REM,
   GAP_REM,

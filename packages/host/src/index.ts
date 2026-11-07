@@ -9,7 +9,7 @@ import { join, resolve } from 'node:path'
 import { mkdir, readFile } from 'node:fs/promises'
 import type { Context, Volatile } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import type { BoardEvent, WidgetMinBox, WidgetRoot } from '@dsh-widget-board/contracts'
+import type { BoardEvent, WidgetMinBox, WidgetRoot } from '@dsh-scholar-board/contracts'
 import {
   BOARD_COMPATIBILITY,
   PACKAGE_NAME,
@@ -21,7 +21,7 @@ import {
   sessionsOf,
   webServerOf,
   workspaceRegistryOf,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { createVersionStore } from './blobs'
 import { loadAssets } from './assets'
 import { createHttpSource } from './http'

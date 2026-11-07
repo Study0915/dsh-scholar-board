@@ -6,8 +6,8 @@
  * 的自检经桥上的 `inspect` 消息调同一个。判定只看用户能观察到的结果——横向滚出盒子、文字与可见
  * 控件被截掉、画面空白、脚本出错、资源被 CSP 拦下。
  */
-import type { InspectionReport } from '@dsh-widget-board/contracts'
-import { INSPECT_GLOBAL, inspectionProblems } from '@dsh-widget-board/contracts'
+import type { InspectionReport } from '@dsh-scholar-board/contracts'
+import { INSPECT_GLOBAL, inspectionProblems } from '@dsh-scholar-board/contracts'
 
 /** 一份报告里最多列几个被截掉的元素：够看出是哪一处，又不至于把消息撑大。 */
 const SAMPLE_LIMIT = 3

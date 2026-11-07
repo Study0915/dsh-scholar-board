@@ -7,8 +7,8 @@
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { InspectionReport, ParentMessage, WidgetMessage, WidgetSize } from '@dsh-widget-board/contracts'
-import { MESSAGE_LIMIT, MESSAGE_RATE_LIMIT, isWidgetMessage, widgetDocumentPath, withinLimit } from '@dsh-widget-board/contracts'
+import type { InspectionReport, ParentMessage, WidgetMessage, WidgetSize } from '@dsh-scholar-board/contracts'
+import { MESSAGE_LIMIT, MESSAGE_RATE_LIMIT, isWidgetMessage, widgetDocumentPath, withinLimit } from '@dsh-scholar-board/contracts'
 import type { FrameHost } from './frame-host'
 import type { ShellTheme } from './theme'
 import { openInNewTab } from './open-url'
@@ -254,14 +254,14 @@ export const SnapshotSurface = forwardRef<SnapshotSurfaceHandle, SnapshotSurface
     <>
       <iframe
         ref={frameRef}
-        className="dsh-widget-board__snapshot-frame"
+        className="dsh-scholar-board__snapshot-frame"
         sandbox="allow-scripts"
         title={title}
         data-placement={placement}
         style={{ width: `${String(size.w)}px`, height: `${String(size.h)}px` }}
         {...(inert ? { inert: '' } : {})}
       />
-      {failure === null ? null : <p className="dsh-widget-board__snapshot-failure" role="status">{failure}</p>}
+      {failure === null ? null : <p className="dsh-scholar-board__snapshot-failure" role="status">{failure}</p>}
     </>
   )
 })

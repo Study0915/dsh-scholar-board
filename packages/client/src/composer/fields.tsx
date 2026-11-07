@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from 'react'
 import type { ChangeEvent, ReactNode } from 'react'
-import type { LocalizedText } from '@dsh-widget-board/contracts'
+import type { LocalizedText } from '@dsh-scholar-board/contracts'
 import { isChinese, t } from '../copy'
 import type { SchemaField, SchemaNode } from './schema'
 import { fieldsOfTree, hintOf, isRecord, labelOf } from './schema'
@@ -57,19 +57,19 @@ function FieldShell({ path, field, env, children }: {
   const hint = hintOf(path, env.text, env.section)
   return (
     <div
-      className="dsh-widget-board__field"
-      data-dsh-widget-board-field-row={path}
+      className="dsh-scholar-board__field"
+      data-dsh-scholar-board-field-row={path}
       data-disabled={env.disabled === true ? 'true' : undefined}
     >
-      <div className="dsh-widget-board__field-head">
-        <span className="dsh-widget-board__field-label">
+      <div className="dsh-scholar-board__field-head">
+        <span className="dsh-scholar-board__field-label">
           {label}
-          {field.required ? <span className="dsh-widget-board__field-required" aria-hidden="true">*</span> : null}
+          {field.required ? <span className="dsh-scholar-board__field-required" aria-hidden="true">*</span> : null}
         </span>
-        {hint === undefined ? null : <span className="dsh-widget-board__field-hint">{hint}</span>}
+        {hint === undefined ? null : <span className="dsh-scholar-board__field-hint">{hint}</span>}
       </div>
       {children}
-      {message === undefined ? null : <span className="dsh-widget-board__field-error" role="status">{message}</span>}
+      {message === undefined ? null : <span className="dsh-scholar-board__field-error" role="status">{message}</span>}
     </div>
   )
 }
@@ -109,12 +109,12 @@ function JsonControl({ value, onChange, reason, env, path }: {
     setError(null)
   }, [seen, text])
   return (
-    <div className="dsh-widget-board__json" data-dsh-widget-board-json={path}>
+    <div className="dsh-scholar-board__json" data-dsh-scholar-board-json={path}>
       {open
         ? (
           <textarea
-            className="dsh-widget-board__input dsh-widget-board__textarea dsh-widget-board__json-input"
-            data-dsh-widget-board-json-input={path}
+            className="dsh-scholar-board__input dsh-scholar-board__textarea dsh-scholar-board__json-input"
+            data-dsh-scholar-board-json-input={path}
             rows={4}
             spellCheck={false}
             value={draft}
@@ -136,14 +136,14 @@ function JsonControl({ value, onChange, reason, env, path }: {
             }}
           />
         )
-        : <span className="dsh-widget-board__json-preview">{text === '' ? '—' : text.replace(/\s+/g, ' ').slice(0, 120)}</span>}
-      {error === null ? null : <span className="dsh-widget-board__field-error" role="status">{`JSON 读不出来：${error}`}</span>}
-      <div className="dsh-widget-board__json-foot">
-        <span className="dsh-widget-board__field-hint">{reason}</span>
+        : <span className="dsh-scholar-board__json-preview">{text === '' ? '—' : text.replace(/\s+/g, ' ').slice(0, 120)}</span>}
+      {error === null ? null : <span className="dsh-scholar-board__field-error" role="status">{`JSON 读不出来：${error}`}</span>}
+      <div className="dsh-scholar-board__json-foot">
+        <span className="dsh-scholar-board__field-hint">{reason}</span>
         <button
           type="button"
-          className="dsh-widget-board__editor-ghost"
-          data-dsh-widget-board-json-toggle={path}
+          className="dsh-scholar-board__editor-ghost"
+          data-dsh-scholar-board-json-toggle={path}
           disabled={env.disabled === true}
           onClick={() => { setOpen(!open) }}
         >
@@ -191,7 +191,7 @@ function ArrayItems({ node, value, onChange, env, path }: {
   }
 
   return (
-    <div className="dsh-widget-board__array" data-dsh-widget-board-array={path}>
+    <div className="dsh-scholar-board__array" data-dsh-scholar-board-array={path}>
       {items.map((item, index) => {
         const identity = identityAt(index)
         const itemPath = `${path}.${String(index)}`
@@ -199,14 +199,14 @@ function ArrayItems({ node, value, onChange, env, path }: {
         const heading = titled ? String((item as Record<string, unknown>).title) : `${t('formItem')} ${String(index + 1)}`
         const field: SchemaField = { key: String(index), node: node.item, required: false }
         return (
-          <div className="dsh-widget-board__array-item" key={identity} data-dsh-widget-board-item={identity}>
-            <div className="dsh-widget-board__array-head">
-              <span className="dsh-widget-board__array-index">{heading}</span>
-              <span className="dsh-widget-board__array-actions">
+          <div className="dsh-scholar-board__array-item" key={identity} data-dsh-scholar-board-item={identity}>
+            <div className="dsh-scholar-board__array-head">
+              <span className="dsh-scholar-board__array-index">{heading}</span>
+              <span className="dsh-scholar-board__array-actions">
                 <button
                   type="button"
-                  className="dsh-widget-board__icon-button"
-                  data-dsh-widget-board-move="up"
+                  className="dsh-scholar-board__icon-button"
+                  data-dsh-scholar-board-move="up"
                   disabled={disabled || index === 0}
                   aria-label={t('formMoveUp')}
                   title={t('formMoveUp')}
@@ -216,8 +216,8 @@ function ArrayItems({ node, value, onChange, env, path }: {
                 </button>
                 <button
                   type="button"
-                  className="dsh-widget-board__icon-button"
-                  data-dsh-widget-board-move="down"
+                  className="dsh-scholar-board__icon-button"
+                  data-dsh-scholar-board-move="down"
                   disabled={disabled || index === items.length - 1}
                   aria-label={t('formMoveDown')}
                   title={t('formMoveDown')}
@@ -227,8 +227,8 @@ function ArrayItems({ node, value, onChange, env, path }: {
                 </button>
                 <button
                   type="button"
-                  className="dsh-widget-board__icon-button dsh-widget-board__icon-button--danger"
-                  data-dsh-widget-board-remove-item=""
+                  className="dsh-scholar-board__icon-button dsh-scholar-board__icon-button--danger"
+                  data-dsh-scholar-board-remove-item=""
                   disabled={disabled}
                   aria-label={t('formRemoveItem')}
                   title={t('formRemoveItem')}
@@ -256,11 +256,11 @@ function ArrayItems({ node, value, onChange, env, path }: {
           </div>
         )
       })}
-      <div className="dsh-widget-board__array-foot">
+      <div className="dsh-scholar-board__array-foot">
         <button
           type="button"
-          className="dsh-widget-board__editor-ghost"
-          data-dsh-widget-board-add-item={path}
+          className="dsh-scholar-board__editor-ghost"
+          data-dsh-scholar-board-add-item={path}
           disabled={disabled || items.length >= limit}
           onClick={() => {
             const next = [...items, seedOf(node.item)]
@@ -271,7 +271,7 @@ function ArrayItems({ node, value, onChange, env, path }: {
           {t('formAddItem')}
         </button>
         {node.maxItems === undefined ? null : (
-          <span className="dsh-widget-board__array-count">{`${String(items.length)} / ${String(node.maxItems)}`}</span>
+          <span className="dsh-scholar-board__array-count">{`${String(items.length)} / ${String(node.maxItems)}`}</span>
         )}
       </div>
     </div>
@@ -296,26 +296,26 @@ function Control({ node, path, field, value, onChange, env }: {
     return (
       <button
         type="button"
-        className="dsh-widget-board__switch"
+        className="dsh-scholar-board__switch"
         role="switch"
         aria-checked={checked}
         aria-label={labelOf(path, env.text, env.section)}
-        data-dsh-widget-board-field={path}
+        data-dsh-scholar-board-field={path}
         disabled={disabled}
         onClick={() => { onChange(checked ? undefined : true) }}
       >
-        <span className="dsh-widget-board__switch-thumb" />
+        <span className="dsh-scholar-board__switch-thumb" />
       </button>
     )
   }
   if (node.kind === 'number') {
     return (
       <input
-        className="dsh-widget-board__input dsh-widget-board__input--number"
+        className="dsh-scholar-board__input dsh-scholar-board__input--number"
         type="number"
         inputMode={node.integer ? 'numeric' : 'decimal'}
         step={node.integer ? 1 : 'any'}
-        data-dsh-widget-board-field={path}
+        data-dsh-scholar-board-field={path}
         value={typeof value === 'number' ? String(value) : ''}
         min={node.min}
         max={node.max}
@@ -332,8 +332,8 @@ function Control({ node, path, field, value, onChange, env }: {
   if (node.kind === 'enum') {
     return (
       <select
-        className="dsh-widget-board__input dsh-widget-board__select"
-        data-dsh-widget-board-field={path}
+        className="dsh-scholar-board__input dsh-scholar-board__select"
+        data-dsh-scholar-board-field={path}
         value={typeof value === 'string' ? value : ''}
         disabled={disabled}
         onChange={(event: ChangeEvent<HTMLSelectElement>) => {
@@ -351,8 +351,8 @@ function Control({ node, path, field, value, onChange, env }: {
     if (node.multiline) {
       return (
         <textarea
-          className="dsh-widget-board__input dsh-widget-board__textarea"
-          data-dsh-widget-board-field={path}
+          className="dsh-scholar-board__input dsh-scholar-board__textarea"
+          data-dsh-scholar-board-field={path}
           rows={3}
           maxLength={node.maxLength}
           value={shown}
@@ -364,9 +364,9 @@ function Control({ node, path, field, value, onChange, env }: {
     const type = node.format === 'date' ? 'date' : node.format === 'time' ? 'time' : node.format === 'url' ? 'url' : 'text'
     return (
       <input
-        className="dsh-widget-board__input"
+        className="dsh-scholar-board__input"
         type={type}
-        data-dsh-widget-board-field={path}
+        data-dsh-scholar-board-field={path}
         maxLength={node.maxLength}
         value={shown}
         disabled={disabled}
@@ -421,7 +421,7 @@ function ObjectFields({ fields, extra, value, onChange, env, prefix = '' }: {
     onChange(base)
   }
   return (
-    <div className="dsh-widget-board__fields" data-dsh-widget-board-fields={prefix === '' ? undefined : prefix}>
+    <div className="dsh-scholar-board__fields" data-dsh-scholar-board-fields={prefix === '' ? undefined : prefix}>
       {fields.map((field) => {
         const path = prefix === '' ? field.key : `${prefix}.${field.key}`
         return (
@@ -440,10 +440,10 @@ function ObjectFields({ fields, extra, value, onChange, env, prefix = '' }: {
       {(extra ?? []).map((key) => {
         const path = prefix === '' ? key : `${prefix}.${key}`
         return (
-          <div className="dsh-widget-board__field" key={`extra:${key}`} data-dsh-widget-board-field-row={path} data-extra="true">
-            <div className="dsh-widget-board__field-head">
-              <span className="dsh-widget-board__field-label">{key}</span>
-              <span className="dsh-widget-board__field-hint">{t('formUndeclared')}</span>
+          <div className="dsh-scholar-board__field" key={`extra:${key}`} data-dsh-scholar-board-field-row={path} data-extra="true">
+            <div className="dsh-scholar-board__field-head">
+              <span className="dsh-scholar-board__field-label">{key}</span>
+              <span className="dsh-scholar-board__field-hint">{t('formUndeclared')}</span>
             </div>
             <JsonControl
               value={record[key]}
@@ -481,6 +481,6 @@ export function SchemaForm({ schema, value, onChange, text, issues, disabled, se
     ...(disabled === true ? { disabled } : {}),
     section,
   }
-  if (fields.length === 0) return <p className="dsh-widget-board__editor-empty">{t('formNoFields')}</p>
+  if (fields.length === 0) return <p className="dsh-scholar-board__editor-empty">{t('formNoFields')}</p>
   return <ObjectFields fields={fields} value={isRecord(value) ? value : {}} onChange={onChange} env={env} />
 }

@@ -22,11 +22,11 @@ const ROOT = path.resolve(__dirname, '..', '..')
 const SITE = path.resolve(process.argv[2] ?? path.join(ROOT, '.debug', 'demo'))
 const SHOTS = path.join(ROOT, '.debug', 'demo-shots')
 /** 子路径：与 GitHub Pages 的项目站点同形。 */
-const BASE = '/dsh-widget-board/'
+const BASE = '/dsh-scholar-board/'
 
-const GRIP = '[data-dsh-widget-board-handle="move"]'
-const RESIZE = '[data-dsh-widget-board-handle="resize"]'
-const VIEW = '[data-dsh-widget-board-view]'
+const GRIP = '[data-dsh-scholar-board-handle="move"]'
+const RESIZE = '[data-dsh-scholar-board-handle="resize"]'
+const VIEW = '[data-dsh-scholar-board-view]'
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.mp4': 'video/mp4' }
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -78,7 +78,7 @@ function serve() {
 
 /** 一张卡的实例 id，按 iframe 标题找。 */
 async function instanceOf(page, title) {
-  return page.evaluate((name) => document.querySelector(`iframe.dsh-widget-board__frame[title="${name}"]`)?.closest('[data-instance]')?.getAttribute('data-instance') ?? '', title)
+  return page.evaluate((name) => document.querySelector(`iframe.dsh-scholar-board__frame[title="${name}"]`)?.closest('[data-instance]')?.getAttribute('data-instance') ?? '', title)
 }
 
 /** 把演示页打开到看板出现。 */
@@ -108,7 +108,7 @@ async function layoutPass(page, url) {
   await settled(page, 15000)
   const id = await instanceOf(page, '番茄钟')
   check('看板上有番茄钟卡', id !== '')
-  await page.evaluate((name) => document.querySelector(`iframe.dsh-widget-board__frame[title="${name}"]`)?.scrollIntoView({ block: 'center' }), '番茄钟')
+  await page.evaluate((name) => document.querySelector(`iframe.dsh-scholar-board__frame[title="${name}"]`)?.scrollIntoView({ block: 'center' }), '番茄钟')
   await sleep(400)
   const step = await columnStep(page)
   const before = await layoutOf(page, id)
@@ -147,7 +147,7 @@ async function layoutPass(page, url) {
 /** 浅色与深色：页面与每张卡片一起换。 */
 async function themePass(page) {
   const toggle = page.locator('[data-demo-theme]')
-  const heroFrame = await frameOf(page, 'iframe.dsh-widget-board__frame[title="看板题头"]')
+  const heroFrame = await frameOf(page, 'iframe.dsh-scholar-board__frame[title="看板题头"]')
   const read = async () => ({
     dark: await page.evaluate(() => document.body.hasAttribute('data-ds-dark-theme')),
     card: await heroFrame.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--w-color-bg').trim()),
@@ -162,7 +162,7 @@ async function themePass(page) {
   // 拖动与缩放之后看板滚到了别处：截图前回到顶部。
   await page.evaluate(() => {
     window.scrollTo(0, 0)
-    document.querySelector('.dsh-widget-board')?.scrollTo(0, 0)
+    document.querySelector('.dsh-scholar-board')?.scrollTo(0, 0)
   })
   await sleep(500)
   await page.screenshot({ path: path.join(SHOTS, `theme-${second.dark ? 'dark' : 'light'}.png`) })
@@ -174,13 +174,13 @@ async function themePass(page) {
 async function languagePass(page) {
   await page.getByRole('button', { name: 'English' }).click()
   await page.waitForFunction(() => /^Inside DSH/.test(document.querySelector('h2')?.textContent ?? ''), undefined, { timeout: 15000 })
-  const hero = await frameOf(page, 'iframe.dsh-widget-board__frame[title="看板题头"]')
+  const hero = await frameOf(page, 'iframe.dsh-scholar-board__frame[title="看板题头"]')
   await hero.waitForFunction(() => document.documentElement.lang === 'en', undefined, { timeout: 10000 })
   check('切到英文：页面文案与卡片文档都是英文', true)
   await page.screenshot({ path: path.join(SHOTS, 'desktop-board-en.png') })
   await page.getByRole('button', { name: '中文' }).click()
   await page.waitForFunction(() => document.querySelector('h2')?.textContent?.startsWith('在 DSH'), undefined, { timeout: 15000 })
-  await frameOf(page, 'iframe.dsh-widget-board__frame[title="看板题头"]')
+  await frameOf(page, 'iframe.dsh-scholar-board__frame[title="看板题头"]')
 }
 
 /** 演示宿主不提供的能力：拒绝里写明原因，数据不伪造。 */
@@ -248,7 +248,7 @@ async function narrowPass(browser, url, errors) {
   const page = await context.newPage()
   watch(page, errors)
   await open(page, url)
-  const columns = await page.evaluate(() => Number(document.querySelector('[data-dsh-widget-board-view]')?.getAttribute('data-dsh-widget-board-columns') ?? 0))
+  const columns = await page.evaluate(() => Number(document.querySelector('[data-dsh-scholar-board-view]')?.getAttribute('data-dsh-scholar-board-columns') ?? 0))
   check('375px 宽时看板是一列', columns === 1, String(columns))
   const overflow = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }))
   check('375px 宽时页面没有横向滚动', overflow.scroll <= overflow.client, JSON.stringify(overflow))
@@ -284,12 +284,12 @@ async function main() {
     const cards = await page.evaluate(() => document.querySelectorAll('[data-instance]').length)
     // 默认看板：七张单卡加一组日历组，组卡在页面上是一个盒子。
     check('真实的看板出现，卡片都在', cards >= 8, `${cards} 张`)
-    await frameOf(page, 'iframe.dsh-widget-board__frame[title="看板题头"]')
+    await frameOf(page, 'iframe.dsh-scholar-board__frame[title="看板题头"]')
     check('卡片的沙箱文档接上了握手', true)
-    const sandbox = await page.evaluate(() => Array.from(document.querySelectorAll('iframe.dsh-widget-board__frame')).every((frame) => frame.getAttribute('sandbox') === 'allow-scripts'))
+    const sandbox = await page.evaluate(() => Array.from(document.querySelectorAll('iframe.dsh-scholar-board__frame')).every((frame) => frame.getAttribute('sandbox') === 'allow-scripts'))
     check('每张卡片都是 sandbox="allow-scripts" 的 iframe', sandbox)
     const policy = await page.evaluate(async () => {
-      const frame = document.querySelector('iframe.dsh-widget-board__frame')
+      const frame = document.querySelector('iframe.dsh-scholar-board__frame')
       const html = await (await fetch(frame.getAttribute('src'))).text()
       return /http-equiv="content-security-policy" content="default-src 'none'; script-src 'nonce-[^']+'/.test(html)
     })

@@ -1,6 +1,6 @@
 /** 校园卡的实例数据；不保存账号、凭据或未经用户录入的期限。 */
-import type { CampusItem } from '@dsh-widget-board/contracts/campus'
-export type { Due, CampusStatus, CampusItem } from '@dsh-widget-board/contracts/campus'
+import type { CampusItem } from '@dsh-scholar-board/contracts/campus'
+export type { Due, CampusStatus, CampusItem } from '@dsh-scholar-board/contracts/campus'
 export type SchoolId = 'generic' | 'bupt' | 'bit' | 'xmu' | 'csu' | 'custom'
 export type Degree = 'undergraduate' | 'master' | 'doctoral'
 export interface CampusLink { id: string, title: string, url: string }

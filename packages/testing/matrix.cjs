@@ -53,9 +53,9 @@ function check(label, ok, detail) {
  */
 async function boardMetrics(page) {
   return page.evaluate(() => {
-    const view = document.querySelector('[data-dsh-widget-board-view]')
-    const flow = document.querySelector('.dsh-widget-board__flow')
-    const columns = Number(view?.getAttribute('data-dsh-widget-board-columns') ?? 1)
+    const view = document.querySelector('[data-dsh-scholar-board-view]')
+    const flow = document.querySelector('.dsh-scholar-board__flow')
+    const columns = Number(view?.getAttribute('data-dsh-scholar-board-columns') ?? 1)
     const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
     const gap = rootFontSize * 0.75
     const width = flow?.getBoundingClientRect().width ?? 0
@@ -82,7 +82,7 @@ async function placeTarget(page, target, box, metrics) {
     })
     return layouts
   })
-  await page.evaluate((selector) => document.querySelector(selector)?.scrollIntoView({ block: 'start' }), '[data-dsh-widget-board-view]')
+  await page.evaluate((selector) => document.querySelector(selector)?.scrollIntoView({ block: 'start' }), '[data-dsh-scholar-board-view]')
 }
 
 /**
@@ -132,7 +132,7 @@ start({ home: scratchHome('matrix-') }).then(async (host) => {
   try {
     opened = await openPage(host.url, { width: 1600, height: 1000 })
     const page = opened.page
-    await page.waitForSelector('svg.dsh-widget-board__icon', { timeout: 120000 })
+    await page.waitForSelector('svg.dsh-scholar-board__icon', { timeout: 120000 })
     // 只留画廊：精选看板上的翻面组两面共用一个盒子，单独摆其中一面量不出它自己的排版。
     await keepOnlyGallery(page)
     // 画廊默认是整齐行列（D33）；矩阵按 free 坐标摆盒子，先切回自由布局。
@@ -152,7 +152,7 @@ start({ home: scratchHome('matrix-') }).then(async (host) => {
       check(`把 ${widget} 加到看板上`, await addInstance(page, widget) !== '')
     }
     await page.waitForFunction(
-      (count) => document.querySelectorAll('.dsh-widget-board__flow[data-active="true"] [data-instance]').length >= count,
+      (count) => document.querySelectorAll('.dsh-scholar-board__flow[data-active="true"] [data-instance]').length >= count,
       snapshot.board.instances.length + missing.length,
       { timeout: 30000 },
     ).catch(() => {})
@@ -164,7 +164,7 @@ start({ home: scratchHome('matrix-') }).then(async (host) => {
     const instances = current.instances
     // 卡片按实例 id 找：精选看板与画廊里同名组件不止一张，按标题会量到另一张。刚加上的卡要到
     // 它被摆进视口之后才握手，所以先按盒子试一次，连不上就在量它之前重来。
-    const frameSelector = (id) => `.dsh-widget-board__flow[data-active="true"] [data-instance="${id}"] iframe.dsh-widget-board__frame`
+    const frameSelector = (id) => `.dsh-scholar-board__flow[data-active="true"] [data-instance="${id}"] iframe.dsh-scholar-board__frame`
     const frames = new Map()
     for (const instance of instances) {
       const widget = snapshot.widgets[instance.widget]
@@ -220,7 +220,7 @@ start({ home: scratchHome('matrix-') }).then(async (host) => {
       const widget = snapshot.widgets[instance.widget]
       if (widget === undefined) continue
       const title = widget.title.zh || widget.title.en
-      const frame = await frameOf(page, `.dsh-widget-board__library-preview iframe.dsh-widget-board__frame[title="${title}"]`)
+      const frame = await frameOf(page, `.dsh-scholar-board__library-preview iframe.dsh-scholar-board__frame[title="${title}"]`)
       const state = await measure(frame)
       const marker = await frame.evaluate(() => ({
         size: document.documentElement.dataset.size,

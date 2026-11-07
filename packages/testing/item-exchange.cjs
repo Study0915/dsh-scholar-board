@@ -89,7 +89,7 @@ async function itemExchangePass(page, check, board, props) {
       check(`T07 ${format}真实下载再上传识别重复`, (await exchange.innerText()).includes('重复 1'))
       await exchange.getByRole('button', { name: '取消导入', exact: true }).click()
     }
-    await page.locator('[data-dsh-widget-board-content-close]').click()
+    await page.locator('[data-dsh-scholar-board-content-close]').click()
   } finally {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.emulateMedia({ colorScheme: 'light' })

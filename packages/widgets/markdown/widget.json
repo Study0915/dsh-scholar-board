@@ -8,7 +8,7 @@
     "zh": "Markdown 与代码卡：标题、列表、表格、引用和按语言高亮的代码块，适合笔记、提示词与片段。",
     "en": "Markdown and code: headings, lists, tables, quotes and language-highlighted code blocks for notes, prompts and snippets."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 2, "h": 22 },

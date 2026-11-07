@@ -6,7 +6,7 @@
  */
 import { mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import type { WidgetSource } from '@dsh-widget-board/contracts'
+import type { WidgetSource } from '@dsh-scholar-board/contracts'
 import { contentHash, type WidgetRecord } from './library'
 
 /** 版本库。 */

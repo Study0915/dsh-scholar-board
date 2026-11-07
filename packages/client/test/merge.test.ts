@@ -6,7 +6,7 @@
  * 卡片 id 全工作区唯一，所以状态与数据的事件要在全部看板里找那张卡。
  */
 import { describe, expect, it } from 'vitest'
-import type { Arrangement, WorkspaceSnapshot } from '@dsh-widget-board/contracts'
+import type { Arrangement, WorkspaceSnapshot } from '@dsh-scholar-board/contracts'
 import { mergeArrangement, mergeEvent, mergeLayout, needsSnapshot } from '../src/merge'
 
 /** 一份两块看板的工作区：第一块两张卡，第二块一张卡。 */

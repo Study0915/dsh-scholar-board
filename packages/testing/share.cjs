@@ -17,8 +17,8 @@ const { openLibrary } = require('./library.cjs')
 async function sharePass(page, check) {
   await openLibrary(page)
   // 显式挑一个内置组件：组件库按角色分区，示例区排在前面，第一个导出入口落不到内置组件上（D17）。
-  const link = await page.waitForSelector('[data-dsh-widget-board-export="weather"]', { timeout: 15000 })
-  const id = await link.getAttribute('data-dsh-widget-board-export')
+  const link = await page.waitForSelector('[data-dsh-scholar-board-export="weather"]', { timeout: 15000 })
+  const id = await link.getAttribute('data-dsh-scholar-board-export')
   check('组件库里有导出入口', typeof id === 'string' && id !== '', String(id))
   const roundTrip = await page.evaluate(async (widget) => {
     const exported = await fetch(`api/widget-board/library/widget/${encodeURIComponent(widget)}/export`)

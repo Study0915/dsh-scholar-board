@@ -5,7 +5,7 @@
  * 两种模式各自不变量、互不改写。
  */
 import { describe, expect, it } from 'vitest'
-import type { CardLayout } from '@dsh-widget-board/contracts'
+import type { CardLayout } from '@dsh-scholar-board/contracts'
 import {
   displayColumns,
   fittedBox,

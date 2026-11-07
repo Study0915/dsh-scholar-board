@@ -24,7 +24,7 @@ async function capabilityPass(page, check) {
   check('看板上有一张 DSH 余额卡', id !== '')
   if (id === '') return
   const card = `[data-instance="${id}"]`
-  const frame = await frameOf(page, `${card} iframe.dsh-widget-board__frame[title="DSH 余额"]`)
+  const frame = await frameOf(page, `${card} iframe.dsh-scholar-board__frame[title="DSH 余额"]`)
   await frame.waitForFunction(
     () => {
       const balance = document.querySelector('.balance')

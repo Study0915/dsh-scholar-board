@@ -9,7 +9,7 @@
  */
 import { readFile } from 'node:fs/promises'
 import { isAbsolute, join } from 'node:path'
-import type { DataSourceRegistration, InstanceFace } from '@dsh-widget-board/contracts'
+import type { DataSourceRegistration, InstanceFace } from '@dsh-scholar-board/contracts'
 import type { RepoCwdDeps } from './git-utils'
 import { dataSourceOf, resolveRepoCwd, runGit } from './git-utils'
 
@@ -94,7 +94,7 @@ const LOG_FORMAT = '--format=%h%x09%cd%x09%an%x09%s'
 const LOG_DATE = '--date=format:%m-%d %H:%M'
 
 /** 文档入口：这个仓库自己的地址。 */
-const REPO_HOME = 'https://github.com/Nwflower/dsh-widget-board'
+const REPO_HOME = 'https://github.com/Nwflower/dsh-scholar-board'
 
 /** 动效原语的参考页面。 */
 const TRANSITIONS_HOME = 'https://transitions.dev'

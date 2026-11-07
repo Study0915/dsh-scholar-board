@@ -5,7 +5,7 @@
  * 定时链与订阅的互斥判定在 `intervalCardsOf` 里，是宿主真的那一份。
  */
 import { describe, expect, it } from 'vitest'
-import type { ActionPermission, Board, BoardEvent, BoardInstance, WidgetManifest } from '@dsh-widget-board/contracts'
+import type { ActionPermission, Board, BoardEvent, BoardInstance, WidgetManifest } from '@dsh-scholar-board/contracts'
 import type { GrantStore } from '../src/grants'
 import type { VisibleCards } from '../src/live'
 import type { WidgetRecord } from '../src/library'

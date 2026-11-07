@@ -6,7 +6,7 @@
  * 切换浅色与深色时通知插件。
  */
 import type { ComponentType } from 'react'
-import { MAIN_SLOT } from '@dsh-widget-board/contracts'
+import { MAIN_SLOT } from '@dsh-scholar-board/contracts'
 
 /** 宿主页面的主题事件：与 DSH 的主题服务同名。 */
 const THEME_EVENT = 'theme/change'

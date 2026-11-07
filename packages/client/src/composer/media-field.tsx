@@ -1,7 +1,7 @@
 /** 图片选择只上传到受限编辑会话；绑定留到用户正式保存。 */
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { MEDIA_INPUT_BYTES, CLIENT_ROUTE, instanceCallPath, type InstanceMedia, type MediaBinding, type MediaUploaded } from '@dsh-widget-board/contracts'
+import { MEDIA_INPUT_BYTES, CLIENT_ROUTE, instanceCallPath, type InstanceMedia, type MediaBinding, type MediaUploaded } from '@dsh-scholar-board/contracts'
 import { isChinese } from '../copy'
 import { readMedia } from '../../../runtime/src/media/read'
 
@@ -71,23 +71,23 @@ export function ImageField({ target, value, onChange, disabled, onBusy, onPrevie
       if (!current.signal.aborted) setError((caught as Error).message)
     } finally { if (controller.current === current) { setBusy(false); onBusy(false) } }
   }
-  return <section className="dsh-widget-board__composer-section" data-dsh-widget-board-media-field="">
-    <h3 className="dsh-widget-board__composer-heading">{role === 'icon' ? (zh ? '学校图标' : 'School icon') : (zh ? '本地图片' : 'Local image')}</h3>
-    <label className="dsh-widget-board__editor-label">{zh ? '选择图片' : 'Choose image'}
-      <input className="dsh-widget-board__input" type="file" accept="image/png,image/jpeg,image/webp" disabled={disabled || busy} onChange={event => { const file = event.currentTarget.files?.[0]; if (file) void upload(file); event.currentTarget.value = '' }} />
+  return <section className="dsh-scholar-board__composer-section" data-dsh-scholar-board-media-field="">
+    <h3 className="dsh-scholar-board__composer-heading">{role === 'icon' ? (zh ? '学校图标' : 'School icon') : (zh ? '本地图片' : 'Local image')}</h3>
+    <label className="dsh-scholar-board__editor-label">{zh ? '选择图片' : 'Choose image'}
+      <input className="dsh-scholar-board__input" type="file" accept="image/png,image/jpeg,image/webp" disabled={disabled || busy} onChange={event => { const file = event.currentTarget.files?.[0]; if (file) void upload(file); event.currentTarget.value = '' }} />
     </label>
-    <p className="dsh-widget-board__editor-note">{busy ? (zh ? '正在处理图片…' : 'Processing image…') : value.media?.[role] ? (zh ? '图片已选择，保存后生效' : 'Image selected; save to apply') : (zh ? 'PNG / JPEG / WebP，最大 10MiB；不支持动画' : 'PNG / JPEG / WebP, up to 10MiB; static images only')}</p>
+    <p className="dsh-scholar-board__editor-note">{busy ? (zh ? '正在处理图片…' : 'Processing image…') : value.media?.[role] ? (zh ? '图片已选择，保存后生效' : 'Image selected; save to apply') : (zh ? 'PNG / JPEG / WebP，最大 10MiB；不支持动画' : 'PNG / JPEG / WebP, up to 10MiB; static images only')}</p>
     {url === null ? null : <img src={url} alt={zh ? '所选图片预览' : 'Selected image preview'} style={{ display: 'block', maxWidth: '100%', maxHeight: '16rem', objectFit: 'contain' }} />}
-    {value.media?.[role] ? <button type="button" className="dsh-widget-board__editor-ghost" disabled={disabled || busy} onClick={() => { const refs = { ...value.media }; const tickets = { ...value.mediaTickets }; delete refs[role]; delete tickets[role]; setUrl(null); onChange({ ...value, media: refs as InstanceMedia, mediaTickets: tickets }) }}>{zh ? '移除图片' : 'Remove image'}</button> : null}
-    {error === null ? null : <p role="alert" className="dsh-widget-board__editor-error">{error}</p>}
+    {value.media?.[role] ? <button type="button" className="dsh-scholar-board__editor-ghost" disabled={disabled || busy} onClick={() => { const refs = { ...value.media }; const tickets = { ...value.mediaTickets }; delete refs[role]; delete tickets[role]; setUrl(null); onChange({ ...value, media: refs as InstanceMedia, mediaTickets: tickets }) }}>{zh ? '移除图片' : 'Remove image'}</button> : null}
+    {error === null ? null : <p role="alert" className="dsh-scholar-board__editor-error">{error}</p>}
   </section>
 }
 
 /** 仅画本次选择或人工获准读取的图片，避免把父页面 blob URL 交给不透明来源的 iframe。 */
 export function ImageDraftPreview({ url, props, data }: { url: string | null, props: Record<string, unknown>, data: unknown }): ReactNode {
   const content = data !== null && typeof data === 'object' ? data as Record<string, unknown> : {}
-  return <figure data-dsh-widget-board-image-preview="" style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 'var(--w-space-md)', minWidth: 0 }}>
-    {url === null ? <p className="dsh-widget-board__editor-empty">{isChinese() ? '选择图片后预览' : 'Choose an image to preview'}</p> : <img src={url} alt={String(content.alt ?? '')} style={{ width: '100%', height: '100%', minHeight: 0, maxHeight: '28rem', objectFit: 'cover', objectPosition: `${String(props.focusX ?? 50)}% ${String(props.focusY ?? 50)}%`, borderRadius: 'var(--w-radius-card)' }} />}
-    <figcaption className="dsh-widget-board__editor-note">{String(content.caption ?? '')}</figcaption>
+  return <figure data-dsh-scholar-board-image-preview="" style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 'var(--w-space-md)', minWidth: 0 }}>
+    {url === null ? <p className="dsh-scholar-board__editor-empty">{isChinese() ? '选择图片后预览' : 'Choose an image to preview'}</p> : <img src={url} alt={String(content.alt ?? '')} style={{ width: '100%', height: '100%', minHeight: 0, maxHeight: '28rem', objectFit: 'cover', objectPosition: `${String(props.focusX ?? 50)}% ${String(props.focusY ?? 50)}%`, borderRadius: 'var(--w-radius-card)' }} />}
+    <figcaption className="dsh-scholar-board__editor-note">{String(content.caption ?? '')}</figcaption>
   </figure>
 }

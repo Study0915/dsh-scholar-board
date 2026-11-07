@@ -5,8 +5,8 @@
  * 都只在这里实现一次，复制它们就是抄来的代码（jscpd）。
  */
 import { execFile } from 'node:child_process'
-import type { DataSourceRegistration, HostSessions, HostWorkspaceRegistry, InstanceFace } from '@dsh-widget-board/contracts'
-import { WIDGET_BOARD_API_VERSION } from '@dsh-widget-board/contracts'
+import type { DataSourceRegistration, HostSessions, HostWorkspaceRegistry, InstanceFace } from '@dsh-scholar-board/contracts'
+import { WIDGET_BOARD_API_VERSION } from '@dsh-scholar-board/contracts'
 
 /** Git 命令的超时，毫秒：读不动就当这一拍没有结果。 */
 export const GIT_COMMAND_TIMEOUT_MS = 5000

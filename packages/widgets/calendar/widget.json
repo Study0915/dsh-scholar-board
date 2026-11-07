@@ -8,7 +8,7 @@
     "zh": "一个月的日期网格，第二行写农历、节气与节日；有安排的日期带点，宽盒子里日程写成条目。可以翻到前后月份或回到今天。",
     "en": "A month grid whose second line carries the lunar date, solar terms and festivals; days with plans get a dot or, in a wide box, a bar with the title. Steps to the previous or next month or back to today."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.3.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 22 },

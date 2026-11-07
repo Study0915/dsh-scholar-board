@@ -9,7 +9,7 @@
 import { mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import type { WidgetDraft, WidgetDraftSummary } from '@dsh-widget-board/contracts'
+import type { WidgetDraft, WidgetDraftSummary } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
 import { Refusal } from '../refusal'
 import { binaryInputs, checkWidgetFiles, normalizeWidgetPath } from '../widget-write/write'

@@ -8,7 +8,7 @@
  * 声明白名单本身不往下发：声明过的能力不一定现在能调，把它当可用发出去等于教组件去撞一次注定失败的
  * 请求（D24）。
  */
-import type { CapabilityMetadata, WidgetSummary } from '@dsh-widget-board/contracts'
+import type { CapabilityMetadata, WidgetSummary } from '@dsh-scholar-board/contracts'
 
 /** 交给组件的能力面；这一侧没有投影过的那一份缺席，组件按空能力面处理。 */
 export interface CapabilityFace {

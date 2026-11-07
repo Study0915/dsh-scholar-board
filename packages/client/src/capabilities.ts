@@ -5,7 +5,7 @@
  * 指针与视口。这里按能力名登记它们的浏览器实现，卡片先问这一张表，接不住时再走宿主路由。表是
  * 整页共用的一份，登记项随插件卸载撤下。
  */
-import type { BoardInstance, WidgetSummary } from '@dsh-widget-board/contracts'
+import type { BoardInstance, WidgetSummary } from '@dsh-scholar-board/contracts'
 
 /** 一次本地能力调用能看到的上下文。 */
 export interface ClientCapabilityCall {

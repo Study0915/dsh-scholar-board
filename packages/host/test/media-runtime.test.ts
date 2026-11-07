@@ -1,7 +1,7 @@
 /** 共享 runtime 在真实分块协议边界拒绝截断、变化和取消。 */
 import { expect, it } from 'vitest'
-import type { WidgetHandles } from '@dsh-widget-board/contracts'
-import { MEDIA_CHUNK_BYTES, MEDIA_READ_CAPABILITY } from '@dsh-widget-board/contracts'
+import type { WidgetHandles } from '@dsh-scholar-board/contracts'
+import { MEDIA_CHUNK_BYTES, MEDIA_READ_CAPABILITY } from '@dsh-scholar-board/contracts'
 import { readMedia } from '../../runtime/src/media/read'
 
 it('runtime 顺序读取并精确组装 Blob', async () => {

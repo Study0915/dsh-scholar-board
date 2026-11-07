@@ -8,7 +8,7 @@
  * 格式用成熟的实现（zip 用 fflate），不自己拼字节。
  */
 import { Gunzip, gzipSync, strFromU8, strToU8, unzipSync, zipSync } from 'fflate'
-import type { InstanceGroup, InstanceMedia, WidgetManifest } from '@dsh-widget-board/contracts'
+import type { InstanceGroup, InstanceMedia, WidgetManifest } from '@dsh-scholar-board/contracts'
 
 /** 组件包里允许出现的扩展名。 */
 export const PACKAGE_EXTENSIONS = ['.html', '.css', '.js', '.json', '.svg', '.png', '.webp', '.woff2', '.md', '.txt']

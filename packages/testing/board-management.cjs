@@ -9,25 +9,25 @@
  * 还剩一块空的。走查结束时把多出来的看板收掉，后面的场景仍只有原来那一块。
  */
 
-const TABS = '[data-dsh-widget-board-tabs]'
-const TAB = '[data-dsh-widget-board-tab]'
-const MORE = '[data-dsh-widget-board-tab-more]'
-const NEW_TAB = '[data-dsh-widget-board-tab-new]'
-const MENU = '[data-dsh-widget-board-board-menu]'
-const MENU_RENAME = '[data-dsh-widget-board-board-menu-action="rename"]'
-const MENU_REMOVE = '[data-dsh-widget-board-board-menu-action="remove"]'
-const RENAME = '[data-dsh-widget-board-rename-board]'
-const RENAME_INPUT = '[data-dsh-widget-board-rename-input]'
-const RENAME_SAVE = '[data-dsh-widget-board-rename-save]'
-const RENAME_CANCEL = '[data-dsh-widget-board-rename-cancel]'
-const RENAME_NOTE = '[data-dsh-widget-board-rename-note]'
-const DELETE = '[data-dsh-widget-board-delete-board]'
-const DELETE_CONFIRM = '[data-dsh-widget-board-delete-confirm]'
-const DELETE_CANCEL = '[data-dsh-widget-board-delete-cancel]'
-const DELETE_NAME = '[data-dsh-widget-board-delete-name]'
-const DELETE_CELLS = '[data-dsh-widget-board-delete-cells]'
-const DELETE_CARDS = '[data-dsh-widget-board-delete-cards]'
-const VIEW = '[data-dsh-widget-board-view]'
+const TABS = '[data-dsh-scholar-board-tabs]'
+const TAB = '[data-dsh-scholar-board-tab]'
+const MORE = '[data-dsh-scholar-board-tab-more]'
+const NEW_TAB = '[data-dsh-scholar-board-tab-new]'
+const MENU = '[data-dsh-scholar-board-board-menu]'
+const MENU_RENAME = '[data-dsh-scholar-board-board-menu-action="rename"]'
+const MENU_REMOVE = '[data-dsh-scholar-board-board-menu-action="remove"]'
+const RENAME = '[data-dsh-scholar-board-rename-board]'
+const RENAME_INPUT = '[data-dsh-scholar-board-rename-input]'
+const RENAME_SAVE = '[data-dsh-scholar-board-rename-save]'
+const RENAME_CANCEL = '[data-dsh-scholar-board-rename-cancel]'
+const RENAME_NOTE = '[data-dsh-scholar-board-rename-note]'
+const DELETE = '[data-dsh-scholar-board-delete-board]'
+const DELETE_CONFIRM = '[data-dsh-scholar-board-delete-confirm]'
+const DELETE_CANCEL = '[data-dsh-scholar-board-delete-cancel]'
+const DELETE_NAME = '[data-dsh-scholar-board-delete-name]'
+const DELETE_CELLS = '[data-dsh-scholar-board-delete-cells]'
+const DELETE_CARDS = '[data-dsh-scholar-board-delete-cards]'
+const VIEW = '[data-dsh-scholar-board-view]'
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -44,19 +44,19 @@ async function strip(page) {
       return { left: Math.round(rect.left), top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height), right: Math.round(rect.right) }
     }
     return {
-      ids: buttons.map((button) => button.getAttribute('data-dsh-widget-board-tab')),
+      ids: buttons.map((button) => button.getAttribute('data-dsh-scholar-board-tab')),
       labels: buttons.map((button) => (button.textContent ?? '').trim()),
-      selected: active?.getAttribute('data-dsh-widget-board-tab') ?? null,
+      selected: active?.getAttribute('data-dsh-scholar-board-tab') ?? null,
       active: box(active ?? null),
       pill: box(marker),
       group: box(node === null ? null : node),
     }
-  }, { tabs: TABS, tab: TAB, pill: '[data-dsh-widget-board-tabs-pill]' })
+  }, { tabs: TABS, tab: TAB, pill: '[data-dsh-scholar-board-tabs-pill]' })
 }
 
 /** 按 id 打开某一块的更多菜单。 */
 async function openMenu(page, id) {
-  await page.locator(`${MORE}[data-dsh-widget-board-tab-more="${id}"]`).click()
+  await page.locator(`${MORE}[data-dsh-scholar-board-tab-more="${id}"]`).click()
   await page.waitForSelector(MENU, { timeout: 5000 })
 }
 
@@ -82,7 +82,7 @@ async function boardManagementPass(page, { check }) {
 
   // 建一块临时看板：后面核对的「非当前标签」要用它。
   await page.locator(NEW_TAB).click()
-  await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`).length === count + 1, { tabs: TABS, count: before.ids.length }, { timeout: 10000 })
+  await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`).length === count + 1, { tabs: TABS, count: before.ids.length }, { timeout: 10000 })
   const created = await strip(page)
   const second = created.selected
   check('新建之后多一块看板并选中它', created.ids.length === 2 && second !== null && second !== base, JSON.stringify(created.selected))
@@ -95,16 +95,16 @@ async function boardManagementPass(page, { check }) {
     const menu = page.locator(MENU)
     const motion = await menu.evaluate(node => ({ curve: getComputedStyle(node).getPropertyValue('--w-motion-ease-pop').trim(), animation: getComputedStyle(node).animationName }))
     check('管理菜单从外壳继承统一动效令牌', motion.curve !== '' && motion.animation !== 'none', JSON.stringify(motion))
-    const actions = await menu.locator('[role="menuitem"]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-dsh-widget-board-board-menu-action')))
+    const actions = await menu.locator('[role="menuitem"]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-dsh-scholar-board-board-menu-action')))
     check('菜单里有改名与移除两项', actions.length === 2 && actions.includes('rename') && actions.includes('remove'), JSON.stringify(actions))
-    check('菜单写着它管的是哪一块', (await menu.textContent())?.includes((await page.locator(`[data-dsh-widget-board-tab="${base}"]`).textContent()) ?? '') === true)
+    check('菜单写着它管的是哪一块', (await menu.textContent())?.includes((await page.locator(`[data-dsh-scholar-board-tab="${base}"]`).textContent()) ?? '') === true)
 
     // B01：Escape 关闭并归还焦点。焦点回来是在这一轮事件走完之后，等它落定再判。
     await page.keyboard.press('Escape')
     await page.waitForFunction((selector) => document.querySelector(selector) === null, MENU, { timeout: 5000 })
     const afterEscape = await page.evaluate(async (id) => {
       await new Promise((resolve) => setTimeout(resolve, 120))
-      return document.activeElement?.getAttribute('data-dsh-widget-board-tab-more') === id
+      return document.activeElement?.getAttribute('data-dsh-scholar-board-tab-more') === id
     }, base)
     check('Escape 关掉菜单并把焦点还给更多按钮', afterEscape === true && await closed(page), String(afterEscape))
 
@@ -114,26 +114,26 @@ async function boardManagementPass(page, { check }) {
     await page.waitForFunction((selector) => document.querySelector(selector) === null, MENU, { timeout: 5000 })
     const afterOutside = await page.evaluate(async (id) => {
       await new Promise((resolve) => setTimeout(resolve, 120))
-      return document.activeElement?.getAttribute('data-dsh-widget-board-tab-more') === id
+      return document.activeElement?.getAttribute('data-dsh-scholar-board-tab-more') === id
     }, base)
     check('外部点击关掉菜单并把焦点还给更多按钮', afterOutside === true && await closed(page), String(afterOutside))
 
     // B03：标签右键打开同一个菜单，同样不切换。
-    await page.locator(`[data-dsh-widget-board-tab="${base}"]`).click({ button: 'right' })
+    await page.locator(`[data-dsh-scholar-board-tab="${base}"]`).click({ button: 'right' })
     await page.waitForSelector(MENU, { timeout: 5000 })
     const rightClick = await strip(page)
     check('标签右键打开同一张菜单且不切换看板', await page.locator(MENU).count() === 1 && rightClick.selected === second,
       `${String(rightClick.selected)} / 期望仍是 ${String(second)}`)
     await page.keyboard.press('Escape')
     await page.waitForFunction((selector) => document.querySelector(selector) === null, MENU, { timeout: 5000 })
-    await page.waitForFunction(id => document.activeElement?.getAttribute('data-dsh-widget-board-tab-more') === id, base)
+    await page.waitForFunction(id => document.activeElement?.getAttribute('data-dsh-scholar-board-tab-more') === id, base)
     check('右键菜单关闭后焦点回到同组更多按钮', true)
 
     // V08：标签的语义与键盘。标签里不能再套按钮，更多按钮自己是一个可聚焦控件，菜单首项拿到焦点，
     // 方向键在两项之间绕行，aria-expanded 跟着开合走。
     const semantics = await page.evaluate(({ tabs, tab, more }) => {
       const strip = document.querySelector(tabs)
-      const groups = Array.from(strip?.querySelectorAll('[data-dsh-widget-board-tab-group]') ?? [])
+      const groups = Array.from(strip?.querySelectorAll('[data-dsh-scholar-board-tab-group]') ?? [])
       return {
         // tab 里再套按钮会让读屏把切换与「更多」读成同一个控件。
         nested: groups.filter((group) => [...(group.querySelector(`${tab}[role="tab"]`)?.querySelectorAll('button') ?? [])].length > 0).length,
@@ -154,22 +154,22 @@ async function boardManagementPass(page, { check }) {
     await page.locator(MORE).first().focus()
     await page.keyboard.press('Enter')
     await page.waitForSelector(MENU, { timeout: 5000 })
-    const firstFocus = await page.evaluate((selector) => document.activeElement?.getAttribute('data-dsh-widget-board-board-menu-action'), { selector: MENU })
+    const firstFocus = await page.evaluate((selector) => document.activeElement?.getAttribute('data-dsh-scholar-board-board-menu-action'), { selector: MENU })
     check('键盘打开菜单后焦点落在第一项', firstFocus === 'rename', String(firstFocus))
     const expandedOpen = await page.evaluate((more) => Array.from(document.querySelectorAll(more)).some((node) => node.getAttribute('aria-expanded') === 'true'), MORE)
     check('菜单开着时 aria-expanded 为真', expandedOpen === true, String(expandedOpen))
     await page.keyboard.press('ArrowDown')
-    const secondFocus = await page.evaluate(() => document.activeElement?.getAttribute('data-dsh-widget-board-board-menu-action'))
+    const secondFocus = await page.evaluate(() => document.activeElement?.getAttribute('data-dsh-scholar-board-board-menu-action'))
     await page.keyboard.press('ArrowDown')
-    const wrapped = await page.evaluate(() => document.activeElement?.getAttribute('data-dsh-widget-board-board-menu-action'))
+    const wrapped = await page.evaluate(() => document.activeElement?.getAttribute('data-dsh-scholar-board-board-menu-action'))
     check('方向键在两项之间移动并绕回第一项', secondFocus === 'remove' && wrapped === 'rename', `${String(secondFocus)} / ${String(wrapped)}`)
     await page.keyboard.press('Tab')
     await page.waitForFunction((selector) => document.querySelector(selector) === null, MENU, { timeout: 5000 })
     check('Tab 离开菜单时菜单收起', await closed(page))
 
     // B04、B06：改名成功、宽度跟着变。
-    const original = await page.locator(`[data-dsh-widget-board-tab="${base}"]`).textContent()
-    const widthBefore = (await strip(page)).ids.length === 2 ? (await page.locator(`[data-dsh-widget-board-tab-group="${base}"]`).boundingBox())?.width ?? 0 : 0
+    const original = await page.locator(`[data-dsh-scholar-board-tab="${base}"]`).textContent()
+    const widthBefore = (await strip(page)).ids.length === 2 ? (await page.locator(`[data-dsh-scholar-board-tab-group="${base}"]`).boundingBox())?.width ?? 0 : 0
     await openMenu(page, base)
     await page.locator(MENU_RENAME).click()
     await page.waitForSelector(RENAME, { timeout: 5000 })
@@ -183,14 +183,14 @@ async function boardManagementPass(page, { check }) {
     await page.waitForFunction(({ tabs, pill, tab }) => {
       const strip = document.querySelector(tabs)
       const marker = strip?.querySelector(pill)
-      const active = strip?.querySelector(`[data-dsh-widget-board-tab-group="${CSS.escape(strip?.querySelector(`${tab}[aria-selected="true"]`)?.getAttribute('data-dsh-widget-board-tab') ?? '')}"]`)
+      const active = strip?.querySelector(`[data-dsh-scholar-board-tab-group="${CSS.escape(strip?.querySelector(`${tab}[aria-selected="true"]`)?.getAttribute('data-dsh-scholar-board-tab') ?? '')}"]`)
       if (marker == null || active == null) return false
       const left = marker.getBoundingClientRect()
       const target = active.getBoundingClientRect()
       return Math.abs(left.left - target.left) <= 2 && Math.abs(left.width - target.width) <= 2
-    }, { tabs: TABS, pill: '[data-dsh-widget-board-tabs-pill]', tab: TAB }, { timeout: 5000 })
+    }, { tabs: TABS, pill: '[data-dsh-scholar-board-tabs-pill]', tab: TAB }, { timeout: 5000 })
     const settled = await strip(page)
-    const widthAfter = (await page.locator(`[data-dsh-widget-board-tab-group="${base}"]`).boundingBox())?.width ?? 0
+    const widthAfter = (await page.locator(`[data-dsh-scholar-board-tab-group="${base}"]`).boundingBox())?.width ?? 0
     check('改名之后标签文字是新的', renamed.labels.includes(longName), JSON.stringify(renamed.labels))
     check('改名之后药丸仍套住活动那一组',
       settled.pill !== null && settled.active !== null
@@ -207,10 +207,10 @@ async function boardManagementPass(page, { check }) {
     await page.locator(RENAME_INPUT).press('Enter')
     await sleep(150)
     const blank = await page.evaluate(({ note }) => ({
-      open: document.querySelector('[data-dsh-widget-board-rename-board]') !== null,
+      open: document.querySelector('[data-dsh-scholar-board-rename-board]') !== null,
       text: document.querySelector(note)?.textContent ?? '',
-      invalid: document.querySelector('[data-dsh-widget-board-rename-input]')?.getAttribute('aria-invalid'),
-      disabled: document.querySelector('[data-dsh-widget-board-rename-save]')?.hasAttribute('disabled'),
+      invalid: document.querySelector('[data-dsh-scholar-board-rename-input]')?.getAttribute('aria-invalid'),
+      disabled: document.querySelector('[data-dsh-scholar-board-rename-save]')?.hasAttribute('disabled'),
     }), { note: RENAME_NOTE })
     check('空名字就地报错、保存按钮不可按', blank.open && blank.invalid === 'true' && blank.disabled === true, JSON.stringify(blank))
     check('空名字的说明是给人看的一句话', /不能是空的/.test(blank.text), blank.text)
@@ -218,7 +218,7 @@ async function boardManagementPass(page, { check }) {
     // B05：Escape 取消，标签不动。
     await page.keyboard.press('Escape')
     await page.waitForSelector(RENAME, { state: 'detached', timeout: 5000 })
-    check('Escape 取消改名，标签还是原来的名字', (await page.locator(`[data-dsh-widget-board-tab="${base}"]`).textContent()) === longName)
+    check('Escape 取消改名，标签还是原来的名字', (await page.locator(`[data-dsh-scholar-board-tab="${base}"]`).textContent()) === longName)
 
     // B05：中文输入法组合期间的回车不保存。
     await openMenu(page, base)
@@ -240,7 +240,7 @@ async function boardManagementPass(page, { check }) {
     // B05：组合结束之后正常回车保存。
     await page.locator(RENAME_INPUT).press('Enter')
     await page.waitForSelector(RENAME, { state: 'detached', timeout: 10000 })
-    check('正常回车保存新名字', (await page.locator(`[data-dsh-widget-board-tab="${base}"]`).textContent()) === '输入法中')
+    check('正常回车保存新名字', (await page.locator(`[data-dsh-scholar-board-tab="${base}"]`).textContent()) === '输入法中')
 
     // B06：改名失败保留输入、标签不动。让这一次改名请求在宿主那一侧失败。
     await openMenu(page, base)
@@ -255,9 +255,9 @@ async function boardManagementPass(page, { check }) {
       await page.locator(RENAME_SAVE).click()
       await page.waitForFunction((selector) => /宿主这一轮写不下去了/.test(document.querySelector(selector)?.textContent ?? ''), RENAME, { timeout: 10000 })
       const still = await page.evaluate(({ input }) => ({
-        open: document.querySelector('[data-dsh-widget-board-rename-board]') !== null,
+        open: document.querySelector('[data-dsh-scholar-board-rename-board]') !== null,
         text: document.querySelector(input)?.value ?? '',
-        label: document.querySelector('[data-dsh-widget-board-tab]')?.textContent ?? '',
+        label: document.querySelector('[data-dsh-scholar-board-tab]')?.textContent ?? '',
       }), { input: RENAME_INPUT })
       check('改名失败时弹窗留着、输入原样保留', still.open && still.text === failing, JSON.stringify(still))
       check('改名失败时标签还是原来的名字，失败原因写在弹窗里', still.label === '输入法中', still.label)
@@ -275,12 +275,12 @@ async function boardManagementPass(page, { check }) {
       title: document.querySelector(name)?.textContent ?? '',
       cells: document.querySelector(cells)?.textContent ?? '',
       cards: document.querySelector(cards)?.textContent ?? '',
-      body: document.querySelector('[data-dsh-widget-board-delete-board]')?.textContent ?? '',
+      body: document.querySelector('[data-dsh-scholar-board-delete-board]')?.textContent ?? '',
     }), { name: DELETE_NAME, cells: DELETE_CELLS, cards: DELETE_CARDS })
     check('删除确认写出看板标题', confirm.title.trim() !== '', confirm.title)
     check('删除确认报出格子数与卡片数', /格/.test(confirm.cells) && /张卡片/.test(confirm.cards), `${confirm.cells} / ${confirm.cards}`)
     check('删除确认说明卡片与保存内容一起删除', /不能撤销/.test(confirm.body), confirm.body.slice(0, 60))
-    const deleteFocus = await page.evaluate(() => document.activeElement?.hasAttribute('data-dsh-widget-board-delete-cancel') === true)
+    const deleteFocus = await page.evaluate(() => document.activeElement?.hasAttribute('data-dsh-scholar-board-delete-cancel') === true)
     check('删除确认打开时焦点在取消上', deleteFocus === true, String(deleteFocus))
     await page.locator(DELETE_CANCEL).click()
     await page.waitForSelector(DELETE, { state: 'detached', timeout: 5000 })
@@ -293,7 +293,7 @@ async function boardManagementPass(page, { check }) {
     })
     try {
       await page.locator(DELETE_CONFIRM).click()
-      await page.waitForFunction(() => /宿主这一轮删不掉/.test(document.querySelector('[data-dsh-widget-board-delete-board]')?.textContent ?? ''), undefined, { timeout: 10000 })
+      await page.waitForFunction(() => /宿主这一轮删不掉/.test(document.querySelector('[data-dsh-scholar-board-delete-board]')?.textContent ?? ''), undefined, { timeout: 10000 })
       const failed = await strip(page)
       check('删除失败时弹窗留着并写出原因', await page.locator(DELETE).count() === 1)
       check('删除失败时看板一个都没少', failed.ids.length === 2 && failed.selected === second, JSON.stringify(failed.ids))
@@ -302,7 +302,7 @@ async function boardManagementPass(page, { check }) {
     }
     await page.locator(DELETE_CANCEL).click()
     await page.waitForSelector(DELETE, { state: 'detached', timeout: 5000 })
-    await page.waitForFunction(id => document.activeElement?.getAttribute('data-dsh-widget-board-tab-more') === id, base)
+    await page.waitForFunction(id => document.activeElement?.getAttribute('data-dsh-scholar-board-tab-more') === id, base)
     check('删除失败后取消仍归还触发按钮焦点', true)
 
     // B09：删非当前看板不改变活动看板。
@@ -311,7 +311,7 @@ async function boardManagementPass(page, { check }) {
     await page.locator(MENU_REMOVE).click()
     await page.waitForSelector(DELETE, { timeout: 5000 })
     await page.locator(DELETE_CONFIRM).click()
-    await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`).length === count - 1, { tabs: TABS, count: beforeRemove.ids.length }, { timeout: 10000 })
+    await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`).length === count - 1, { tabs: TABS, count: beforeRemove.ids.length }, { timeout: 10000 })
     const afterRemove = await strip(page)
     check('删掉非当前看板之后活动看板不变', afterRemove.selected === second && !afterRemove.ids.includes(base),
       `${String(afterRemove.selected)} / ${JSON.stringify(afterRemove.ids)}`)
@@ -328,20 +328,20 @@ async function boardManagementPass(page, { check }) {
       await page.waitForSelector(DELETE, { timeout: 5000 })
       const lastOne = (await strip(page)).ids.length === 1
       if (lastOne) {
-        const last = await page.evaluate(() => document.querySelector('[data-dsh-widget-board-delete-board]')?.textContent ?? '')
+        const last = await page.evaluate(() => document.querySelector('[data-dsh-scholar-board-delete-board]')?.textContent ?? '')
         check('最后一块的确认里说明会补一块空的', /新的空看板/.test(last), last.slice(0, 80))
       }
       await page.locator(DELETE_CONFIRM).click()
       if (lastOne) {
         // 删最后一块的答复里带的是补上来的那块空看板：等标签换成另一个 id。
         await page.waitForFunction(({ tabs, id }) => {
-          const buttons = Array.from(document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`))
-          return buttons.length === 1 && buttons[0]?.getAttribute('data-dsh-widget-board-tab') !== id
+          const buttons = Array.from(document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`))
+          return buttons.length === 1 && buttons[0]?.getAttribute('data-dsh-scholar-board-tab') !== id
         }, { tabs: TABS, id: target }, { timeout: 15000 })
       } else {
         await page.waitForFunction(({ tabs, count, id }) => {
-          const buttons = Array.from(document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`))
-          return !buttons.some((button) => button.getAttribute('data-dsh-widget-board-tab') === id) && buttons.length === count - 1
+          const buttons = Array.from(document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`))
+          return !buttons.some((button) => button.getAttribute('data-dsh-scholar-board-tab') === id) && buttons.length === count - 1
         }, { tabs: TABS, count: ids.length, id: target }, { timeout: 15000 })
       }
       await page.waitForSelector(VIEW, { timeout: 5000 })
@@ -382,15 +382,15 @@ async function overflowPass(page, { check }) {
       await page.evaluate(async (title) => {
         await fetch('api/widget-board/boards', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ title }) })
       }, `溢出的第${String(index + 1)}块看板`)
-      await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`).length > count, { tabs: TABS, count: ids.length }, { timeout: 10000 })
+      await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`).length > count, { tabs: TABS, count: ids.length }, { timeout: 10000 })
       // 新建的看板是宿主选中的那块：等页面把它挂上，活动标签才在溢出的那一段里。
-      await page.waitForFunction(({ tabs, count }) => document.querySelector(`${tabs} [data-dsh-widget-board-tab][aria-selected="true"]`) !== null
-        && document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`).length > count, { tabs: TABS, count: ids.length }, { timeout: 10000 })
+      await page.waitForFunction(({ tabs, count }) => document.querySelector(`${tabs} [data-dsh-scholar-board-tab][aria-selected="true"]`) !== null
+        && document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`).length > count, { tabs: TABS, count: ids.length }, { timeout: 10000 })
     }
     const state = await page.evaluate(({ tabs, tab }) => {
       const strip = document.querySelector(tabs)
       const active = strip?.querySelector(`${tab}[aria-selected="true"]`)
-      const root = document.querySelector('[data-dsh-widget-board-view]')
+      const root = document.querySelector('[data-dsh-scholar-board-view]')
       const box = (element) => {
         if (element == null) return null
         const rect = element.getBoundingClientRect()

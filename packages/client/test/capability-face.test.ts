@@ -5,7 +5,7 @@
  * 副本，组件改不到快照里那一份。
  */
 import { describe, expect, it } from 'vitest'
-import type { CapabilityMetadata } from '@dsh-widget-board/contracts'
+import type { CapabilityMetadata } from '@dsh-scholar-board/contracts'
 import { capabilityFaceOf } from '../src/capability-face'
 
 /** 一项现在能调的能力。 */

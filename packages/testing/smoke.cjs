@@ -6,7 +6,7 @@
  * 出来、天气卡切预报日与番茄钟开合计时都真的动、三个动效模板能翻转与跟随指针、拖动与缩放会改写
  * 卡片盒子并保存到宿主、窄窗口里列数降到一列、减弱动效下天空静置、控制台没有错误。查找只用插件
  * 自己写在节点上的标记
- * （`svg.dsh-widget-board__icon`、`data-dsh-widget-board-*`、卡片的 iframe `title`），宿主换了
+ * （`svg.dsh-scholar-board__icon`、`data-dsh-scholar-board-*`、卡片的 iframe `title`），宿主换了
  * 内部结构也不会让这些判据失真（D1）。
  *
  * 用法：node packages/testing/smoke.cjs
@@ -38,23 +38,23 @@ const { sharePass } = require('./share.cjs')
 const { dataCardsPass, prepareCardsProbe } = require('./data-cards.cjs')
 
 /** 插件自己画的东西，只用这些标记找节点。 */
-const PANEL_ICON = 'svg.dsh-widget-board__icon'
-const BOARD_VIEW = '[data-dsh-widget-board-view]'
-const HERO_FRAME = 'iframe.dsh-widget-board__frame[title="看板题头"]'
-const MEASURE = '[data-dsh-widget-board-measure]'
-const GHOST = '[data-dsh-widget-board-ghost]'
-const FLOW = '.dsh-widget-board__flow'
-const CARD_FRAME = 'iframe.dsh-widget-board__frame'
-const GRIP = '[data-dsh-widget-board-handle="move"]'
-const RESIZE = '[data-dsh-widget-board-handle="resize"]'
-const SHEET = 'style[data-plugin="dsh-widget-board"]'
+const PANEL_ICON = 'svg.dsh-scholar-board__icon'
+const BOARD_VIEW = '[data-dsh-scholar-board-view]'
+const HERO_FRAME = 'iframe.dsh-scholar-board__frame[title="看板题头"]'
+const MEASURE = '[data-dsh-scholar-board-measure]'
+const GHOST = '[data-dsh-scholar-board-ghost]'
+const FLOW = '.dsh-scholar-board__flow'
+const CARD_FRAME = 'iframe.dsh-scholar-board__frame'
+const GRIP = '[data-dsh-scholar-board-handle="move"]'
+const RESIZE = '[data-dsh-scholar-board-handle="resize"]'
+const SHEET = 'style[data-plugin="dsh-scholar-board"]'
 /** 两张内置卡片的 iframe 标题，来自 manifest 的中文标题。 */
-const WEATHER_FRAME = 'iframe.dsh-widget-board__frame[title="天气"]'
-const POMODORO_FRAME = 'iframe.dsh-widget-board__frame[title="番茄钟"]'
-const TODO_FRAME = 'iframe.dsh-widget-board__frame[title="待办"]'
-const FLIP_FRAME = 'iframe.dsh-widget-board__frame[title="翻转卡"]'
-const MAGNETIC_FRAME = 'iframe.dsh-widget-board__frame[title="磁吸卡"]'
-const HOLO_FRAME = 'iframe.dsh-widget-board__frame[title="全息卡"]'
+const WEATHER_FRAME = 'iframe.dsh-scholar-board__frame[title="天气"]'
+const POMODORO_FRAME = 'iframe.dsh-scholar-board__frame[title="番茄钟"]'
+const TODO_FRAME = 'iframe.dsh-scholar-board__frame[title="待办"]'
+const FLIP_FRAME = 'iframe.dsh-scholar-board__frame[title="翻转卡"]'
+const MAGNETIC_FRAME = 'iframe.dsh-scholar-board__frame[title="磁吸卡"]'
+const HOLO_FRAME = 'iframe.dsh-scholar-board__frame[title="全息卡"]'
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -74,14 +74,14 @@ function check(label, ok, detail) {
 async function ensureTemplates(page) {
   const wanted = [['flip-card', '翻转卡'], ['magnetic-card', '磁吸卡'], ['holographic-card', '全息卡']]
   for (const [id, title] of wanted) {
-    const present = await page.evaluate((title) => Array.from(document.querySelectorAll('iframe.dsh-widget-board__frame')).some((frame) => frame.title === title), title)
+    const present = await page.evaluate((title) => Array.from(document.querySelectorAll('iframe.dsh-scholar-board__frame')).some((frame) => frame.title === title), title)
     if (present) continue
     const before = await page.evaluate(() => document.querySelectorAll('[data-instance]').length)
     await openLibrary(page)
-    await page.waitForSelector(`[data-dsh-widget-board-add="${id}"]`, { timeout: 10000 })
-    await page.locator(`[data-dsh-widget-board-add="${id}"]`).click()
+    await page.waitForSelector(`[data-dsh-scholar-board-add="${id}"]`, { timeout: 10000 })
+    await page.locator(`[data-dsh-scholar-board-add="${id}"]`).click()
     await page.waitForFunction((count) => document.querySelectorAll('[data-instance]').length === count + 1, before, { timeout: 10000 })
-    await page.waitForSelector(`iframe.dsh-widget-board__frame[title="${title}"]`, { timeout: 30000 })
+    await page.waitForSelector(`iframe.dsh-scholar-board__frame[title="${title}"]`, { timeout: 30000 })
   }
 }
 
@@ -117,7 +117,7 @@ async function mainPass(page, problems) {
   check('中栏打开一页看板', await page.evaluate((selector) => document.querySelector(selector) !== null, BOARD_VIEW))
   check('题头是一张卡片', await page.evaluate((selector) => document.querySelector(selector) !== null, HERO_FRAME))
 
-  const columns = await page.evaluate(() => Number(document.querySelector('[data-dsh-widget-board-view]')?.getAttribute('data-dsh-widget-board-columns') ?? 0))
+  const columns = await page.evaluate(() => Number(document.querySelector('[data-dsh-scholar-board-view]')?.getAttribute('data-dsh-scholar-board-columns') ?? 0))
   check('看板按容器宽度分列', columns >= 1, `${columns} 列`)
 
   const weatherBox = await cardBox(page, '天气')
@@ -203,7 +203,7 @@ async function mainPass(page, problems) {
   check('开始按钮上方是两个快捷时长', labels.presets.length === 2 && labels.presets[0] === '5分钟' && labels.presets[1] === '25分钟', labels.presets.join(' / '))
 
   // 矮盒子里的刻度不收起：14rem 高的卡片仍然画进度条，读数与按钮各就各位。
-  const pomodoroId = await page.evaluate(() => document.querySelector('iframe.dsh-widget-board__frame[title="番茄钟"]')?.closest('[data-instance]')?.getAttribute('data-instance') ?? '')
+  const pomodoroId = await page.evaluate(() => document.querySelector('iframe.dsh-scholar-board__frame[title="番茄钟"]')?.closest('[data-instance]')?.getAttribute('data-instance') ?? '')
   await setCardHeight(page, pomodoroId, 14)
   await sleep(600)
   const compact = await pomodoro.evaluate(() => {
@@ -366,11 +366,11 @@ async function mainPass(page, problems) {
 async function addRemovePass(page) {
   const before = await page.evaluate(() => document.querySelectorAll('[data-instance]').length)
   await openLibrary(page)
-  const listed = await page.evaluate(() => document.querySelectorAll('[data-dsh-widget-board-add]').length)
+  const listed = await page.evaluate(() => document.querySelectorAll('[data-dsh-scholar-board-add]').length)
   check('组件库列出全部组件', listed >= 3, `${listed} 个`)
-  const generic = await page.evaluate((ids) => ids.every((id) => document.querySelector(`[data-dsh-widget-board-add="${id}"]`) !== null), ['stat', 'list', 'table', 'chart', 'progress', 'kv', 'timeline', 'image'])
+  const generic = await page.evaluate((ids) => ids.every((id) => document.querySelector(`[data-dsh-scholar-board-add="${id}"]`) !== null), ['stat', 'list', 'table', 'chart', 'progress', 'kv', 'timeline', 'image'])
   check('八个通用数据组件都在组件库里', generic)
-  const preview = await frameOf(page, '.dsh-widget-board__library-preview iframe.dsh-widget-board__frame[title="番茄钟"]')
+  const preview = await frameOf(page, '.dsh-scholar-board__library-preview iframe.dsh-scholar-board__frame[title="番茄钟"]')
   const previewState = await preview.evaluate(() => ({
     size: document.documentElement.dataset.size,
     placement: document.documentElement.dataset.placement,
@@ -378,14 +378,14 @@ async function addRemovePass(page) {
     start: getComputedStyle(document.querySelector('.pomo-start')).display,
   }))
   check('缩略画面标明 preview 并收掉按钮', previewState.size === 'preview' && previewState.placement === 'preview' && previewState.presets === 'none' && previewState.start === 'none', JSON.stringify(previewState))
-  await page.locator('[data-dsh-widget-board-add="weather"]').click()
+  await page.locator('[data-dsh-scholar-board-add="weather"]').click()
   await page.waitForFunction((count) => document.querySelectorAll('[data-instance]').length === count + 1, before, { timeout: 10000 })
   check('从组件库加了一张卡', true)
   const added = await page.evaluate(() => {
     const cells = Array.from(document.querySelectorAll('[data-instance]'))
     return cells.at(-1)?.getAttribute('data-instance') ?? ''
   })
-  await page.locator(`[data-instance="${added}"] [data-dsh-widget-board-handle="remove"]`).click()
+  await page.locator(`[data-instance="${added}"] [data-dsh-scholar-board-handle="remove"]`).click()
   const exit = await page.evaluate((instance) => {
     const cell = document.querySelector(`[data-instance="${instance}"]`)
     if (cell === null) return null
@@ -394,7 +394,7 @@ async function addRemovePass(page) {
   }, added)
   check(
     '删卡先播退场动画',
-    exit?.exiting === 'true' && exit.animation === 'dsh-widget-board-card-out' && exit.duration === '0.25s',
+    exit?.exiting === 'true' && exit.animation === 'dsh-scholar-board-card-out' && exit.duration === '0.25s',
     JSON.stringify(exit),
   )
   await page.waitForFunction((count) => document.querySelectorAll('[data-instance]').length === count, before, { timeout: 10000 })
@@ -460,7 +460,7 @@ async function layoutPass(page) {
   await openBoard(page)
   await settled(page)
 
-  const weatherId = await page.evaluate(() => document.querySelector('iframe.dsh-widget-board__frame[title="天气"]')?.closest('[data-instance]')?.getAttribute('data-instance') ?? '')
+  const weatherId = await page.evaluate(() => document.querySelector('iframe.dsh-scholar-board__frame[title="天气"]')?.closest('[data-instance]')?.getAttribute('data-instance') ?? '')
   const metrics = { step: await columnStep(page) }
 
   const weatherCard = page.locator(`[data-instance="${weatherId}"]`)
@@ -553,7 +553,7 @@ async function narrowPass(page) {
   await page.setViewportSize({ width: 520, height: 900 })
   await sleep(1800)
   const narrow = await page.evaluate(() => ({
-    columns: Number(document.querySelector('[data-dsh-widget-board-view]')?.getAttribute('data-dsh-widget-board-columns') ?? 0),
+    columns: Number(document.querySelector('[data-dsh-scholar-board-view]')?.getAttribute('data-dsh-scholar-board-columns') ?? 0),
     widths: Array.from(document.querySelectorAll('[data-instance]')).map((node) => Math.round(node.getBoundingClientRect().width)),
   }))
   check('窄窗口里只剩一列', narrow.columns === 1, `${narrow.columns} 列`)
@@ -572,13 +572,13 @@ async function reloadPass(page) {
   const target = join(__dirname, '..', '..', 'lib', 'widgets', 'weather', 'style.css')
   const original = await readFile(target)
   // 看的是被改的那张卡：另一张不该跟着换地址。
-  const before = await page.evaluate(() => document.querySelector('iframe.dsh-widget-board__frame[title="天气"]')?.src ?? '')
+  const before = await page.evaluate(() => document.querySelector('iframe.dsh-scholar-board__frame[title="天气"]')?.src ?? '')
   try {
     await writeFile(target, Buffer.concat([original, Buffer.from('\n/* smoke: 热重载探针 */\n')]))
     // 重挂的瞬间 iframe 的 src 会是空的，所以这里等的是一个非空且不同的地址。
     const after = await page.waitForFunction(
       (previous) => {
-        const frame = document.querySelector('iframe.dsh-widget-board__frame[title="天气"]')
+        const frame = document.querySelector('iframe.dsh-scholar-board__frame[title="天气"]')
         if (frame === null || frame.src === '' || frame.src === previous) return false
         return frame.src
       },

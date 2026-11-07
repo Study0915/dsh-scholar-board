@@ -8,7 +8,7 @@
     "zh": "已经消耗的 Token 总量，加一张按卡片实际宽高铺开的用量格子：格子边长、列数与行数都跟着盒子走，格子总数跟着记录长度走并封顶 364 格，悬停读出当天用量。",
     "en": "The tokens spent so far, over a grid of daily usage sized to the card: cell size, columns and rows follow the box, the number of cells follows how long the record is (at most 364), and each day reads out on hover."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": [
     "s",

@@ -15,7 +15,7 @@ import {
   WIDGET_MANIFEST_SCHEMA,
   WIDGET_REQUIRES_SCHEMA,
   serviceVersionProblem,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 
 const PACKAGE = JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf8')) as {
   version: string

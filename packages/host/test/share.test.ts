@@ -9,8 +9,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { strToU8 } from 'fflate'
-import type { Board, BoardEvent, HostRequest, HostResponse, MarketListing, MarketVersionSummary, WidgetLibraryEntry } from '@dsh-widget-board/contracts'
-import { PLUGIN_ROUTE } from '@dsh-widget-board/contracts'
+import type { Board, BoardEvent, HostRequest, HostResponse, MarketListing, MarketVersionSummary, WidgetLibraryEntry } from '@dsh-scholar-board/contracts'
+import { PLUGIN_ROUTE } from '@dsh-scholar-board/contracts'
 import type { RouteContext } from '../src/routes'
 import { createHandler } from '../src/routes'
 import type { WidgetRecord } from '../src/library'
@@ -136,12 +136,12 @@ function send(context: RouteContext, method: string, path: string, body?: Uint8A
 
 /** 一套替身。 */
 async function harness(records: WidgetRecord[] = [record('demo')]) {
-  const dir = await mkdtemp(join(tmpdir(), 'dsh-widget-board-share-'))
+  const dir = await mkdtemp(join(tmpdir(), 'dsh-scholar-board-share-'))
   roots.push(dir)
   const map = new Map(records.map((entry) => [entry.manifest.id, entry]))
   const events: BoardEvent[] = []
   // 工作区替身：真正的 openWorkspace，写一份索引与一块看板（D21）。
-  const home = await mkdtemp(join(tmpdir(), 'dsh-widget-board-share-home-'))
+  const home = await mkdtemp(join(tmpdir(), 'dsh-scholar-board-share-home-'))
   roots.push(home)
   const marketDir = join(home, 'market-widgets')
   await mkdir(marketDir)

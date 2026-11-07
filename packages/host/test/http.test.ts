@@ -4,7 +4,7 @@
  * 请求本身换成替身，测试只盯着「请求发出前核对了什么」与「响应怎么变成卡片的数据」。
  */
 import { describe, expect, it } from 'vitest'
-import type { WidgetManifest } from '@dsh-widget-board/contracts'
+import type { WidgetManifest } from '@dsh-scholar-board/contracts'
 import { HTTP_BODY_LIMIT, createHttpSource, readHttpSource, requestUrlOf } from '../src/http'
 import type { FetchLike, HttpCache } from '../src/http'
 
@@ -249,9 +249,9 @@ describe('带凭据的请求', () => {
 
 describe('注册项', () => {
   it('名字是 http，组件不在库里时读不了', async () => {
-    const source = createHttpSource(() => new Map(), 'dsh-widget-board', 2)
+    const source = createHttpSource(() => new Map(), 'dsh-scholar-board', 2)
     expect(source.id).toBe('http')
-    expect(source.provider).toBe('dsh-widget-board')
+    expect(source.provider).toBe('dsh-scholar-board')
     await expect(source.read({ id: 'card', widget: 'weather', props: {} })).rejects.toThrow(/不在组件库里/)
   })
 })

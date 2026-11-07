@@ -8,15 +8,15 @@
  * 宿主偏好存在 `ui-theme` 这个配置入口的 `preference` 字段里，与设置页的外观行同一处；写入带修订号，
  * 冲突时重读一次再试，避免两个人同时按开关时后一次覆盖掉前一次的答复。
  */
-import type { CapabilityRegistration, InstanceFace } from '@dsh-widget-board/contracts'
-import { WIDGET_BOARD_API_VERSION, settingsOf } from '@dsh-widget-board/contracts'
+import type { CapabilityRegistration, InstanceFace } from '@dsh-scholar-board/contracts'
+import { WIDGET_BOARD_API_VERSION, settingsOf } from '@dsh-scholar-board/contracts'
 import type { Registries } from './sources'
 
 /** 能力名；组件 manifest 用它声明（D24）。 */
 export const THEME_CAPABILITY = 'dsh.theme'
 
 /** 能力的提供方名；设置弹窗用它标注归属。 */
-export const THEME_PROVIDER = 'dsh-widget-board'
+export const THEME_PROVIDER = 'dsh-scholar-board'
 
 /** 主题偏好所在的配置入口。 */
 export const THEME_NAMESPACE = 'ui-theme'

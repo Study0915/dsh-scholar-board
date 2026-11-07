@@ -15,8 +15,8 @@ import type {
   WidgetSummary,
   WorkspaceSnapshot,
   MediaBinding,
-} from '@dsh-widget-board/contracts'
-import { FLIP_GROUP_ID } from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
+import { FLIP_GROUP_ID } from '@dsh-scholar-board/contracts'
 import { isChinese, t, textOf } from '../copy'
 import { ContentRejectedError, composeInstance, fetchWidgetForm } from '../snapshot'
 import type { FrameHost } from '../frame-host'
@@ -29,7 +29,7 @@ import type { Template, TemplateKey } from './templates'
 import { TEMPLATES, seedOf, templateOf } from './templates'
 import { imageFormSchema, ImageDraftPreview, ImageField } from './media-field'
 import { CampusForm, isCampusSchema } from '../campus/form'
-import { campusProps, campusState } from '@dsh-widget-board/model/campus/model'
+import { campusProps, campusState } from '@dsh-scholar-board/model/campus/model'
 import { CampusMedia } from './campus-media'
 
 /** 创建器要画的东西。 */
@@ -255,7 +255,7 @@ export function CardComposer({
 
   return (
     <div
-      className="dsh-widget-board__editor-layer"
+      className="dsh-scholar-board__editor-layer"
       style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
@@ -264,27 +264,27 @@ export function CardComposer({
         }
       }}
     >
-      <div className="dsh-widget-board__editor-backdrop" onPointerDown={requestClose} />
+      <div className="dsh-scholar-board__editor-backdrop" onPointerDown={requestClose} />
       <div
         ref={dialogRef}
-        className="dsh-widget-board__editor dsh-widget-board__composer"
-        data-dsh-widget-board-composer=""
+        className="dsh-scholar-board__editor dsh-scholar-board__composer"
+        data-dsh-scholar-board-composer=""
         role="dialog"
-        aria-labelledby="dsh-widget-board-composer-title"
+        aria-labelledby="dsh-scholar-board-composer-title"
       >
-        <header className="dsh-widget-board__editor-head">
+        <header className="dsh-scholar-board__editor-head">
           <div>
-            <p className="dsh-widget-board__editor-eyebrow">{t('create')}</p>
-            <h2 id="dsh-widget-board-composer-title" className="dsh-widget-board__editor-title">
+            <p className="dsh-scholar-board__editor-eyebrow">{t('create')}</p>
+            <h2 id="dsh-scholar-board-composer-title" className="dsh-scholar-board__editor-title">
               {templateKey === null ? t('createTitle') : titleOf(template, widget?.title)}
             </h2>
-            <p className="dsh-widget-board__editor-source">{t('createHint')}</p>
+            <p className="dsh-scholar-board__editor-source">{t('createHint')}</p>
           </div>
           <button
             ref={closeRef}
             type="button"
-            className="dsh-widget-board__editor-close"
-            data-dsh-widget-board-composer-close=""
+            className="dsh-scholar-board__editor-close"
+            data-dsh-scholar-board-composer-close=""
             onClick={requestClose}
             title={t('close')}
           >
@@ -292,27 +292,27 @@ export function CardComposer({
           </button>
         </header>
 
-        {sourceOpen ? <div className="dsh-widget-board__source-panes">{(['editor', 'preview'] as const).map((pane) => <button key={pane} type="button" className="dsh-widget-board__editor-ghost" aria-pressed={sourcePane === pane} onClick={() => { setSourcePane(pane) }}>{pane === 'editor' ? '源码' : '预览'}</button>)}</div> : null}
-        <div className="dsh-widget-board__composer-body" data-dsh-widget-board-source-pane={sourceOpen ? sourcePane : undefined}>
-          <div className="dsh-widget-board__composer-form">
-            <div className="dsh-widget-board__composer-templates" role="group" aria-label={t('templates')}>
+        {sourceOpen ? <div className="dsh-scholar-board__source-panes">{(['editor', 'preview'] as const).map((pane) => <button key={pane} type="button" className="dsh-scholar-board__editor-ghost" aria-pressed={sourcePane === pane} onClick={() => { setSourcePane(pane) }}>{pane === 'editor' ? '源码' : '预览'}</button>)}</div> : null}
+        <div className="dsh-scholar-board__composer-body" data-dsh-scholar-board-source-pane={sourceOpen ? sourcePane : undefined}>
+          <div className="dsh-scholar-board__composer-form">
+            <div className="dsh-scholar-board__composer-templates" role="group" aria-label={t('templates')}>
               {TEMPLATES.map((entry) => {
                 const unavailable = entry.key !== 'advanced' && widgets[entry.widget] === undefined
                 return (
                   <button
                     key={entry.key}
                     type="button"
-                    className="dsh-widget-board__composer-template"
-                    data-dsh-widget-board-template={entry.key}
+                    className="dsh-scholar-board__composer-template"
+                    data-dsh-scholar-board-template={entry.key}
                     aria-pressed={templateKey === entry.key}
                     disabled={unavailable || saving || mediaBusy || sourceOpen || campusPending}
                     title={unavailable ? t('templateMissing') : isChinese() ? entry.hint.zh : entry.hint.en}
                     onClick={() => { pickTemplate(entry.key) }}
                   >
-                    <span className="dsh-widget-board__composer-template-title">
+                    <span className="dsh-scholar-board__composer-template-title">
                       {isChinese() ? entry.title.zh : entry.title.en}
                     </span>
-                    <span className="dsh-widget-board__composer-template-hint">
+                    <span className="dsh-scholar-board__composer-template-hint">
                       {isChinese() ? entry.hint.zh : entry.hint.en}
                     </span>
                   </button>
@@ -324,11 +324,11 @@ export function CardComposer({
             {widgetId === null
               ? null
               : (
-                <div className="dsh-widget-board__composer-modes" role="group" aria-label={t('sourceTitle')}>
+                <div className="dsh-scholar-board__composer-modes" role="group" aria-label={t('sourceTitle')}>
                   <button
                     type="button"
-                    className="dsh-widget-board__composer-mode"
-                    data-dsh-widget-board-mode="form"
+                    className="dsh-scholar-board__composer-mode"
+                    data-dsh-scholar-board-mode="form"
                     aria-pressed={!sourceOpen}
                     disabled={saving}
                     onClick={() => { setSourceCloseRequest((value) => value + 1) }}
@@ -337,8 +337,8 @@ export function CardComposer({
                   </button>
                   <button
                     type="button"
-                    className="dsh-widget-board__composer-mode"
-                    data-dsh-widget-board-mode="source"
+                    className="dsh-scholar-board__composer-mode"
+                    data-dsh-scholar-board-mode="source"
                     aria-pressed={sourceOpen}
                     disabled={saving}
                     onClick={() => { if (!campusPending && !mediaBusy) setSourceOpen(true) }}
@@ -366,15 +366,15 @@ export function CardComposer({
 
             {templateKey === 'advanced' && advanced === null
               ? (
-                <div className="dsh-widget-board__composer-picker" data-dsh-widget-board-composer-picker="">
-                  <p className="dsh-widget-board__editor-empty">{t('formAdvancedPick')}</p>
-                  <div className="dsh-widget-board__composer-picker-grid">
+                <div className="dsh-scholar-board__composer-picker" data-dsh-scholar-board-composer-picker="">
+                  <p className="dsh-scholar-board__editor-empty">{t('formAdvancedPick')}</p>
+                  <div className="dsh-scholar-board__composer-picker-grid">
                     {pickable.map((entry) => (
                       <button
                         key={entry.id}
                         type="button"
-                        className="dsh-widget-board__composer-picker-item"
-                        data-dsh-widget-board-pick-widget={entry.id}
+                        className="dsh-scholar-board__composer-picker-item"
+                        data-dsh-scholar-board-pick-widget={entry.id}
                         disabled={saving}
                         onClick={() => {
                           setAdvanced(entry.id)
@@ -394,7 +394,7 @@ export function CardComposer({
               )
               : null}
 
-            {formError === null ? null : <p className="dsh-widget-board__editor-error" role="alert">{formError}</p>}
+            {formError === null ? null : <p className="dsh-scholar-board__editor-error" role="alert">{formError}</p>}
             {widgetId === 'image' && !sourceOpen ? <ImageField key={widgetId} target={`board:${board.id}`} value={media} onChange={next => { setMedia(next); setProps(current => ({ ...current, localImage: Boolean(next.media?.background) })) }} onBusy={setMediaBusy} onPreview={setMediaPreview} disabled={saving} /> : null}
 
             {ready && form !== null && !sourceOpen
@@ -405,8 +405,8 @@ export function CardComposer({
                   ? (next: unknown) => { setProps(next !== null && typeof next === 'object' && !Array.isArray(next) ? next as Record<string, unknown> : {}) }
                   : section.key === 'data' ? setData : setState
                 return (
-                  <section key={section.key} className="dsh-widget-board__composer-section" data-dsh-widget-board-composer-section={section.key}>
-                    <h3 className="dsh-widget-board__composer-heading">{section.title}</h3>
+                  <section key={section.key} className="dsh-scholar-board__composer-section" data-dsh-scholar-board-composer-section={section.key}>
+                    <h3 className="dsh-scholar-board__composer-heading">{section.title}</h3>
                     <SchemaForm
                       schema={widgetId === 'image' ? imageFormSchema(schema, section.key) : schema}
                       value={value}
@@ -420,22 +420,22 @@ export function CardComposer({
                 )
               })
               : templateKey === null
-                ? <p className="dsh-widget-board__editor-empty">{t('createHint')}</p>
+                ? <p className="dsh-scholar-board__editor-empty">{t('createHint')}</p>
                 : null}
 
-            {error === null ? null : <p className="dsh-widget-board__editor-error" role="alert">{error}</p>}
+            {error === null ? null : <p className="dsh-scholar-board__editor-error" role="alert">{error}</p>}
           </div>
 
-          <aside className="dsh-widget-board__composer-preview" aria-label={t('formPreview')}>
-            <div className="dsh-widget-board__composer-preview-head">
+          <aside className="dsh-scholar-board__composer-preview" aria-label={t('formPreview')}>
+            <div className="dsh-scholar-board__composer-preview-head">
               <span>{t('formPreview')}</span>
-              <span className="dsh-widget-board__composer-sizes" role="group">
+              <span className="dsh-scholar-board__composer-sizes" role="group">
                 {(['narrow', 'regular', 'wide'] as const).map((family) => (
                   <button
                     key={family}
                     type="button"
-                    className="dsh-widget-board__composer-size"
-                    data-dsh-widget-board-preview-size={family}
+                    className="dsh-scholar-board__composer-size"
+                    data-dsh-scholar-board-preview-size={family}
                     aria-pressed={previewFamily === family}
                     onClick={() => { setPreviewFamily(family) }}
                   >
@@ -460,9 +460,9 @@ export function CardComposer({
               )
               : null}
             {sourceOpen ? null : previewWidget === undefined || widgetId === null
-              ? <p className="dsh-widget-board__editor-empty">{t('formPreviewHint')}</p>
+              ? <p className="dsh-scholar-board__editor-empty">{t('formPreviewHint')}</p>
               : (
-                <div className="dsh-widget-board__composer-frame" data-size={previewFamily}>
+                <div className="dsh-scholar-board__composer-frame" data-size={previewFamily}>
                   {widgetId === 'image' ? <ImageDraftPreview url={mediaPreview} props={props} data={data} /> : <WidgetPreview
                     id={`composer:${board.id}`}
                     widgetId={widgetId}
@@ -478,21 +478,21 @@ export function CardComposer({
 
         {confirmClose
           ? (
-            <footer className="dsh-widget-board__editor-foot">
-              <p className="dsh-widget-board__editor-note">{t('formUnsaved')}</p>
-              <div className="dsh-widget-board__editor-actions">
+            <footer className="dsh-scholar-board__editor-foot">
+              <p className="dsh-scholar-board__editor-note">{t('formUnsaved')}</p>
+              <div className="dsh-scholar-board__editor-actions">
                 <button
                   type="button"
-                  className="dsh-widget-board__editor-ghost"
-                  data-dsh-widget-board-composer-keep=""
+                  className="dsh-scholar-board__editor-ghost"
+                  data-dsh-scholar-board-composer-keep=""
                   onClick={() => { setConfirmClose(false) }}
                 >
                   {t('formKeepEditing')}
                 </button>
                 <button
                   type="button"
-                  className="dsh-widget-board__editor-primary"
-                  data-dsh-widget-board-composer-discard=""
+                  className="dsh-scholar-board__editor-primary"
+                  data-dsh-scholar-board-composer-discard=""
                   onClick={onClose}
                 >
                   {t('formDiscard')}
@@ -501,13 +501,13 @@ export function CardComposer({
             </footer>
           )
           : (
-            <footer className="dsh-widget-board__editor-foot">
-              <button type="button" className="dsh-widget-board__editor-ghost" onClick={requestClose}>{t('cancel')}</button>
-              <span className="dsh-widget-board__editor-spacer" />
+            <footer className="dsh-scholar-board__editor-foot">
+              <button type="button" className="dsh-scholar-board__editor-ghost" onClick={requestClose}>{t('cancel')}</button>
+              <span className="dsh-scholar-board__editor-spacer" />
               <button
                 type="button"
-                className="dsh-widget-board__editor-primary"
-                data-dsh-widget-board-composer-submit=""
+                className="dsh-scholar-board__editor-primary"
+                data-dsh-scholar-board-composer-submit=""
                 disabled={!ready || saving || mediaBusy || sourceOpen || campusPending}
                 onClick={() => { void submit() }}
               >

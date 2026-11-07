@@ -8,7 +8,7 @@
  * 与自由布局的两处关键区别：纵向位置不用 2rem 吸附（行高由卡片自己的高度档决定），横向不回填前
  * 一排剩下的空位（阅读顺序就是保存顺序）。
  */
-import type { CardLayout, WidgetMinBox } from '@dsh-widget-board/contracts'
+import type { CardLayout, WidgetMinBox } from '@dsh-scholar-board/contracts'
 import type { GridMetrics } from './grid'
 import { MAX_COLUMNS, clampCardBox, readOrderOf, snapCardHeight } from './grid'
 

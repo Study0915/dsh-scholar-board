@@ -8,7 +8,7 @@
     "zh": "通用翻转卡模板：悬停或轻点翻到背面，正反两面的文案都由 props 填入。",
     "en": "A reusable flip-card template: hover or tap to turn it over; props fill both faces."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 18 },

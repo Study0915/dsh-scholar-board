@@ -1,8 +1,8 @@
 /** 看板备份的完整性校验，在任何安装或创建之前完成。 */
 import { createHash, randomUUID } from 'node:crypto'
 import sharp from 'sharp'
-import { MEDIA_TOTAL_BYTES, type Board, type BoardInstance } from '@dsh-widget-board/contracts'
-import { isCardLayout } from '@dsh-widget-board/model'
+import { MEDIA_TOTAL_BYTES, type Board, type BoardInstance } from '@dsh-scholar-board/contracts'
+import { isCardLayout } from '@dsh-scholar-board/model'
 import { buildDocument, freshNonce } from '../document'
 import { contentHash, manifestProblem, type WidgetRecord } from '../library'
 import { checkFiles, type BoardPackage, type BoardPackageWidget } from '../package'

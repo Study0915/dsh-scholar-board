@@ -2,8 +2,8 @@
  * `widget_define` 的自检登记处（D9、D13）：任务的交接、第一份报告算数、无人接手时给出 unverified。
  */
 import { describe, expect, it } from 'vitest'
-import type { InspectionReport, SelfCheckBoxResult, SelfCheckJob } from '@dsh-widget-board/contracts'
-import { inspectionProblems, isSelfCheckBoxResults, selfCheckBoxes } from '@dsh-widget-board/contracts'
+import type { InspectionReport, SelfCheckBoxResult, SelfCheckJob } from '@dsh-scholar-board/contracts'
+import { inspectionProblems, isSelfCheckBoxResults, selfCheckBoxes } from '@dsh-scholar-board/contracts'
 import { createSelfChecks, verdictOf } from '../src/selfcheck'
 
 const JOB: SelfCheckJob = { widget: 'demo', hash: 'a'.repeat(64), props: {}, data: null, boxes: [{ cols: 1, h: 22 }] }

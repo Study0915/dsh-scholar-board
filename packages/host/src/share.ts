@@ -12,7 +12,7 @@
  * 覆盖。内置与插件提供的组件不允许被覆盖——它们不落在用户目录里（D17）。
  */
 import { createHash } from 'node:crypto'
-import type { WidgetLibraryEntry, WidgetManifest, WidgetPermissions } from '@dsh-widget-board/contracts'
+import type { WidgetLibraryEntry, WidgetManifest, WidgetPermissions } from '@dsh-scholar-board/contracts'
 import { readBody } from './body'
 import { contentHash, manifestProblem, requiresMismatch } from './library'
 import type { WidgetRecord } from './library'

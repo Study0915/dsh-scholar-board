@@ -4,7 +4,7 @@
  * 页面里跑的是插件真实的浏览器半边，它只认文档相对的路由。这里把这些请求按真实宿主的契约
  * 回答：快照来自构建时的静态数据，写入落在 IndexedDB，变更通知按 D18 的帧推给页面。
  */
-import { PLUGIN_ROUTE, WIDGET_ROUTE } from '@dsh-widget-board/contracts'
+import { PLUGIN_ROUTE, WIDGET_ROUTE } from '@dsh-scholar-board/contracts'
 import { HOST_DATA_FILE } from '../data'
 import type { HostData } from '../data'
 import { createBoards } from './boards'

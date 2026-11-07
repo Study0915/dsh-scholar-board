@@ -4,7 +4,7 @@
  * 通知只活在当前页面，整页重载时清空；组件只在看板页挂载时运行，离开面板不会再发新的。消息的
  * 形状由 `contracts` 判定，这里只收已经通过判定的那几段文字。
  */
-import type { WidgetNotification } from '@dsh-widget-board/contracts'
+import type { WidgetNotification } from '@dsh-scholar-board/contracts'
 
 /** 一条留在页面上的通知。 */
 export interface BoardNotification {

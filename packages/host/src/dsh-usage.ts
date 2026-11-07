@@ -7,8 +7,8 @@
  * 读失败只让历史这一层退出（D11）：实时订阅照旧建立，来源状态写进读数的 `history`，卡片据此区分
  * 没装、读不到与形状不合格这三种情形。
  */
-import type { HostWebServer } from '@dsh-widget-board/contracts'
-import { webServerOf } from '@dsh-widget-board/contracts'
+import type { HostWebServer } from '@dsh-scholar-board/contracts'
+import { webServerOf } from '@dsh-scholar-board/contracts'
 import { isRecord } from './guards'
 import type { SessionUsageScope } from './session-usage'
 

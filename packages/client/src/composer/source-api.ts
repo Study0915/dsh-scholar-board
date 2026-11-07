@@ -12,14 +12,14 @@ import type {
   WidgetDraft,
   WidgetDraftSummary,
   WidgetSourceModel,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import {
   draftPath,
   draftsPath,
   libraryDefinePath,
   librarySourcePath,
   previewPath,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { isRecord } from './schema'
 
 /**

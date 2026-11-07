@@ -8,7 +8,7 @@
     "zh": "一组带数值与说明的进度条，适合容量、配额与目标完成度。",
     "en": "A set of progress bars with values and notes; for capacity, quotas and goals."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 18 },

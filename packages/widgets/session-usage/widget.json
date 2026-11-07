@@ -8,7 +8,7 @@
     "zh": "所选范围最近的 token 用量：总量、最近 30 次调用的走势、输入与输出等四项分项，以及最近一次调用；今天与全部合并 dsh-usage 的历史用量。",
     "en": "Token usage for the selected window: the total, the trend across the last 30 calls, the four parts such as input and output, and the latest call; today and all merge the history dsh-usage keeps."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": [
     "m",

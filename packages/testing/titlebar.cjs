@@ -8,12 +8,12 @@
  * 标签条自己的判据只读它自己的位置：标题栏放得下时挂在里面，放不下或不在桌面端时留在页面顶部。
  */
 
-const TABS = '[data-dsh-widget-board-tabs]'
-const TAB = '[data-dsh-widget-board-tab]'
-const MORE = '[data-dsh-widget-board-tab-more]'
-const MENU = '[data-dsh-widget-board-board-menu]'
-const NEW_TAB = '[data-dsh-widget-board-tab-new]'
-const CARD = '.dsh-widget-board__flow[data-active="true"] [data-instance]'
+const TABS = '[data-dsh-scholar-board-tabs]'
+const TAB = '[data-dsh-scholar-board-tab]'
+const MORE = '[data-dsh-scholar-board-tab-more]'
+const MENU = '[data-dsh-scholar-board-board-menu]'
+const NEW_TAB = '[data-dsh-scholar-board-tab-new]'
+const CARD = '.dsh-scholar-board__flow[data-active="true"] [data-instance]'
 const BAND = 40
 const CONTROLS = 140
 /** 标题栏左端让给宿主控件与 Desktop 菜单的宽度（titlebar.ts 的 LEADING_CLEARANCE）。 */
@@ -88,11 +88,11 @@ async function state(page) {
       active: box(active),
       card: box(fresh),
       root: box(root),
-      tabs: Array.from(document.querySelectorAll(tab)).map((node) => node.getAttribute('data-dsh-widget-board-tab')),
-      selected: Array.from(document.querySelectorAll(tab)).filter((node) => node.getAttribute('aria-selected') === 'true').map((node) => node.getAttribute('data-dsh-widget-board-tab')),
+      tabs: Array.from(document.querySelectorAll(tab)).map((node) => node.getAttribute('data-dsh-scholar-board-tab')),
+      selected: Array.from(document.querySelectorAll(tab)).filter((node) => node.getAttribute('aria-selected') === 'true').map((node) => node.getAttribute('data-dsh-scholar-board-tab')),
       viewport: { width: window.innerWidth, height: window.innerHeight },
     }
-  }, { tabs: TABS, tab: TAB, card: CARD, pill: '[data-dsh-widget-board-tabs-pill]', board: '.dsh-widget-board' })
+  }, { tabs: TABS, tab: TAB, card: CARD, pill: '[data-dsh-scholar-board-tabs-pill]', board: '.dsh-scholar-board' })
 }
 
 /**
@@ -158,18 +158,18 @@ async function titlebarPass(page, { check }) {
     `${JSON.stringify(lifted.card)} / ${JSON.stringify(lifted.strip)}`)
 
   // 看板滚动时标签条留在标题栏，不跟着卡片走。
-  await page.evaluate(() => { document.querySelector('.dsh-widget-board').scrollTop = 400 })
+  await page.evaluate(() => { document.querySelector('.dsh-scholar-board').scrollTop = 400 })
   await sleep(400)
   const scrolled = await state(page)
   check('看板滚动时标签条留在标题栏',
     scrolled.position === 'fixed' && scrolled.strip !== null && scrolled.strip.top === lifted.strip?.top,
     `${scrolled.position} / ${JSON.stringify(scrolled.strip)}`)
-  await page.evaluate(() => { document.querySelector('.dsh-widget-board').scrollTop = 0 })
+  await page.evaluate(() => { document.querySelector('.dsh-scholar-board').scrollTop = 0 })
   await sleep(300)
 
   // 标题栏里按得动：更多按钮没被拖动区吞掉，菜单开在看得见的地方。
   const activeId = lifted.selected[0]
-  await page.locator(`${MORE}[data-dsh-widget-board-tab-more="${activeId}"]`).click()
+  await page.locator(`${MORE}[data-dsh-scholar-board-tab-more="${activeId}"]`).click()
   await page.waitForSelector(MENU, { timeout: 5000 })
   const menu = await page.evaluate(({ menu: selector }) => {
     const node = document.querySelector(selector)
@@ -186,7 +186,7 @@ async function titlebarPass(page, { check }) {
   // 标题栏里按得动：新建入口没被拖动区吞掉。
   const before = lifted.tabs.length
   await page.locator(NEW_TAB).click()
-  await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`).length === count + 1, { tabs: TABS, count: before }, { timeout: 10000 })
+  await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`).length === count + 1, { tabs: TABS, count: before }, { timeout: 10000 })
   const created = await state(page)
   check('标题栏里的新建入口能按', created.tabs.length === before + 1 && created.selected.length === 1, JSON.stringify(created.selected))
   const extra = created.tabs.find((id) => !lifted.tabs.includes(id))
@@ -196,7 +196,7 @@ async function titlebarPass(page, { check }) {
       await fetch(`api/widget-board/boards/${encodeURIComponent(id)}/remove`, { method: 'POST' })
     }, extra)
   }
-  await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-widget-board-tab]`).length === count, { tabs: TABS, count: before }, { timeout: 10000 })
+  await page.waitForFunction(({ tabs, count }) => document.querySelectorAll(`${tabs} [data-dsh-scholar-board-tab]`).length === count, { tabs: TABS, count: before }, { timeout: 10000 })
 
   // 把窗口按钮那一端推到 380px 以内，菜单之后只剩 68px：标签条放不下，回到页面里。
   await shell(page, true, lifted.viewport.width - 380)

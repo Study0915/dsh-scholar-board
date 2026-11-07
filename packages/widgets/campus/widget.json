@@ -2,7 +2,7 @@
   "id": "campus",
   "title": { "zh": "校园事务", "en": "Campus planner" },
   "description": { "zh": "按身份管理事项、里程碑与校园入口；所有期限由你录入。", "en": "Manage personal deadlines, milestones and campus links. All dates are entered by you." },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "m", "l"],
   "defaultBox": { "w": 1, "h": 22 },
@@ -33,7 +33,7 @@
     "allOf": [{ "if": { "required": ["schoolPreset"], "properties": { "schoolPreset": { "const": "custom" } } }, "then": { "required": ["customSchool"], "properties": { "customSchool": { "required": ["name"], "properties": { "name": { "minLength": 1 } } } } } }]
   },
   "state": {
-    "$id": "https://dsh-widget-board.local/schema/campus-state-v1",
+    "$id": "https://dsh-scholar-board.local/schema/campus-state-v1",
     "type": "object", "additionalProperties": false,
     "required": ["schemaVersion", "items", "links", "customCategories", "reminderLedger"],
     "properties": {

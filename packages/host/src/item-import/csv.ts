@@ -1,5 +1,5 @@
 import Papa from 'papaparse'
-import type { ItemImportRequest, ItemImportRow } from '@dsh-widget-board/contracts/item-import'
+import type { ItemImportRequest, ItemImportRow } from '@dsh-scholar-board/contracts/item-import'
 import { CANDIDATE_LIMIT, CSV_FIELDS, importRow } from './common'
 
 export function parseCsv(request: ItemImportRequest, now: string): { headers: string[], rows: ItemImportRow[], warnings: string[] } {

@@ -6,7 +6,7 @@
  * 那一份。
  */
 import { describe, expect, it } from 'vitest'
-import type { CapabilityMetadata } from '@dsh-widget-board/contracts'
+import type { CapabilityMetadata } from '@dsh-scholar-board/contracts'
 import { capabilityFaceOf } from '../src/capability-face'
 
 /** 一项现在能调的能力：注册项的标题、schema 与权限都在。 */

@@ -13,8 +13,8 @@
  * 什么时候调。这样它的启停规则可以被单元测试直接盯着。
  */
 
-import type { WidgetRefresh } from '@dsh-widget-board/contracts'
-import { REFRESH_DEFAULT_MS, REFRESH_MIN_MS } from '@dsh-widget-board/contracts'
+import type { WidgetRefresh } from '@dsh-scholar-board/contracts'
+import { REFRESH_DEFAULT_MS, REFRESH_MIN_MS } from '@dsh-scholar-board/contracts'
 import type { VisibleCards } from './live'
 
 /** 一张要定时读的卡。 */

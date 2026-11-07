@@ -8,7 +8,7 @@
     "zh": "今日运势：由黄道黑道、建除十二神、星宿吉凶与宜忌算出一个分数与一句判词，日期、农历、节气与今天的宜忌一起排出来。",
     "en": "Today’s fortune: a score and one line derived from the day’s auspicious/inauspicious deity, the twelve duty officers, the mansion and the almanac’s do and avoid lists, beside the date, lunar date, solar terms and today’s lists."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 22 },

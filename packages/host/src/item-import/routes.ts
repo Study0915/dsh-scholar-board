@@ -1,8 +1,8 @@
 /** 文件仅在宿主内解析，预览不写磁盘；确认在同一工作区队列内再次检查修订号、schema与全部预算。 */
-import type { ItemImportRequest, ItemImportCommit, ImportDecision, ItemImportPreview } from '@dsh-widget-board/contracts/item-import'
-import type { CampusState } from '@dsh-widget-board/model/campus/types'
-import { campusState, isCampusSchema } from '@dsh-widget-board/model/campus/model'
-import { validZone } from '@dsh-widget-board/model/campus/time'
+import type { ItemImportRequest, ItemImportCommit, ImportDecision, ItemImportPreview } from '@dsh-scholar-board/contracts/item-import'
+import type { CampusState } from '@dsh-scholar-board/model/campus/types'
+import { campusState, isCampusSchema } from '@dsh-scholar-board/model/campus/model'
+import { validZone } from '@dsh-scholar-board/model/campus/time'
 import type { Route, RouteContext } from '../routes'
 import { isRecord } from '../guards'
 import { locate } from '../lookup'

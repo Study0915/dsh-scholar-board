@@ -3,8 +3,8 @@
  *
  * 两者都只读宿主上的状态，不改任何东西；返回的是规范 JSON 值，模型看到的内容由 `render` 拼。
  */
-import type { BoardValue, CatalogEntry, CatalogValue, WidgetToolSpec } from '@dsh-widget-board/contracts'
-import { WIDGET_TOOL_NAMES, ToolRefusal } from '@dsh-widget-board/contracts'
+import type { BoardValue, CatalogEntry, CatalogValue, WidgetToolSpec } from '@dsh-scholar-board/contracts'
+import { WIDGET_TOOL_NAMES, ToolRefusal } from '@dsh-scholar-board/contracts'
 import type { WidgetRecord } from '../library'
 import type { ToolContext } from './index'
 import { OPTIONAL_TOOLS } from './index'

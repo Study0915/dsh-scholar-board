@@ -10,7 +10,7 @@
  * 失效，这里也直接拒绝重定向。凭据的值只在这一处被读出、拼进请求，既不进返回值也不进日志。
  */
 import { isIP } from 'node:net'
-import { HTTP_DATA_SOURCE } from '@dsh-widget-board/contracts'
+import { HTTP_DATA_SOURCE } from '@dsh-scholar-board/contracts'
 import type {
   DataSourceRegistration,
   HostCredentials,
@@ -18,7 +18,7 @@ import type {
   RequestLogEntry,
   WidgetManifest,
   WidgetRequest,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import type { WidgetRecord } from './library'
 
 /** 一次请求最多等多久。 */

@@ -8,7 +8,7 @@
     "zh": "读取当前 DeepSeek Harness 账号的充值钱包与赠送钱包；账号在宿主里登录，不需要 API key。",
     "en": "Reads the recharge and bonus wallets of the signed-in DeepSeek Harness account; no API key needed."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "capabilities": ["dsh.account.balance"],

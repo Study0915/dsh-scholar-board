@@ -25,15 +25,15 @@ async function markdownPass(page, check) {
   await campusPass(page, check)
   await page.waitForFunction(async () => {
     const workspace = await (await fetch('api/widget-board/boards')).json()
-    return document.querySelector('.dsh-widget-board__flow[data-active="true"]')?.getAttribute('data-dsh-widget-board-board') === workspace.active
+    return document.querySelector('.dsh-scholar-board__flow[data-active="true"]')?.getAttribute('data-dsh-scholar-board-board') === workspace.active
   }, undefined, { timeout: 5000 })
   // 媒体与校园场景刚移除的卡片仍在播放作者的退场动画，先等它真正离开再记数量。
   await page.waitForFunction(() => document.querySelector('[data-instance][data-exiting="true"]') === null, undefined, { timeout: 5000 })
   const before = await page.evaluate(() => document.querySelectorAll('[data-instance]').length)
   await openLibrary(page)
-  await page.waitForSelector('[data-dsh-widget-board-add="markdown"]:visible', { timeout: 10000 })
+  await page.waitForSelector('[data-dsh-scholar-board-add="markdown"]:visible', { timeout: 10000 })
   check('组件库里有 Markdown 卡', true)
-  await page.locator('[data-dsh-widget-board-add="markdown"]:visible').first().click()
+  await page.locator('[data-dsh-scholar-board-add="markdown"]:visible').first().click()
   await page.waitForFunction((count) => document.querySelectorAll('[data-instance]').length === count + 1, before, { timeout: 15000 })
   const id = await page.evaluate(() => Array.from(document.querySelectorAll('[data-instance]')).at(-1)?.getAttribute('data-instance') ?? '')
   await page.waitForSelector(`[data-instance="${id}"] iframe[title="Markdown"]`, { timeout: 30000 })
@@ -86,7 +86,7 @@ async function markdownPass(page, check) {
   check('脚本与危险链接没有执行', sanitized.bad === 'undefined' && sanitized.scripts === 0 && sanitized.links.every((href) => href === null || /^https?:/.test(href)), sanitized.links.join(' / '))
   check('推送的代码块也跟着高亮', sanitized.code > 0)
 
-  await page.locator(`[data-instance="${id}"] [data-dsh-widget-board-handle="remove"]`).click()
+  await page.locator(`[data-instance="${id}"] [data-dsh-scholar-board-handle="remove"]`).click()
   await page.waitForFunction((count) => document.querySelectorAll('[data-instance]').length === count, before, { timeout: 10000 })
   check('Markdown 卡移掉了', true)
 }

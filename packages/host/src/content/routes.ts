@@ -13,7 +13,7 @@ import type {
   InstanceComposeRequest,
   InstanceContentRequest,
   WidgetManifest,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { readJson } from '../body'
 import { isRecord } from '../guards'
 import type { WidgetRecord } from '../library'
@@ -23,13 +23,13 @@ import { Refusal } from '../refusal'
 import { json } from '../response'
 import { workspaceSnapshot } from '../snapshot'
 import type { Route, RouteContext } from '../routes'
-import { isCardLayout } from '@dsh-widget-board/model'
-import { campusProps, campusState, isCampusSchema } from '@dsh-widget-board/model/campus/model'
+import { isCardLayout } from '@dsh-scholar-board/model'
+import { campusProps, campusState, isCampusSchema } from '@dsh-scholar-board/model/campus/model'
 import { STATE_BYTES_LIMIT } from '../limits'
 import { instanceOf, stateBytes, withArrangementUnits, withInstancePatched } from '../state'
 import { checkContentBudget, contentIssues, handshakeBytes } from './validate'
 import { mediaOf } from '../media/routes'
-import type { MediaBinding, InstanceMedia } from '@dsh-widget-board/contracts'
+import type { MediaBinding, InstanceMedia } from '@dsh-scholar-board/contracts'
 
 /** 没有媒体修改时兼容现有宿主与调用；有修改时必须使用受限存储事务。 */
 async function bindMedia<T>(context: RouteContext, target: string, binding: MediaBinding, save: (media: InstanceMedia | undefined) => Promise<T>, beforeBind?: () => void): Promise<T> {

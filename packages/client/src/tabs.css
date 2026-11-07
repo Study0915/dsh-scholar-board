@@ -8,7 +8,7 @@
  * 那一条（tabs.tsx 量位置）。
  */
 
-.dsh-widget-board__tabs {
+.dsh-scholar-board__tabs {
   position: sticky;
   top: 20px;
   z-index: 6;
@@ -29,13 +29,13 @@
   scrollbar-width: none;
 }
 
-.dsh-widget-board__tabs::-webkit-scrollbar { display: none; }
+.dsh-scholar-board__tabs::-webkit-scrollbar { display: none; }
 
 /* 标签条后面的一条底：看板滚动时卡片从它下面走过，不再透过标签条之外的空隙露出来。它是看板根节点的
  * 第一个伪元素，粘在窗口最上沿、不占版面（高度与下外边距相加为 0，标签条仍从原来的位置起排）；
  * Windows 桌面端标签条挂进窗口标题栏时没有这一条，根节点自己补回上缘的内边距。颜色读宿主令牌，
  * 浅色与深色各自成立。 */
-.dsh-widget-board::before {
+.dsh-scholar-board::before {
   content: "";
   position: sticky;
   top: 0;
@@ -49,11 +49,11 @@
   pointer-events: none;
 }
 
-.dsh-widget-board:has(> .dsh-widget-board__tabs[data-titlebar="true"])::before { display: none; }
-.dsh-widget-board:has(> .dsh-widget-board__tabs[data-titlebar="true"]) { padding-top: 20px; }
+.dsh-scholar-board:has(> .dsh-scholar-board__tabs[data-titlebar="true"])::before { display: none; }
+.dsh-scholar-board:has(> .dsh-scholar-board__tabs[data-titlebar="true"]) { padding-top: 20px; }
 
 /* 活动标签底下那枚药丸：位置与宽度由 tabs.tsx 写在行内，切换时从这里过渡。 */
-.dsh-widget-board__tabs-pill {
+.dsh-scholar-board__tabs-pill {
   position: absolute;
   top: 3px;
   left: 0;
@@ -71,7 +71,7 @@
 
 /* 一块标签是一组：文字按钮负责切换，更多按钮自己接指针（见 tabs.tsx）。更多按钮收在右侧留白的
  * 那一条里，整体宽度与原来窄一些的标签条对齐：悬停出现时不把相邻标签推开。 */
-.dsh-widget-board__tab-group {
+.dsh-scholar-board__tab-group {
   position: relative;
   z-index: 1;
   display: inline-flex;
@@ -80,9 +80,9 @@
   border-radius: 9999px;
 }
 
-.dsh-widget-board__tab-group .dsh-widget-board__tab { padding-right: 22px; }
+.dsh-scholar-board__tab-group .dsh-scholar-board__tab { padding-right: 22px; }
 
-.dsh-widget-board__tab {
+.dsh-scholar-board__tab {
   position: relative;
   z-index: 1;
   flex: none;
@@ -105,7 +105,7 @@
 }
 
 /* 更多按钮：悬停或组里任何一个控件拿到焦点时出现；键盘聚焦时一直在。 */
-.dsh-widget-board__tab-more {
+.dsh-scholar-board__tab-more {
   position: absolute;
   top: 50%;
   right: 4px;
@@ -133,33 +133,33 @@
     color var(--w-motion-fast) var(--w-motion-ease-smooth);
 }
 
-.dsh-widget-board__tab-group:hover .dsh-widget-board__tab-more,
-.dsh-widget-board__tab-group:focus-within .dsh-widget-board__tab-more,
-.dsh-widget-board__tab-more:focus-visible,
-.dsh-widget-board__tab-more[aria-expanded="true"] { opacity: 1; }
+.dsh-scholar-board__tab-group:hover .dsh-scholar-board__tab-more,
+.dsh-scholar-board__tab-group:focus-within .dsh-scholar-board__tab-more,
+.dsh-scholar-board__tab-more:focus-visible,
+.dsh-scholar-board__tab-more[aria-expanded="true"] { opacity: 1; }
 
 @media (hover: none) {
-  .dsh-widget-board__tab-more { opacity: 1; }
+  .dsh-scholar-board__tab-more { opacity: 1; }
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .dsh-widget-board__tab-more:hover {
+  .dsh-scholar-board__tab-more:hover {
     background: color-mix(in srgb, var(--dsw-alias-label-primary) 10%, transparent);
     color: var(--dsw-alias-label-primary);
   }
 }
 
-.dsh-widget-board__tab-more:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 1px; }
+.dsh-scholar-board__tab-more:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 1px; }
 
-.dsh-widget-board__tab[aria-selected="true"] { color: var(--dsw-alias-label-primary); }
+.dsh-scholar-board__tab[aria-selected="true"] { color: var(--dsw-alias-label-primary); }
 
 @media (hover: hover) and (pointer: fine) {
-  .dsh-widget-board__tab:not([aria-selected="true"]):hover { color: var(--dsw-alias-label-primary); }
+  .dsh-scholar-board__tab:not([aria-selected="true"]):hover { color: var(--dsw-alias-label-primary); }
 }
 
-.dsh-widget-board__tab:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 1px; }
+.dsh-scholar-board__tab:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 1px; }
 
-.dsh-widget-board__tab-new {
+.dsh-scholar-board__tab-new {
   position: relative;
   z-index: 1;
   flex: none;
@@ -180,29 +180,29 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .dsh-widget-board__tab-new:hover:not(:disabled) {
+  .dsh-scholar-board__tab-new:hover:not(:disabled) {
     background: color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);
     color: var(--dsw-alias-label-primary);
   }
 }
 
-.dsh-widget-board__tab-new:disabled { opacity: 0.45; cursor: not-allowed; }
-.dsh-widget-board__tab-new:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 1px; }
+.dsh-scholar-board__tab-new:disabled { opacity: 0.45; cursor: not-allowed; }
+.dsh-scholar-board__tab-new:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 1px; }
 
 /* 减弱动效：药丸直接换位置，更多按钮直接出现（D10）。 */
 @media (prefers-reduced-motion: reduce) {
-  .dsh-widget-board__tabs-pill,
-  .dsh-widget-board__tab,
-  .dsh-widget-board__tab-more { transition: none; }
+  .dsh-scholar-board__tabs-pill,
+  .dsh-scholar-board__tab,
+  .dsh-scholar-board__tab-more { transition: none; }
 }
 
 /* Windows 桌面端：宿主把窗口标题栏让给页面时，标签条靠左挂进那一条（tabs.tsx 量位置与宽度）。
  * 固定定位后不再占用页面高度；窗口标题栏是拖动区，整条标成可点，否则按不动。标题栏里比页内
  * 小一号，上下各留出空隙，不贴着窗口边。 */
-.dsh-widget-board__tabs[data-titlebar="true"] {
+.dsh-scholar-board__tabs[data-titlebar="true"] {
   position: fixed;
-  top: var(--dsh-widget-board-tabs-top);
-  left: var(--dsh-widget-board-tabs-left);
+  top: var(--dsh-scholar-board-tabs-top);
+  left: var(--dsh-scholar-board-tabs-left);
   width: max-content;
   max-width: none;
   margin: 0;
@@ -211,22 +211,22 @@
   -webkit-app-region: no-drag;
 }
 
-.dsh-widget-board__tabs[data-titlebar="true"] .dsh-widget-board__tab {
+.dsh-scholar-board__tabs[data-titlebar="true"] .dsh-scholar-board__tab {
   height: 22px;
   padding: 0 10px;
   line-height: 22px;
 }
 
 /* 标题栏里也留出更多按钮的那一条，悬停出现时不压到文字。 */
-.dsh-widget-board__tabs[data-titlebar="true"] .dsh-widget-board__tab-group .dsh-widget-board__tab { padding-right: 18px; }
+.dsh-scholar-board__tabs[data-titlebar="true"] .dsh-scholar-board__tab-group .dsh-scholar-board__tab { padding-right: 18px; }
 
-.dsh-widget-board__tabs[data-titlebar="true"] .dsh-widget-board__tab-new {
+.dsh-scholar-board__tabs[data-titlebar="true"] .dsh-scholar-board__tab-new {
   width: 22px;
   height: 22px;
   font-size: 16px;
   line-height: 22px;
 }
 
-.dsh-widget-board__tabs[data-titlebar="true"] .dsh-widget-board__tab-more { width: 16px; height: 16px; right: 3px; }
+.dsh-scholar-board__tabs[data-titlebar="true"] .dsh-scholar-board__tab-more { width: 16px; height: 16px; right: 3px; }
 
-.dsh-widget-board__tabs[data-titlebar="true"] .dsh-widget-board__tabs-pill { height: 22px; }
+.dsh-scholar-board__tabs[data-titlebar="true"] .dsh-scholar-board__tabs-pill { height: 22px; }

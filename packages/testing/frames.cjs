@@ -3,7 +3,7 @@
 /**
  * frames.cjs — 看板卡片与它里面的 iframe：查找、等握手、量盒子、滚进视口。
  *
- * 只认插件自己写在节点上的标记（`iframe.dsh-widget-board__frame` 的标题、`data-instance`），宿主换了
+ * 只认插件自己写在节点上的标记（`iframe.dsh-scholar-board__frame` 的标题、`data-instance`），宿主换了
  * 内部结构也不会让这些判据失真（D1）。点击与悬停之前要不要把卡片滚进视口，由调用方决定。
  */
 
@@ -45,7 +45,7 @@ async function frameOf(page, selector) {
  */
 async function centerCard(page, title) {
   await page.evaluate((name) => {
-    document.querySelector(`iframe.dsh-widget-board__frame[title="${name}"]`)?.scrollIntoView({ block: 'center' })
+    document.querySelector(`iframe.dsh-scholar-board__frame[title="${name}"]`)?.scrollIntoView({ block: 'center' })
   }, title)
   await sleep(300)
 }
@@ -58,14 +58,14 @@ async function centerCard(page, title) {
  * @returns 两个盒子的像素尺寸。
  */
 async function cardBox(page, title) {
-  await page.waitForSelector(`iframe.dsh-widget-board__frame[title="${title}"]`, { timeout: 20000 })
+  await page.waitForSelector(`iframe.dsh-scholar-board__frame[title="${title}"]`, { timeout: 20000 })
   await page.waitForFunction((title) => {
-    const frame = document.querySelector(`iframe.dsh-widget-board__frame[title="${title}"]`)
+    const frame = document.querySelector(`iframe.dsh-scholar-board__frame[title="${title}"]`)
     const card = frame?.closest('[data-instance]')
     return card !== null && card !== undefined && card.getBoundingClientRect().height > 60
   }, title, { timeout: 20000 })
   return page.evaluate((title) => {
-    const frame = document.querySelector(`iframe.dsh-widget-board__frame[title="${title}"]`)
+    const frame = document.querySelector(`iframe.dsh-scholar-board__frame[title="${title}"]`)
     const card = frame?.closest('[data-instance]')
     const outer = card.getBoundingClientRect()
     const inner = frame.getBoundingClientRect()

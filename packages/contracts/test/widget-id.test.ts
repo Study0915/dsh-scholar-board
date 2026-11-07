@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import Ajv from 'ajv'
-import type { WidgetRoot } from '@dsh-widget-board/contracts'
+import type { WidgetRoot } from '@dsh-scholar-board/contracts'
 import {
   MARKET_INDEX_SCHEMA,
   MARKET_LISTING_SCHEMA,
@@ -14,7 +14,7 @@ import {
   WIDGET_MANIFEST_SCHEMA,
   WIDGET_NAMESPACED_ID_PATTERN,
   isAuthorNamespacedWidgetId,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 
 const validateListing = new Ajv({ allErrors: true, strict: true }).compile(MARKET_LISTING_SCHEMA)
 const validateIndex = new Ajv({ allErrors: true, strict: true }).compile(MARKET_INDEX_SCHEMA)

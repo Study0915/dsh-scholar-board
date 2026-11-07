@@ -5,7 +5,7 @@
  * 新把手的 id 必须带作者域。
  */
 import { describe, expect, it } from 'vitest'
-import type { WidgetNativeProviderHandle } from '@dsh-widget-board/contracts'
+import type { WidgetNativeProviderHandle } from '@dsh-scholar-board/contracts'
 import { createClientService, NATIVE_WIDGETS_PER_PROVIDER, nativeWidgetOf } from '../src/native'
 
 /** 一个最小的组件：登记处只认它是不是函数。 */

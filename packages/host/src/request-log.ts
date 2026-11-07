@@ -3,8 +3,8 @@
  *
  * 日志活在宿主进程里，不写盘：它用来说明「刚才这张卡去了哪里」，不是审计留存；凭据永远不进这里。
  */
-import type { RequestLogEntry } from '@dsh-widget-board/contracts'
-import { REQUEST_LOG_LIMIT } from '@dsh-widget-board/contracts'
+import type { RequestLogEntry } from '@dsh-scholar-board/contracts'
+import { REQUEST_LOG_LIMIT } from '@dsh-scholar-board/contracts'
 
 /** 按卡片存请求日志的表。 */
 export interface RequestLog {

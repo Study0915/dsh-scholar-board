@@ -1,5 +1,5 @@
 {
-  "name": "dsh-widget-board-test-provider-v3",
+  "name": "dsh-scholar-board-test-provider-v3",
   "version": "0.0.0",
   "private": true,
   "description": "冒烟用的 v3 提供方：一个 registerProvider 把手挂两个组件目录、两个原生组件、数据源、动作、能力与市场提供方。",

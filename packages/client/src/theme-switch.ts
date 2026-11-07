@@ -8,7 +8,7 @@
  *
  * 这里没有按组件分支：任何声明了 `dsh.theme` 的组件都走同一条调用。
  */
-import tokens from '@dsh-widget-board/contracts/tokens.json'
+import tokens from '@dsh-scholar-board/contracts/tokens.json'
 import { registerClientCapability } from './capabilities'
 import type { ClientCapabilityCall } from './capabilities'
 import { frameHostOf } from './page-frames'
@@ -39,11 +39,11 @@ let running = false
 
 /** 视图切换的根节点变量，只在一次转场期间存在。 */
 const VT_ATTRIBUTE = 'dshWidgetBoardVt'
-const VT_X = '--dsh-widget-board-vt-x'
-const VT_Y = '--dsh-widget-board-vt-y'
-const VT_RADIUS = '--dsh-widget-board-vt-r'
-const VT_DURATION = '--dsh-widget-board-vt-duration'
-const VT_EASE = '--dsh-widget-board-vt-ease'
+const VT_X = '--dsh-scholar-board-vt-x'
+const VT_Y = '--dsh-scholar-board-vt-y'
+const VT_RADIUS = '--dsh-scholar-board-vt-r'
+const VT_DURATION = '--dsh-scholar-board-vt-duration'
+const VT_EASE = '--dsh-scholar-board-vt-ease'
 
 /** 系统是否要求减弱动效。 */
 function reducedMotion(): boolean {

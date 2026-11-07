@@ -12,8 +12,8 @@ import type {
   WidgetHandles,
   WidgetMessage,
   WidgetSize,
-} from '@dsh-widget-board/contracts'
-import { PARENT_MESSAGE_LIMIT, boxClassesOf, isParentMessage, withinLimit } from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
+import { PARENT_MESSAGE_LIMIT, boxClassesOf, isParentMessage, withinLimit } from '@dsh-scholar-board/contracts'
 import type { CapabilityFace } from './capability-face'
 import { capabilityFaceOf } from './capability-face'
 import { installInspector, problemsOf } from './inspect'

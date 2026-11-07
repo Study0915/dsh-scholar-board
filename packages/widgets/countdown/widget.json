@@ -8,7 +8,7 @@
     "zh": "距离一个日期还有几天几时几分：按指定时区的墙上时间算，到点之后改成已经过去的说法。",
     "en": "Days, hours and minutes to a date in the wall time of a chosen time zone; after the moment passes it says how long ago it was."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 16 },

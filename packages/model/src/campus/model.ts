@@ -4,7 +4,7 @@ import type { ValidateFunction } from 'ajv'
 import { dueDateTime, dueTone, validZone } from './time'
 import type { CampusItem, CampusProps, CampusState, CampusStatus } from './types'
 
-export const CAMPUS_SCHEMA_ID = 'https://dsh-widget-board.local/schema/campus-state-v1'
+export const CAMPUS_SCHEMA_ID = 'https://dsh-scholar-board.local/schema/campus-state-v1'
 export const isCampusSchema = (schema: unknown): boolean => schema !== null && typeof schema === 'object' && '$id' in schema && schema.$id === CAMPUS_SCHEMA_ID
 
 export const EMPTY_CAMPUS_STATE: CampusState = { schemaVersion: 1, items: [], links: [], customCategories: [], reminderLedger: {} }

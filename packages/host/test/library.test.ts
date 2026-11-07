@@ -7,7 +7,7 @@ import { afterAll, describe, expect, it } from 'vitest'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { contentHash, insertRoot, loadLibrary, readWidget } from '../src/library'
-import type { WidgetRoot } from '@dsh-widget-board/contracts'
+import type { WidgetRoot } from '@dsh-scholar-board/contracts'
 
 const ROOT = join(process.cwd(), '.debug', 'tests', `library-${String(process.pid)}-${String(Date.now())}`)
 

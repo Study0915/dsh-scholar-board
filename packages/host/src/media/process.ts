@@ -1,6 +1,6 @@
 /** 图片解码与去元数据；输入、像素与输出额度分别校验。 */
 import sharp from 'sharp'
-import { MEDIA_INPUT_BYTES, type MediaRole } from '@dsh-widget-board/contracts'
+import { MEDIA_INPUT_BYTES, type MediaRole } from '@dsh-scholar-board/contracts'
 import { Refusal } from '../refusal'
 
 /** 只识别批准的三种文件签名；解码器还会独立校验实际格式。 */

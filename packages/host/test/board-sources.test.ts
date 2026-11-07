@@ -8,7 +8,7 @@ import { execFile } from 'node:child_process'
 import { mkdir, readFile, readdir, rmdir, unlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
-import type { Board, BoardInstance, DataSourceRegistration, InstanceFace, WidgetManifest } from '@dsh-widget-board/contracts'
+import type { Board, BoardInstance, DataSourceRegistration, InstanceFace, WidgetManifest } from '@dsh-scholar-board/contracts'
 import type { BoardSourceDeps } from '../src/board-sources'
 import {
   BOARD_JSON_NAME,
@@ -296,7 +296,7 @@ describe('仓库链接', () => {
     const data = await readChecked(source, 'links') as { items: { title: string, url: string }[] }
     expect(data.items.map((item) => item.url)).toContain('https://github.com/owner/repo')
     expect(data.items.map((item) => item.url)).toContain('http://127.0.0.1:3080')
-    expect(data.items.map((item) => item.url)).toContain('https://github.com/Nwflower/dsh-widget-board')
+    expect(data.items.map((item) => item.url)).toContain('https://github.com/Nwflower/dsh-scholar-board')
     expect(data.items.map((item) => item.url)).toContain('https://transitions.dev')
   })
 
@@ -436,7 +436,7 @@ describe('运行环境', () => {
   it('插件、Node.js、看板与组件库四项都在', async () => {
     const data = await readChecked(createRuntimeKvSource(depsOf()), 'kv') as { items: { key: string, value: string | number }[] }
     expect(data.items.map((item) => item.key)).toEqual(['插件', 'Node.js', '看板', '组件库'])
-    expect(data.items[0]?.value).toBe('dsh-widget-board')
+    expect(data.items[0]?.value).toBe('dsh-scholar-board')
     expect(data.items[1]?.value).toBe(process.version)
   })
 })

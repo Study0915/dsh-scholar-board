@@ -9,8 +9,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import Ajv from 'ajv'
-import type { Board, BoardEvent, BoardValue, DefineValue, ShowValue, ToolCall, WidgetRoot, WidgetSkillRegistration, WidgetToolRegistration } from '@dsh-widget-board/contracts'
-import { WIDGET_TOOL_NAMES, ToolRefusal } from '@dsh-widget-board/contracts'
+import type { Board, BoardEvent, BoardValue, DefineValue, ShowValue, ToolCall, WidgetRoot, WidgetSkillRegistration, WidgetToolRegistration } from '@dsh-scholar-board/contracts'
+import { WIDGET_TOOL_NAMES, ToolRefusal } from '@dsh-scholar-board/contracts'
 import type { RouteContext } from '../src/routes'
 import { createRequestLog } from '../src/request-log'
 import { createMarketRegistry } from '../src/market'
@@ -639,7 +639,7 @@ describe('widget_show', () => {
 describe('widget_define', () => {
   /** 一个可写的临时用户目录。 */
   async function userRoot(): Promise<WidgetRoot> {
-    const dir = await mkdtemp(join(tmpdir(), 'dsh-widget-board-define-'))
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-scholar-board-define-'))
     roots.push(dir)
     return { dir, source: 'user' }
   }

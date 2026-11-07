@@ -6,7 +6,7 @@
  *
  * 声明里的名字可以写成裸名，由注册表按全局唯一解；解不出来时不算可用，但保留声明的样子。
  */
-import type { CapabilityMetadata, LocalizedText } from '@dsh-widget-board/contracts'
+import type { CapabilityMetadata, LocalizedText } from '@dsh-scholar-board/contracts'
 import type { ResolvedCapability } from './sources'
 
 /** 按声明里的名字解析一项能力；这个会话里解析不到时是 `undefined`。 */

@@ -149,7 +149,7 @@ for (const rule of FORBIDDEN) {
     directions += 1
     for (const specifier of importsOf(file)) {
       for (const target of rule.into) {
-        if (specifier === `@dsh-widget-board/${target}` || specifier.startsWith(`@dsh-widget-board/${target}/`)) {
+        if (specifier === `@dsh-scholar-board/${target}` || specifier.startsWith(`@dsh-scholar-board/${target}/`)) {
           problems.push(`${relative(file)}: 导入了 ${specifier}；${rule.why}（D2）`)
         }
       }

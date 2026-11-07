@@ -7,7 +7,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { CardSettings, CredentialSetting, CredentialStatus, LocalizedText } from '@dsh-widget-board/contracts'
+import type { CardSettings, CredentialSetting, CredentialStatus, LocalizedText } from '@dsh-scholar-board/contracts'
 import { isChinese, t, textOf } from './copy'
 import { fixOfCandidate, geocodeCity, locateCity } from './geocode'
 import type { CityFix } from './geocode'
@@ -270,9 +270,9 @@ function NumberInput({ fieldKey, value, placeholder, min, max, disabled, onCommi
   const [text, setText] = useState<string | null>(null)
   return (
     <input
-      className="dsh-widget-board__input dsh-widget-board__input--number"
+      className="dsh-scholar-board__input dsh-scholar-board__input--number"
       type="number"
-      data-dsh-widget-board-field={fieldKey}
+      data-dsh-scholar-board-field={fieldKey}
       value={text ?? (value === undefined ? '' : String(value))}
       placeholder={placeholder}
       min={min}
@@ -468,34 +468,34 @@ export function ConfigPanel({
   }
 
   if (fields.length === 0 && settings.credentials.length === 0) {
-    return <p className="dsh-widget-board__editor-empty">{t('noConfig')}</p>
+    return <p className="dsh-scholar-board__editor-empty">{t('noConfig')}</p>
   }
 
   return (
-    <div className="dsh-widget-board__config" data-dsh-widget-board-config="">
+    <div className="dsh-scholar-board__config" data-dsh-scholar-board-config="">
       {fields.map((field) => {
         const fieldIssues = issues.filter((issue) => issueKey(issue) === field.key)
         const raw = draft[field.key]
         return (
-          <div key={field.key} className="dsh-widget-board__row" data-dsh-widget-board-field-row={field.key}>
-            <div className="dsh-widget-board__row-copy">
-              <span className="dsh-widget-board__row-title">
+          <div key={field.key} className="dsh-scholar-board__row" data-dsh-scholar-board-field-row={field.key}>
+            <div className="dsh-scholar-board__row-copy">
+              <span className="dsh-scholar-board__row-title">
                 {field.label}
-                {field.required ? <span className="dsh-widget-board__field-required" aria-hidden="true">*</span> : null}
+                {field.required ? <span className="dsh-scholar-board__field-required" aria-hidden="true">*</span> : null}
               </span>
-              {field.hint === undefined ? null : <span className="dsh-widget-board__row-desc">{field.hint}</span>}
+              {field.hint === undefined ? null : <span className="dsh-scholar-board__row-desc">{field.hint}</span>}
               {fieldIssues.map((issue) => (
-                <span key={`${issue.path}:${issue.message}`} className="dsh-widget-board__field-error" role="status">
+                <span key={`${issue.path}:${issue.message}`} className="dsh-scholar-board__field-error" role="status">
                   {issue.message}
                 </span>
               ))}
             </div>
-            <div className="dsh-widget-board__row-control">
+            <div className="dsh-scholar-board__row-control">
               {field.kind === 'enum'
                 ? (
                   <select
-                    className="dsh-widget-board__input dsh-widget-board__select"
-                    data-dsh-widget-board-field={field.key}
+                    className="dsh-scholar-board__input dsh-scholar-board__select"
+                    data-dsh-scholar-board-field={field.key}
                     value={typeof raw === 'string' ? raw : (typeof field.defaultValue === 'string' ? field.defaultValue : '')}
                     disabled={saving || busy}
                     onChange={(event) => { update(field.key, event.target.value === '' ? undefined : event.target.value) }}
@@ -510,15 +510,15 @@ export function ConfigPanel({
                     return (
                       <button
                         type="button"
-                        className="dsh-widget-board__switch"
+                        className="dsh-scholar-board__switch"
                         role="switch"
                         aria-checked={checked}
                         aria-label={field.label}
-                        data-dsh-widget-board-field={field.key}
+                        data-dsh-scholar-board-field={field.key}
                         disabled={saving || busy}
                         onClick={() => { update(field.key, !checked) }}
                       >
-                        <span className="dsh-widget-board__switch-thumb" />
+                        <span className="dsh-scholar-board__switch-thumb" />
                       </button>
                     )
                   })()
@@ -538,8 +538,8 @@ export function ConfigPanel({
                       ? field.multiline
                         ? (
                           <textarea
-                            className="dsh-widget-board__input dsh-widget-board__textarea"
-                            data-dsh-widget-board-field={field.key}
+                            className="dsh-scholar-board__input dsh-scholar-board__textarea"
+                            data-dsh-scholar-board-field={field.key}
                             rows={3}
                             maxLength={field.maxLength}
                             value={typeof raw === 'string' ? raw : ''}
@@ -565,9 +565,9 @@ export function ConfigPanel({
                           )
                           : (
                             <input
-                              className="dsh-widget-board__input"
+                              className="dsh-scholar-board__input"
                               type="text"
-                              data-dsh-widget-board-field={field.key}
+                              data-dsh-scholar-board-field={field.key}
                               maxLength={field.maxLength}
                               value={typeof raw === 'string' ? raw : ''}
                               placeholder={typeof field.defaultValue === 'string' ? field.defaultValue : undefined}
@@ -575,7 +575,7 @@ export function ConfigPanel({
                               onChange={(event) => { update(field.key, event.target.value === '' ? undefined : event.target.value) }}
                             />
                           )
-                      : <span className="dsh-widget-board__row-desc">{isChinese() ? '用 JSON 工具写' : 'Edit with JSON tools'}</span>}
+                      : <span className="dsh-scholar-board__row-desc">{isChinese() ? '用 JSON 工具写' : 'Edit with JSON tools'}</span>}
             </div>
           </div>
         )
@@ -586,19 +586,19 @@ export function ConfigPanel({
         const configured = entry.info?.configured === true
         const status = credentialStatusOf(entry)
         return (
-          <div key={entry.ref} className="dsh-widget-board__row" data-dsh-widget-board-credential={entry.ref}>
-            <div className="dsh-widget-board__row-copy">
-              <span className="dsh-widget-board__row-title">
+          <div key={entry.ref} className="dsh-scholar-board__row" data-dsh-scholar-board-credential={entry.ref}>
+            <div className="dsh-scholar-board__row-copy">
+              <span className="dsh-scholar-board__row-title">
                 {textOf(entry.label)}
-                {entry.required === true ? <span className="dsh-widget-board__field-required" aria-hidden="true">*</span> : null}
+                {entry.required === true ? <span className="dsh-scholar-board__field-required" aria-hidden="true">*</span> : null}
               </span>
-              <span className="dsh-widget-board__row-ref">{entry.ref}</span>
-              {entry.description === undefined ? null : <span className="dsh-widget-board__row-desc">{textOf(entry.description)}</span>}
-              <span className="dsh-widget-board__credential-note">{t('credentialPrivacy')}</span>
+              <span className="dsh-scholar-board__row-ref">{entry.ref}</span>
+              {entry.description === undefined ? null : <span className="dsh-scholar-board__row-desc">{textOf(entry.description)}</span>}
+              <span className="dsh-scholar-board__credential-note">{t('credentialPrivacy')}</span>
             </div>
-            <div className="dsh-widget-board__row-control dsh-widget-board__row-control--stack">
+            <div className="dsh-scholar-board__row-control dsh-scholar-board__row-control--stack">
               <span
-                className="dsh-widget-board__credential-status"
+                className="dsh-scholar-board__credential-status"
                 data-configured={configured ? 'true' : 'false'}
                 data-writable={writable ? 'true' : 'false'}
               >
@@ -606,11 +606,11 @@ export function ConfigPanel({
               </span>
               {writable
                 ? (
-                  <span className="dsh-widget-board__secret">
+                  <span className="dsh-scholar-board__secret">
                     <input
-                      className="dsh-widget-board__input"
+                      className="dsh-scholar-board__input"
                       type="password"
-                      data-dsh-widget-board-credential-input={entry.ref}
+                      data-dsh-scholar-board-credential-input={entry.ref}
                       autoComplete="off"
                       spellCheck={false}
                       placeholder={t('credentialPlaceholder')}
@@ -626,7 +626,7 @@ export function ConfigPanel({
                       ? (
                         <button
                           type="button"
-                          className="dsh-widget-board__editor-ghost"
+                          className="dsh-scholar-board__editor-ghost"
                           disabled={saving || busy}
                           onClick={() => { void remove(entry) }}
                         >
@@ -642,22 +642,22 @@ export function ConfigPanel({
         )
       })}
 
-      {error === null ? null : <p className="dsh-widget-board__editor-error" role="alert">{error}</p>}
+      {error === null ? null : <p className="dsh-scholar-board__editor-error" role="alert">{error}</p>}
       {issues.length === 0 || error !== null
         ? null
         : (
-          <p className="dsh-widget-board__editor-error" role="alert">
+          <p className="dsh-scholar-board__editor-error" role="alert">
             {issues.map((issue) => `${issue.path} ${issue.message}`).join('；')}
           </p>
         )}
 
-      <div className="dsh-widget-board__editor-actions">
-        {saved ? <span className="dsh-widget-board__editor-ok">{t('saved')}</span> : null}
-        <span className="dsh-widget-board__editor-spacer" />
+      <div className="dsh-scholar-board__editor-actions">
+        {saved ? <span className="dsh-scholar-board__editor-ok">{t('saved')}</span> : null}
+        <span className="dsh-scholar-board__editor-spacer" />
         <button
           type="button"
-          className="dsh-widget-board__editor-primary"
-          data-dsh-widget-board-config-save=""
+          className="dsh-scholar-board__editor-primary"
+          data-dsh-scholar-board-config-save=""
           disabled={saving || busy || !dirty}
           onClick={() => { void save() }}
         >

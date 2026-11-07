@@ -1,8 +1,8 @@
 import { createElement, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { BoardInstance, GrantKind, ParentMessage, WidgetFamily, WidgetMessage, WidgetNotification, WidgetSummary } from '@dsh-widget-board/contracts'
-import { MESSAGE_RATE_LIMIT, PARENT_MESSAGE_LIMIT, isWidgetMessage, widgetDocumentPath, withinLimit } from '@dsh-widget-board/contracts'
-import type { GridPlacement } from '@dsh-widget-board/model'
+import type { BoardInstance, GrantKind, ParentMessage, WidgetFamily, WidgetMessage, WidgetNotification, WidgetSummary } from '@dsh-scholar-board/contracts'
+import { MESSAGE_RATE_LIMIT, PARENT_MESSAGE_LIMIT, isWidgetMessage, widgetDocumentPath, withinLimit } from '@dsh-scholar-board/contracts'
+import type { GridPlacement } from '@dsh-scholar-board/model'
 import { isChinese, t } from './copy'
 import type { FrameHost } from './frame-host'
 import type { ShellTheme } from './theme'
@@ -262,7 +262,7 @@ export function CardSurface({
           return
         }
         if (message.id === 'widget-board:edit-content' || message.id === 'widget-board:campus-status') {
-          const anchor = frame.closest<HTMLElement>('[data-dsh-widget-board-view]')
+          const anchor = frame.closest<HTMLElement>('[data-dsh-scholar-board-view]')
           if (preview || anchor === null) { setFailure(t('previewNoAction')); return }
           void campusAction(instance.id, message.id, message.payload, anchor, themeRef.current, frames, () => live).then(() => { settleAction() }, settleAction)
           return
@@ -375,14 +375,14 @@ export function CardSurface({
         ? (
           <iframe
             ref={frameRef}
-            className="dsh-widget-board__frame"
+            className="dsh-scholar-board__frame"
             sandbox="allow-scripts"
             title={widget.title.zh}
             style={{ clipPath: CARD_CLIP }}
           />
         )
         : (
-          <div className="dsh-widget-board__native" data-native-widget={native.provider}>
+          <div className="dsh-scholar-board__native" data-native-widget={native.provider}>
             <NativeBoundary label={t('unavailable')}>
               {createElement(native.component, {
                 size,
@@ -418,13 +418,13 @@ export function CardSurface({
           </div>
         )}
       {failure === null && saveFailure === null ? null : (
-        <p className="dsh-widget-board__failure-strip" role="status">{failure ?? saveFailure}</p>
+        <p className="dsh-scholar-board__failure-strip" role="status">{failure ?? saveFailure}</p>
       )}
       {asking === null ? null : (
         <button
           type="button"
-          className="dsh-widget-board__grant"
-          data-dsh-widget-board-grant={`${asking.kind}:${asking.id}`}
+          className="dsh-scholar-board__grant"
+          data-dsh-scholar-board-grant={`${asking.kind}:${asking.id}`}
           onClick={() => {
             grantInstance(instance.id, asking.kind, asking.id).then(
               () => { setAsking(null); setFailure(null) },

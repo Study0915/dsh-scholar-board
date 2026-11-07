@@ -1,5 +1,5 @@
-import { CLIENT_ROUTE } from '@dsh-widget-board/contracts'
-import type { ItemImportPreview, ItemImportRequest, ImportDecision } from '@dsh-widget-board/contracts/item-import'
+import { CLIENT_ROUTE } from '@dsh-scholar-board/contracts'
+import type { ItemImportPreview, ItemImportRequest, ImportDecision } from '@dsh-scholar-board/contracts/item-import'
 
 const path = (id: string): string => `${CLIENT_ROUTE}/instance/${encodeURIComponent(id)}/items`
 async function result<T>(response: Response): Promise<T> {

@@ -4,7 +4,7 @@
  * 每次 `GET /boards`、写入之后与组卡换槽都从同一处拼出来；设置弹窗的读模型不在这里，它按需单独取
  * （D27）。
  */
-import type { WidgetManifest, WidgetProviderHealth, WidgetSummary, WorkspaceSnapshot } from '@dsh-widget-board/contracts'
+import type { WidgetManifest, WidgetProviderHealth, WidgetSummary, WorkspaceSnapshot } from '@dsh-scholar-board/contracts'
 import type { CapabilityResolver } from './capability-metadata'
 import { capabilityMetadataOf } from './capability-metadata'
 import { isRecord } from './guards'

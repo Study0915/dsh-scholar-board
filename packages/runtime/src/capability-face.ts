@@ -6,7 +6,7 @@
  *
  * 交出去的是逐层拷贝并冻住的一份：组件改自己手里的数组或某一项，不会回到运行时里那一份。
  */
-import type { CapabilityMetadata } from '@dsh-widget-board/contracts'
+import type { CapabilityMetadata } from '@dsh-scholar-board/contracts'
 
 /** 一次握手能投影出来的能力面（D32）。 */
 export interface CapabilityFace {

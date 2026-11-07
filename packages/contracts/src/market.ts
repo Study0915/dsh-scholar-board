@@ -9,7 +9,7 @@ import { LOCALIZED_TEXT_SCHEMA, WIDGET_NAMESPACED_ID_PATTERN, WIDGET_REQUIRES_SC
 
 /** 校验市场条目用的 JSON Schema；与 `service-types.ts` 的 `MarketListing` 一一对应。 */
 export const MARKET_LISTING_SCHEMA = {
-  $id: 'https://dsh-widget-board/market-listing.json',
+  $id: 'https://dsh-scholar-board/market-listing.json',
   type: 'object',
   additionalProperties: false,
   required: ['id', 'title', 'author', 'versions'],

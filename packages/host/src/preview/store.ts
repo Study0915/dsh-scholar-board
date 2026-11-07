@@ -9,8 +9,8 @@
  * 正式副作用（C15）。会话十分钟过期，关闭时释放，同时最多四个。
  */
 import { randomBytes } from 'node:crypto'
-import type { PreviewSession, WidgetManifest } from '@dsh-widget-board/contracts'
-import { PARENT_MESSAGE_LIMIT } from '@dsh-widget-board/contracts'
+import type { PreviewSession, WidgetManifest } from '@dsh-scholar-board/contracts'
+import { PARENT_MESSAGE_LIMIT } from '@dsh-scholar-board/contracts'
 import type { DocumentAssets } from '../document'
 import { buildDocument, contentSecurityPolicy, freshNonce } from '../document'
 import { isRecord } from '../guards'

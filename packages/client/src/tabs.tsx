@@ -9,8 +9,8 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react'
-import type { Board } from '@dsh-widget-board/contracts'
-import tokens from '@dsh-widget-board/contracts/tokens.json'
+import type { Board } from '@dsh-scholar-board/contracts'
+import tokens from '@dsh-scholar-board/contracts/tokens.json'
 import { t } from './copy'
 import { titlebarSeat } from './titlebar'
 import { BoardMenu } from './board-management/menu'
@@ -84,7 +84,7 @@ export function BoardTabs({
   /** 量一次活动标签：药丸的位置与宽度按它的整组给，更多按钮也在药丸里。 */
   const measure = useCallback(() => {
     const strip = stripRef.current
-    const group = strip === null ? null : strip.querySelector<HTMLElement>(`[data-dsh-widget-board-tab-group="${CSS.escape(active)}"]`)
+    const group = strip === null ? null : strip.querySelector<HTMLElement>(`[data-dsh-scholar-board-tab-group="${CSS.escape(active)}"]`)
     if (group === null) {
       setPill(null)
       return
@@ -104,7 +104,7 @@ export function BoardTabs({
       setSeat(null)
       return
     }
-    const buttons = strip.querySelectorAll<HTMLElement>('[data-dsh-widget-board-tab-group], [data-dsh-widget-board-tab-new]')
+    const buttons = strip.querySelectorAll<HTMLElement>('[data-dsh-scholar-board-tab-group], [data-dsh-scholar-board-tab-new]')
     const last = buttons.item(buttons.length - 1)
     const paddingRight = Number.parseFloat(getComputedStyle(strip).paddingRight) || 0
     const width = last === null ? 0 : last.offsetLeft + last.offsetWidth + paddingRight
@@ -139,7 +139,7 @@ export function BoardTabs({
     if (strip === null) return
     const observer = new ResizeObserver(() => { measure() })
     observer.observe(strip)
-    for (const group of strip.querySelectorAll('[data-dsh-widget-board-tab-group]')) observer.observe(group)
+    for (const group of strip.querySelectorAll('[data-dsh-scholar-board-tab-group]')) observer.observe(group)
     return () => observer.disconnect()
   }, [measure, boards])
 
@@ -150,7 +150,7 @@ export function BoardTabs({
     const observer = new ResizeObserver(() => { fit() })
     observer.observe(strip)
     observer.observe(root)
-    for (const group of strip.querySelectorAll('[data-dsh-widget-board-tab-group]')) observer.observe(group)
+    for (const group of strip.querySelectorAll('[data-dsh-scholar-board-tab-group]')) observer.observe(group)
     window.addEventListener('resize', fit)
     return () => {
       observer.disconnect()
@@ -161,7 +161,7 @@ export function BoardTabs({
   // 标签条放不下而横向滚动时，把活动标签滚进看得见的那一段；页面滚动不跟着动。
   useEffect(() => {
     const strip = stripRef.current
-    const group = strip === null ? null : strip.querySelector<HTMLElement>(`[data-dsh-widget-board-tab-group="${CSS.escape(active)}"]`)
+    const group = strip === null ? null : strip.querySelector<HTMLElement>(`[data-dsh-scholar-board-tab-group="${CSS.escape(active)}"]`)
     if (strip === null || group === null || strip.scrollWidth <= strip.clientWidth) return
     // 换算成滚动内容自己的坐标：盒子的位置减去标签条的位置，再加上已经滚过的那一段。
     const stripBox = strip.getBoundingClientRect()
@@ -203,7 +203,7 @@ export function BoardTabs({
   /** 右键标签与按更多按钮打开同一个菜单：都不切换看板。 */
   const onContextMenu = useCallback((event: ReactMouseEvent<HTMLElement>, boardId: string): void => {
     event.preventDefault()
-    const trigger = event.currentTarget.querySelector<HTMLElement>('[data-dsh-widget-board-tab-more]')
+    const trigger = event.currentTarget.querySelector<HTMLElement>('[data-dsh-scholar-board-tab-more]')
     if (trigger !== null) openMenu(boardId, trigger)
   }, [openMenu])
 
@@ -243,7 +243,7 @@ export function BoardTabs({
         if (generation !== focusGenerationRef.current) return
         if (trigger?.isConnected === true) { trigger.focus(); return }
         const strip = stripRef.current
-        const selected = strip?.querySelector<HTMLElement>('[data-dsh-widget-board-tab][aria-selected="true"]')
+        const selected = strip?.querySelector<HTMLElement>('[data-dsh-scholar-board-tab][aria-selected="true"]')
         selected?.focus()
       }, 0)
     }, (error: Error) => {
@@ -257,16 +257,16 @@ export function BoardTabs({
     ? TABS_STYLE
     : {
         ...TABS_STYLE,
-        '--dsh-widget-board-tabs-top': `${String(seat.top)}px`,
-        '--dsh-widget-board-tabs-left': `${String(seat.left)}px`,
+        '--dsh-scholar-board-tabs-top': `${String(seat.top)}px`,
+        '--dsh-scholar-board-tabs-left': `${String(seat.left)}px`,
       }) as CSSProperties
 
   return (
     <>
       <div
         ref={stripRef}
-        className="dsh-widget-board__tabs"
-        data-dsh-widget-board-tabs=""
+        className="dsh-scholar-board__tabs"
+        data-dsh-scholar-board-tabs=""
         data-titlebar={seat === null ? undefined : 'true'}
         role="tablist"
         aria-label={t('boardTabs')}
@@ -278,8 +278,8 @@ export function BoardTabs({
           : (
             <span
               ref={pillRef}
-              className="dsh-widget-board__tabs-pill"
-              data-dsh-widget-board-tabs-pill=""
+              className="dsh-scholar-board__tabs-pill"
+              data-dsh-scholar-board-tabs-pill=""
               aria-hidden="true"
               style={{ transform: `translateX(${String(pill.left)}px)`, width: `${String(pill.width)}px` }}
             />
@@ -287,16 +287,16 @@ export function BoardTabs({
         {boards.map((board) => (
           <div
             key={board.id}
-            className="dsh-widget-board__tab-group"
-            data-dsh-widget-board-tab-group={board.id}
+            className="dsh-scholar-board__tab-group"
+            data-dsh-scholar-board-tab-group={board.id}
             data-active={board.id === active ? 'true' : 'false'}
             onContextMenu={(event) => { onContextMenu(event, board.id) }}
           >
             <button
               type="button"
               role="tab"
-              className="dsh-widget-board__tab"
-              data-dsh-widget-board-tab={board.id}
+              className="dsh-scholar-board__tab"
+              data-dsh-scholar-board-tab={board.id}
               aria-selected={board.id === active}
               title={board.title}
               onClick={() => { onSelect(board.id) }}
@@ -305,8 +305,8 @@ export function BoardTabs({
             </button>
             <button
               type="button"
-              className="dsh-widget-board__tab-more"
-              data-dsh-widget-board-tab-more={board.id}
+              className="dsh-scholar-board__tab-more"
+              data-dsh-scholar-board-tab-more={board.id}
               aria-haspopup="menu"
               aria-expanded={overlay !== null && overlay.kind === 'menu' && overlay.boardId === board.id}
               title={t('boardMenuOpen')}
@@ -319,8 +319,8 @@ export function BoardTabs({
         ))}
         <button
           type="button"
-          className="dsh-widget-board__tab-new"
-          data-dsh-widget-board-tab-new=""
+          className="dsh-scholar-board__tab-new"
+          data-dsh-scholar-board-tab-new=""
           title={t('newBoard')}
           aria-label={t('newBoard')}
           disabled={busy}

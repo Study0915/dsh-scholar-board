@@ -8,8 +8,8 @@
  * 返回值同时是客户端工具视图的载荷（`WidgetToolSpec.view`）：视图只按它画，不再回读宿主。
  */
 import { randomUUID } from 'node:crypto'
-import type { BoardInstance, ShowValue, WidgetFamily, WidgetToolSpec } from '@dsh-widget-board/contracts'
-import { WIDGET_TOOL_NAMES, ToolRefusal } from '@dsh-widget-board/contracts'
+import type { BoardInstance, ShowValue, WidgetFamily, WidgetToolSpec } from '@dsh-scholar-board/contracts'
+import { WIDGET_TOOL_NAMES, ToolRefusal } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
 import type { WidgetRecord } from '../library'
 import { requireGrantOf } from '../permissions'

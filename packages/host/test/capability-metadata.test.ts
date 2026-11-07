@@ -3,7 +3,7 @@
  * 只留声明的名字；快照里的白名单、可用子集与元数据由同一次解析得出。
  */
 import { describe, expect, it } from 'vitest'
-import type { WidgetManifest } from '@dsh-widget-board/contracts'
+import type { WidgetManifest } from '@dsh-scholar-board/contracts'
 import { DESCRIPTION_CODE_POINT_LIMIT, capabilityMetadataOf, providerOfDeclaredId } from '../src/capability-metadata'
 import type { WidgetRecord } from '../src/library'
 import { widgetSummaryOf, workspaceSnapshot } from '../src/snapshot'

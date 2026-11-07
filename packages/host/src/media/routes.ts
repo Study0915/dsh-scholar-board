@@ -1,5 +1,5 @@
 /** 仅人工界面通过已有请求栅栏上传与整理。沙箱读取仍走 capability。 */
-import { MEDIA_INPUT_BYTES, type MediaBinding, type MediaRole } from '@dsh-widget-board/contracts'
+import { MEDIA_INPUT_BYTES, type MediaBinding, type MediaRole } from '@dsh-scholar-board/contracts'
 import { readBody, readJson } from '../body'
 import { isRecord } from '../guards'
 import { Refusal } from '../refusal'

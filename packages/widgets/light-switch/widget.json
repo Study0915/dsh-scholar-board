@@ -8,7 +8,7 @@
     "zh": "一盏可以按的台灯：拨动底座上的开关，整页的新配色从灯下的一点展开，深色与浅色随之切换。组件经通用的 dsh.theme 能力改主题；不联网，也不需要密钥。",
     "en": "A desk lamp you can press: flip the switch on its base and the new palette unfolds from a point under the lamp, switching dark and light across the page. It uses the generic dsh.theme capability; no network, no key."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "l"],
   "defaultBox": {

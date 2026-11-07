@@ -3,8 +3,8 @@
  *
  * 形状与 `openGrants` 相同，写入同样是串行的；不同的只是不落盘、不留临时文件。
  */
-import type { Grant } from '@dsh-widget-board/contracts'
-import { grantKey } from '@dsh-widget-board/contracts'
+import type { Grant } from '@dsh-scholar-board/contracts'
+import { grantKey } from '@dsh-scholar-board/contracts'
 import type { GrantStore } from '../src/grants'
 
 /**

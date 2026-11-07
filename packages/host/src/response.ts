@@ -1,7 +1,7 @@
 /**
  * 路由的 JSON 响应：状态码、内容类型与禁止缓存只在这里写一次。
  */
-import type { HostResponse } from '@dsh-widget-board/contracts'
+import type { HostResponse } from '@dsh-scholar-board/contracts'
 
 /**
  * 回一条 JSON。

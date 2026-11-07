@@ -8,7 +8,7 @@
     "zh": "一组环形表盘：比例、百分比与说明，适合配额、目标与完成度。",
     "en": "A set of ring gauges with ratios, percentages and notes; for quotas, goals and completion."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 18 },

@@ -53,7 +53,7 @@
         title: '书签',
         items: [
           { title: 'DeepSeek Harness', url: 'https://github.com/deepseek-ai/dsh', note: '宿主' },
-          { title: '组件格式', url: 'https://github.com/Nwflower/dsh-widget-board', note: '文档' },
+          { title: '组件格式', url: 'https://github.com/Nwflower/dsh-scholar-board', note: '文档' },
           { title: '本地宿主', url: 'http://127.0.0.1:54904', note: '开发' },
           { title: '设计参考', url: 'https://transitions.dev', note: '动效' }
         ]
@@ -63,7 +63,7 @@
       title: 'Bookmarks',
       items: [
         { title: 'DeepSeek Harness', url: 'https://github.com/deepseek-ai/dsh', note: 'Host' },
-        { title: 'Widget format', url: 'https://github.com/Nwflower/dsh-widget-board', note: 'Docs' },
+        { title: 'Widget format', url: 'https://github.com/Nwflower/dsh-scholar-board', note: 'Docs' },
         { title: 'Local host', url: 'http://127.0.0.1:54904', note: 'Dev' },
         { title: 'Design reference', url: 'https://transitions.dev', note: 'Motion' }
       ]

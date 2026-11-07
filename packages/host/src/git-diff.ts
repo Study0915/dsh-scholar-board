@@ -11,7 +11,7 @@
  * 取样由订阅驱动（D32）：卡片可见时宿主订上，`subscribe` 立刻读一次、之后每 5 秒读一次；上一拍
  * 还没回来时这一拍跳过。卡片离开视口、props 变了或提供方撤下时宿主退订，退订之后不再回调。
  */
-import type { DataSourceRegistration, InstanceFace } from '@dsh-widget-board/contracts'
+import type { DataSourceRegistration, InstanceFace } from '@dsh-scholar-board/contracts'
 import type { RepoCwdDeps } from './git-utils'
 import { dataSourceOf, resolveRepoCwd, runGit } from './git-utils'
 

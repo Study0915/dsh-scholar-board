@@ -6,12 +6,12 @@
  * 摆进快照。提供方撤下时它的条目从快照里消失，已安装的组件保留在 `market` 来源里（D17）。
  */
 import Ajv from 'ajv'
-import type { MarketListing, WidgetMarketProviderRegistration } from '@dsh-widget-board/contracts'
-import { MARKET_LISTING_SCHEMA, isAuthorNamespacedWidgetId } from '@dsh-widget-board/contracts'
+import type { MarketListing, WidgetMarketProviderRegistration } from '@dsh-scholar-board/contracts'
+import { MARKET_LISTING_SCHEMA, isAuthorNamespacedWidgetId } from '@dsh-scholar-board/contracts'
 import { randomUUID } from 'node:crypto'
 import { lstat, mkdir, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
-import type { MarketInstallRecord } from '@dsh-widget-board/contracts'
+import type { MarketInstallRecord } from '@dsh-scholar-board/contracts'
 import type { RouteContext } from './routes'
 import type { PackageFile } from './package'
 import { checkFiles } from './package'

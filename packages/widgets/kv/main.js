@@ -30,7 +30,7 @@
       return {
         title: '运行信息',
         items: [
-          { key: '版本', value: '0.2.0', note: 'dsh-widget-board' },
+          { key: '版本', value: '0.2.0', note: 'dsh-scholar-board' },
           { key: '宿主', value: '0.2.1', note: 'dsh' },
           { key: '组件', value: '22', note: '内置' },
           { key: '修订号', value: '42', note: '布局 7' }
@@ -40,7 +40,7 @@
     return {
       title: 'Runtime',
       items: [
-        { key: 'Version', value: '0.2.0', note: 'dsh-widget-board' },
+        { key: 'Version', value: '0.2.0', note: 'dsh-scholar-board' },
         { key: 'Host', value: '0.2.1', note: 'dsh' },
         { key: 'Widgets', value: '22', note: 'built-in' },
         { key: 'Revisions', value: '42', note: 'layout 7' }

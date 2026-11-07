@@ -1,6 +1,6 @@
 /* setState没有回执：只在onState收到已保存ledger后通知；超时显示错误，不反复尝试。 */
-import { campusProps, campusState } from '@dsh-widget-board/model/campus/model'
-import { reminderPlan, reminderVersion } from '@dsh-widget-board/model/campus/reminders'
+import { campusProps, campusState } from '@dsh-scholar-board/model/campus/model'
+import { reminderPlan, reminderVersion } from '@dsh-scholar-board/model/campus/reminders'
 
 export function createCampusReminders(widget, feedback) {
   let pending

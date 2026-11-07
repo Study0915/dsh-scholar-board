@@ -11,7 +11,7 @@
  */
 import { join } from 'node:path'
 
-export const name = 'dsh-widget-board-test-provider-v3'
+export const name = 'dsh-scholar-board-test-provider-v3'
 
 export const inject = ['widgetBoard']
 

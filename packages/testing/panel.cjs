@@ -6,8 +6,8 @@
  * 查找只用插件自己的标记（D1）；具体卡片由调用方按标题等。
  */
 
-const PANEL_ICON = 'svg.dsh-widget-board__icon'
-const BOARD_VIEW = '[data-dsh-widget-board-view]'
+const PANEL_ICON = 'svg.dsh-scholar-board__icon'
+const BOARD_VIEW = '[data-dsh-scholar-board-view]'
 // 设置面板是盖住侧栏的模态；它的一节只在导航选中的时候挂载。
 const SETTINGS_MODAL = '[role="dialog"][aria-modal="true"]'
 // 设置面板的入口在宿主的账号菜单里，菜单项带一段快捷键文字。
@@ -16,9 +16,9 @@ const SETTINGS_ENTRY = '设置'
 const MORE_BUTTON = '更多'
 // 本插件在设置页里那一节的名字，与注册时写的一致（D21）。
 const SETTINGS_SECTION = '看板'
-const HEALTH_TABLE = '[data-dsh-widget-board-provider-health]'
+const HEALTH_TABLE = '[data-dsh-scholar-board-provider-health]'
 // 工作区里可能挂着几块看板，只有选中的那块看得见（D21）：等它里面的第一张卡，而不是全页第一张。
-const CARD_FRAME = '.dsh-widget-board__flow[data-active="true"] iframe.dsh-widget-board__frame'
+const CARD_FRAME = '.dsh-scholar-board__flow[data-active="true"] iframe.dsh-scholar-board__frame'
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**

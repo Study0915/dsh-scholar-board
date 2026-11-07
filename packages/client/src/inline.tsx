@@ -10,8 +10,8 @@
  */
 import { createElement, useCallback, useEffect, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
-import type { BoardInstance, ToolViewProps, WidgetNotification, WidgetSummary } from '@dsh-widget-board/contracts'
-import tokens from '@dsh-widget-board/contracts/tokens.json'
+import type { BoardInstance, ToolViewProps, WidgetNotification, WidgetSummary } from '@dsh-scholar-board/contracts'
+import tokens from '@dsh-scholar-board/contracts/tokens.json'
 import { CardSurface } from './card-surface'
 import { CARD_CLIP } from './card-shell'
 import { isChinese, t } from './copy'
@@ -102,7 +102,7 @@ export function InlineWidget({ context, phase, block }: InlineViewProps): ReactN
 
   if (shown === undefined) {
     const text = phase === 'result' ? textOf(block.content) : undefined
-    return createElement('p', { className: 'dsh-widget-board__inline-note' }, text ?? (phase === 'result' ? t('inlineEmpty') : t('inlinePreparing')))
+    return createElement('p', { className: 'dsh-scholar-board__inline-note' }, text ?? (phase === 'result' ? t('inlineEmpty') : t('inlinePreparing')))
   }
 
   const instance: BoardInstance = {
@@ -126,13 +126,13 @@ export function InlineWidget({ context, phase, block }: InlineViewProps): ReactN
     'div',
     {
       ref,
-      className: 'dsh-widget-board__inline',
-      'data-dsh-widget-board-inline': shown.widget,
+      className: 'dsh-scholar-board__inline',
+      'data-dsh-scholar-board-inline': shown.widget,
       style,
     },
     createElement(
       'div',
-      { className: 'dsh-widget-board__inline-box', style: { clipPath: CARD_CLIP } },
+      { className: 'dsh-scholar-board__inline-box', style: { clipPath: CARD_CLIP } },
       createElement(CardSurface, {
         instance,
         widget: shown.summary,

@@ -9,7 +9,7 @@
  * 照常可用（D31）。
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-widget-board-test-provider',
+  id: 'dsh-scholar-board-test-provider',
   factory: (require) => {
     const module = { exports: {} }
     const exports = module.exports
@@ -21,7 +21,7 @@ window.__ModuleLoader__.load({
     /** 旧入口不接受的那一个。 */
     const UNSUPPORTED_API_VERSION = 4
 
-    exports.name = 'dsh-widget-board-test-provider'
+    exports.name = 'dsh-scholar-board-test-provider'
     exports.inject = ['widgetBoard']
 
     /**
@@ -64,7 +64,7 @@ window.__ModuleLoader__.load({
             {
               'data-test-native-run': '',
               type: 'button',
-              onClick: () => { props.action('dsh-widget-board-test-provider:test.run') },
+              onClick: () => { props.action('dsh-scholar-board-test-provider:test.run') },
             },
             'run',
           ),

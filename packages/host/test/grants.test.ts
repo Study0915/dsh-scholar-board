@@ -8,7 +8,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { Board } from '@dsh-widget-board/contracts'
+import type { Board } from '@dsh-scholar-board/contracts'
 import { createRegistries } from '../src/sources'
 import { GRANTS_FORMAT, openGrants, permissionMatches } from '../src/grants'
 import { requireGrant } from '../src/permissions'
@@ -17,7 +17,7 @@ const roots: string[] = []
 
 /** 一个临时目录。 */
 async function scratch(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'dsh-widget-board-grants-'))
+  const dir = await mkdtemp(join(tmpdir(), 'dsh-scholar-board-grants-'))
   roots.push(dir)
   return dir
 }
@@ -114,7 +114,7 @@ describe('授权闸门', () => {
 
   it('看板自己的数据源不拦', async () => {
     const grants = await openGrants(join(await scratch(), 'grants.json'))
-    expect(() => { requireGrant({ board: boardWith('test-native'), hashes, grants }, 'card', 'source', 'service:taskBoard', undefined, 'dsh-widget-board') }).not.toThrow()
+    expect(() => { requireGrant({ board: boardWith('test-native'), hashes, grants }, 'card', 'source', 'service:taskBoard', undefined, 'dsh-scholar-board') }).not.toThrow()
   })
 
   it('要权限的动作在授权前被拒绝，拒绝里带着缺的那一条', async () => {

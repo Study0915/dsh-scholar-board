@@ -8,7 +8,7 @@
     "zh": "一段 JSON 的树状查看器：对象与数组逐层折叠，值按类型着色，长文本直接换行。",
     "en": "A tree view of a JSON value: objects and arrays fold level by level, values are colored by type, and long text wraps."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 22 },

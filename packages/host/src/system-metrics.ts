@@ -19,8 +19,8 @@
  */
 import os from 'node:os'
 import { statfs } from 'node:fs/promises'
-import type { DataSourceRegistration, InstanceFace } from '@dsh-widget-board/contracts'
-import { WIDGET_BOARD_API_VERSION } from '@dsh-widget-board/contracts'
+import type { DataSourceRegistration, InstanceFace } from '@dsh-scholar-board/contracts'
+import { WIDGET_BOARD_API_VERSION } from '@dsh-scholar-board/contracts'
 import { buildDocument } from './document'
 import type { DocumentAssets } from './document'
 import type { WidgetRecord } from './library'

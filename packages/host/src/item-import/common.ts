@@ -1,10 +1,10 @@
 /** 文件内容始终按数据处理；解析错误逐行保留，正式写入仍由共享校园模型校验。 */
 import { createHash, randomUUID } from 'node:crypto'
 import { DateTime } from 'luxon'
-import type { CampusItem, Due } from '@dsh-widget-board/contracts/campus'
-import type { ImportField, ItemImportRequest, ItemImportRow } from '@dsh-widget-board/contracts/item-import'
-import { campusState, EMPTY_CAMPUS_STATE } from '@dsh-widget-board/model/campus/model'
-import { dueFromInput, validZone } from '@dsh-widget-board/model/campus/time'
+import type { CampusItem, Due } from '@dsh-scholar-board/contracts/campus'
+import type { ImportField, ItemImportRequest, ItemImportRow } from '@dsh-scholar-board/contracts/item-import'
+import { campusState, EMPTY_CAMPUS_STATE } from '@dsh-scholar-board/model/campus/model'
+import { dueFromInput, validZone } from '@dsh-scholar-board/model/campus/time'
 
 export const FILE_LIMIT = 2 * 1024 * 1024
 export const CANDIDATE_LIMIT = 10000

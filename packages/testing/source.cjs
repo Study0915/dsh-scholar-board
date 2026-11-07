@@ -5,7 +5,7 @@
  *
  * 三条路径都从界面走：在创建器里切到高级源码，读一个只读源并另存成一个用户组件；在源码面板里
  * 改一处内容并写下去；在预览面板里看一段还没进组件库的代码真的画出来。查找只用插件自己写在
- * 节点上的标记（`data-dsh-widget-board-*`），宿主换了内部结构也不会让判据失真（D1）。
+ * 节点上的标记（`data-dsh-scholar-board-*`），宿主换了内部结构也不会让判据失真（D1）。
  */
 const { openComposerFromMenu } = require('./composer.cjs')
 const { waitFor } = require('./road.cjs')
@@ -40,11 +40,11 @@ async function hasWidget(page, id) {
  */
 async function openSource(page, widget) {
   await openComposerFromMenu(page)
-  await page.locator('[data-dsh-widget-board-template="advanced"]').click()
-  await page.waitForSelector('[data-dsh-widget-board-pick-widget]', { timeout: 10000 })
-  await page.locator(`[data-dsh-widget-board-pick-widget="${widget}"]`).click()
-  await page.locator('[data-dsh-widget-board-mode="source"]').click()
-  await page.waitForSelector('[data-dsh-widget-board-source]', { timeout: 15000 })
+  await page.locator('[data-dsh-scholar-board-template="advanced"]').click()
+  await page.waitForSelector('[data-dsh-scholar-board-pick-widget]', { timeout: 10000 })
+  await page.locator(`[data-dsh-scholar-board-pick-widget="${widget}"]`).click()
+  await page.locator('[data-dsh-scholar-board-mode="source"]').click()
+  await page.waitForSelector('[data-dsh-scholar-board-source]', { timeout: 15000 })
 }
 
 /**
@@ -54,7 +54,7 @@ async function openSource(page, widget) {
  */
 async function waitForEditor(page) {
   await page.waitForFunction(() => {
-    const host = document.querySelector('[data-dsh-widget-board-source-editor]')
+    const host = document.querySelector('[data-dsh-scholar-board-source-editor]')
     return host !== null && host.querySelector('.cm-editor') !== null
   }, undefined, { timeout: 30000 })
 }
@@ -107,40 +107,40 @@ async function sourcePass(page, check) {
   await openSource(page, 'markdown')
   // 等源码读回来：面板头部的来源标记与另存用的 id 都要等它。
   await page.waitForFunction(() => {
-    const node = document.querySelector('[data-dsh-widget-board-source-origin]')
-    return node !== null && (node.getAttribute('data-dsh-widget-board-source-origin') ?? '') !== ''
+    const node = document.querySelector('[data-dsh-scholar-board-source-origin]')
+    return node !== null && (node.getAttribute('data-dsh-scholar-board-source-origin') ?? '') !== ''
   }, undefined, { timeout: 20000 })
-  const origin = await page.locator('[data-dsh-widget-board-source-origin]').getAttribute('data-dsh-widget-board-source-origin')
+  const origin = await page.locator('[data-dsh-scholar-board-source-origin]').getAttribute('data-dsh-scholar-board-source-origin')
   check('只读源标成只读', origin === 'builtin', String(origin))
-  const suggested = await page.locator('[data-dsh-widget-board-source-id]').inputValue()
+  const suggested = await page.locator('[data-dsh-scholar-board-source-id]').inputValue()
   check('只读源给出另存用的 id', suggested.startsWith('user-'), suggested)
-  const readOnlyNote = await page.locator('.dsh-widget-board__source-note').first().textContent()
+  const readOnlyNote = await page.locator('.dsh-scholar-board__source-note').first().textContent()
   check('只读源说明是另存', String(readOnlyNote).includes('另存'), String(readOnlyNote).slice(0, 40))
 
   // C14：编辑器真的建出来了——CodeMirror 那个分包按需加载之后才有。
   await waitForEditor(page)
   const editor = await page.evaluate(() => {
-    const node = document.querySelector('[data-dsh-widget-board-source-editor] .cm-editor')
+    const node = document.querySelector('[data-dsh-scholar-board-source-editor] .cm-editor')
     return { present: node !== null, lines: node === null ? 0 : node.querySelectorAll('.cm-line').length }
   })
   check('源码编辑器建出来了', editor.present && editor.lines > 0, `${String(editor.lines)} 行`)
 
   // C17：切到别的文件标签，编辑器换内容。
-  const tabs = await page.locator('[data-dsh-widget-board-source-tab]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-dsh-widget-board-source-tab')))
+  const tabs = await page.locator('[data-dsh-scholar-board-source-tab]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-dsh-scholar-board-source-tab')))
   check('源码面板列出组件的文件', tabs.includes('widget.json') && tabs.includes('index.html') && tabs.includes('style.css'), tabs.join(','))
 
   // 改一处内容：index.html 里加一句。改的是编辑器里的真实内容，用真的键盘输入。
-  await page.locator('[data-dsh-widget-board-source-tab="index.html"]').click()
+  await page.locator('[data-dsh-scholar-board-source-tab="index.html"]').click()
   await waitForEditor(page)
-  const content = page.locator('[data-dsh-widget-board-source-editor] .cm-content')
+  const content = page.locator('[data-dsh-scholar-board-source-editor] .cm-content')
   await content.click()
   await page.keyboard.press('Control+End')
   await page.keyboard.type('\n<p>改过一处</p>')
-  const dirty = await page.locator('[data-dsh-widget-board-source-save]').isEnabled()
+  const dirty = await page.locator('[data-dsh-scholar-board-source-save]').isEnabled()
   check('改了内容之后可以写下去', dirty)
 
   // C09：写下去的是一个新��用户组件，原来的只读源没被动过。
-  await page.locator('[data-dsh-widget-board-source-save]').click()
+  await page.locator('[data-dsh-scholar-board-source-save]').click()
   const written = await waitFor(async () => await hasWidget(page, suggested), 20000)
   check('只读源另存为一个新的用户组件', written, suggested)
   const originStillThere = await hasWidget(page, 'markdown')
@@ -276,12 +276,12 @@ async function sourcePass(page, check) {
   // C13：面板里存草稿、恢复草稿，以及关闭时的三个选择。
   await openSource(page, 'markdown')
   await waitForEditor(page)
-  const draftEditor = page.locator('[data-dsh-widget-board-source-editor] .cm-content')
+  const draftEditor = page.locator('[data-dsh-scholar-board-source-editor] .cm-content')
   await draftEditor.click()
   await page.keyboard.press('Control+End')
   await page.keyboard.type('\n<p>草稿里的一行</p>')
-  await page.locator('[data-dsh-widget-board-source-draft-save]').click()
-  const savedDraft = await waitFor(async () => await page.locator('.dsh-widget-board__editor-ok').count() > 0, 10000)
+  await page.locator('[data-dsh-scholar-board-source-draft-save]').click()
+  const savedDraft = await waitFor(async () => await page.locator('.dsh-scholar-board__editor-ok').count() > 0, 10000)
   check('源码面板能存草稿', savedDraft)
 
   // 改回原样，恢复草稿时那一份又回来了。
@@ -289,37 +289,37 @@ async function sourcePass(page, check) {
   await page.keyboard.press('Control+z')
   await page.keyboard.press('Control+z')
   await page.keyboard.press('Control+z')
-  await page.locator('[data-dsh-widget-board-source-draft-restore]').click()
-  const restored = await waitFor(async () => await page.locator('[data-dsh-widget-board-source-editor] .cm-content').textContent().then((text) => String(text).includes('草稿里的一行')), 10000)
+  await page.locator('[data-dsh-scholar-board-source-draft-restore]').click()
+  const restored = await waitFor(async () => await page.locator('[data-dsh-scholar-board-source-editor] .cm-content').textContent().then((text) => String(text).includes('草稿里的一行')), 10000)
   check('草稿能恢复到编辑器里', restored)
 
   // 关闭时先问一句：存草稿、放弃还是继续编辑。
   await page.keyboard.press('Control+End')
   await page.keyboard.type('\n<p>又改了一行</p>')
-  await page.locator('[data-dsh-widget-board-source-close]').click()
-  const asked = await waitFor(async () => await page.locator('[data-dsh-widget-board-source-close-choice]').count() === 1, 10000)
+  await page.locator('[data-dsh-scholar-board-source-close]').click()
+  const asked = await waitFor(async () => await page.locator('[data-dsh-scholar-board-source-close-choice]').count() === 1, 10000)
   check('关掉脏编辑器时先问一句', asked)
-  const choices = await page.locator('[data-dsh-widget-board-source-close-choice] button').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-dsh-widget-board-source-keep') !== null ? 'keep' : node.getAttribute('data-dsh-widget-board-source-draft') !== null ? 'draft' : node.getAttribute('data-dsh-widget-board-source-discard') !== null ? 'discard' : 'other'))
+  const choices = await page.locator('[data-dsh-scholar-board-source-close-choice] button').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-dsh-scholar-board-source-keep') !== null ? 'keep' : node.getAttribute('data-dsh-scholar-board-source-draft') !== null ? 'draft' : node.getAttribute('data-dsh-scholar-board-source-discard') !== null ? 'discard' : 'other'))
   check('三个选择都在：继续、存草稿、放弃', choices.includes('keep') && choices.includes('draft') && choices.includes('discard'), choices.join(','))
 
   // 继续编辑：面板还在。
-  await page.locator('[data-dsh-widget-board-source-keep]').click()
-  const kept = await waitFor(async () => await page.locator('[data-dsh-widget-board-source-close-choice]').count() === 0, 10000)
+  await page.locator('[data-dsh-scholar-board-source-keep]').click()
+  const kept = await waitFor(async () => await page.locator('[data-dsh-scholar-board-source-close-choice]').count() === 0, 10000)
   check('继续编辑之后面板还在', kept)
 
   // 放弃：面板收起来。
-  await page.locator('[data-dsh-widget-board-source-close]').click()
-  await page.waitForSelector('[data-dsh-widget-board-source-close-choice]', { timeout: 10000 })
-  await page.locator('[data-dsh-widget-board-source-discard]').click()
-  const discarded = await waitFor(async () => await page.locator('[data-dsh-widget-board-source]').count() === 0, 10000)
+  await page.locator('[data-dsh-scholar-board-source-close]').click()
+  await page.waitForSelector('[data-dsh-scholar-board-source-close-choice]', { timeout: 10000 })
+  await page.locator('[data-dsh-scholar-board-source-discard]').click()
+  const discarded = await waitFor(async () => await page.locator('[data-dsh-scholar-board-source]').count() === 0, 10000)
   check('放弃之后面板收起来了', discarded)
 
   // 把创建器也收起来：它留在那里会挡住下方的菜单，后面的场景就点不动了。
-  await page.waitForSelector('[data-dsh-widget-board-composer-close]', { timeout: 10000 })
-  await page.locator('[data-dsh-widget-board-composer-close]').click()
-  const discarding = await page.locator('[data-dsh-widget-board-composer-discard]').count()
-  if (discarding > 0) await page.locator('[data-dsh-widget-board-composer-discard]').click()
-  const closed = await waitFor(async () => await page.locator('[data-dsh-widget-board-composer]').count() === 0, 10000)
+  await page.waitForSelector('[data-dsh-scholar-board-composer-close]', { timeout: 10000 })
+  await page.locator('[data-dsh-scholar-board-composer-close]').click()
+  const discarding = await page.locator('[data-dsh-scholar-board-composer-discard]').count()
+  if (discarding > 0) await page.locator('[data-dsh-scholar-board-composer-discard]').click()
+  const closed = await waitFor(async () => await page.locator('[data-dsh-scholar-board-composer]').count() === 0, 10000)
   check('关掉源码面板之后创建器也收起来了', closed)
   const { previewIsolationPass } = require('./source-preview.cjs')
   await previewIsolationPass(page, check)

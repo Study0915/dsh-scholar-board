@@ -7,13 +7,13 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { boardTitleProblem } from '@dsh-widget-board/contracts'
+import { boardTitleProblem } from '@dsh-scholar-board/contracts'
 import type {
   BoardEventFrame,
   SettingsSectionProps,
   WidgetProviderHealth,
   WorkspaceSnapshot,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { t } from './copy'
 import { subscribeLive } from './live'
 import { mergeEvent, needsSnapshot } from './merge'
@@ -45,31 +45,31 @@ export function providerHealthOf(snapshot: WorkspaceSnapshot | null): readonly W
 export function ProviderHealthTable({ providers }: { providers: readonly WidgetProviderHealth[] }): ReactNode {
   return (
     <section
-      className="dsh-widget-board__provider-health"
-      data-dsh-widget-board-provider-health=""
+      className="dsh-scholar-board__provider-health"
+      data-dsh-scholar-board-provider-health=""
       aria-label={t('providerHealth')}
     >
-      <h3 className="dsh-widget-board__provider-health-title">{t('providerHealth')}</h3>
+      <h3 className="dsh-scholar-board__provider-health-title">{t('providerHealth')}</h3>
       {providers.length === 0
         ? (
           <p
-            className="dsh-widget-board__board-settings-notice"
-            data-dsh-widget-board-provider-health-empty=""
+            className="dsh-scholar-board__board-settings-notice"
+            data-dsh-scholar-board-provider-health-empty=""
           >
             {t('providerHealthEmpty')}
           </p>
         )
         : (
-          <div className="dsh-widget-board__provider-health-scroll">
-            <table className="dsh-widget-board__provider-health-table">
+          <div className="dsh-scholar-board__provider-health-scroll">
+            <table className="dsh-scholar-board__provider-health-table">
               <thead>
                 <tr>
                   <th scope="col">{t('provider')}</th>
                   <th scope="col">{t('providerState')}</th>
                   <th scope="col">{t('providerFeatures')}</th>
-                  <th scope="col" className="dsh-widget-board__provider-health-number">{t('providerRegistrations')}</th>
-                  <th scope="col" className="dsh-widget-board__provider-health-number">{t('providerFailures')}</th>
-                  <th scope="col" className="dsh-widget-board__provider-health-number">{t('providerTimeouts')}</th>
+                  <th scope="col" className="dsh-scholar-board__provider-health-number">{t('providerRegistrations')}</th>
+                  <th scope="col" className="dsh-scholar-board__provider-health-number">{t('providerFailures')}</th>
+                  <th scope="col" className="dsh-scholar-board__provider-health-number">{t('providerTimeouts')}</th>
                   <th scope="col">{t('providerLastError')}</th>
                 </tr>
               </thead>
@@ -77,29 +77,29 @@ export function ProviderHealthTable({ providers }: { providers: readonly WidgetP
                 {providers.map((row) => (
                   <tr
                     key={row.provider}
-                    className="dsh-widget-board__provider-health-row"
-                    data-dsh-widget-board-provider={row.provider}
+                    className="dsh-scholar-board__provider-health-row"
+                    data-dsh-scholar-board-provider={row.provider}
                     data-available={row.available ? 'true' : 'false'}
                   >
-                    <th scope="row" className="dsh-widget-board__provider-health-name">{row.provider}</th>
-                    <td className="dsh-widget-board__provider-health-state">
+                    <th scope="row" className="dsh-scholar-board__provider-health-name">{row.provider}</th>
+                    <td className="dsh-scholar-board__provider-health-state">
                       {row.available ? t('providerAvailable') : t('providerUnavailable')}
                     </td>
                     <td>
                       {row.features.length === 0
-                        ? <span className="dsh-widget-board__provider-health-none">{t('providerNoFeatures')}</span>
+                        ? <span className="dsh-scholar-board__provider-health-none">{t('providerNoFeatures')}</span>
                         : (
-                          <span className="dsh-widget-board__provider-health-features">
+                          <span className="dsh-scholar-board__provider-health-features">
                             {row.features.map((feature) => (
-                              <code key={feature} className="dsh-widget-board__provider-health-feature">{feature}</code>
+                              <code key={feature} className="dsh-scholar-board__provider-health-feature">{feature}</code>
                             ))}
                           </span>
                         )}
                     </td>
-                    <td className="dsh-widget-board__provider-health-number">{row.registrations}</td>
-                    <td className="dsh-widget-board__provider-health-number">{row.failures}</td>
-                    <td className="dsh-widget-board__provider-health-number">{row.timeouts}</td>
-                    <td className="dsh-widget-board__provider-health-error">{row.lastError ?? '—'}</td>
+                    <td className="dsh-scholar-board__provider-health-number">{row.registrations}</td>
+                    <td className="dsh-scholar-board__provider-health-number">{row.failures}</td>
+                    <td className="dsh-scholar-board__provider-health-number">{row.timeouts}</td>
+                    <td className="dsh-scholar-board__provider-health-error">{row.lastError ?? '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -183,31 +183,31 @@ export function BoardSettings(_props: SettingsSectionProps): ReactNode {
   const boards = snapshot === null ? [] : snapshot.boards
 
   return (
-    <div className="dsh-widget-board__board-settings" data-dsh-widget-board-settings="">
+    <div className="dsh-scholar-board__board-settings" data-dsh-scholar-board-settings="">
       {failure === null
         ? null
-        : <p className="dsh-widget-board__board-settings-notice dsh-widget-board__board-settings-notice--error">{failure}</p>}
+        : <p className="dsh-scholar-board__board-settings-notice dsh-scholar-board__board-settings-notice--error">{failure}</p>}
       {snapshot === null
-        ? <p className="dsh-widget-board__board-settings-notice">{t('boardListLoading')}</p>
+        ? <p className="dsh-scholar-board__board-settings-notice">{t('boardListLoading')}</p>
         : (
-          <ul className="dsh-widget-board__board-settings-list" aria-label={t('boards')}>
+          <ul className="dsh-scholar-board__board-settings-list" aria-label={t('boards')}>
             {boards.map((board) => (
               <li
                 key={board.id}
-                className="dsh-widget-board__board-settings-row"
-                data-dsh-widget-board-settings-board={board.id}
+                className="dsh-scholar-board__board-settings-row"
+                data-dsh-scholar-board-settings-board={board.id}
                 data-active={board.id === snapshot.active ? 'true' : 'false'}
               >
                 <button
                   type="button"
-                  className="dsh-widget-board__board-settings-name"
+                  className="dsh-scholar-board__board-settings-name"
                   aria-current={board.id === snapshot.active}
                   title={t('selectBoard')}
                   onClick={() => { onSelect(board.id) }}
                 >
                   {board.title}
                 </button>
-                <span className="dsh-widget-board__board-settings-count">
+                <span className="dsh-scholar-board__board-settings-count">
                   {factsOf(board).cards}
                   {' '}
                   {t('boardCards')}
@@ -216,7 +216,7 @@ export function BoardSettings(_props: SettingsSectionProps): ReactNode {
                   ? (
                     <>
                       <input
-                        className="dsh-widget-board__board-settings-input"
+                        className="dsh-scholar-board__board-settings-input"
                         value={title}
                         aria-label={t('boardName')}
                         aria-invalid={boardTitleProblem(title) !== null}
@@ -229,13 +229,13 @@ export function BoardSettings(_props: SettingsSectionProps): ReactNode {
                       />
                       <button
                         type="button"
-                        className="dsh-widget-board__board-settings-action"
+                        className="dsh-scholar-board__board-settings-action"
                         disabled={busy || boardTitleProblem(title) !== null}
                         onClick={onConfirmRename}
                       >
                         {t('renameConfirm')}
                       </button>
-                      <button type="button" className="dsh-widget-board__board-settings-action" onClick={onCancelRename}>
+                      <button type="button" className="dsh-scholar-board__board-settings-action" onClick={onCancelRename}>
                         {t('renameCancel')}
                       </button>
                     </>
@@ -244,14 +244,14 @@ export function BoardSettings(_props: SettingsSectionProps): ReactNode {
                     <>
                       <button
                         type="button"
-                        className="dsh-widget-board__board-settings-action"
+                        className="dsh-scholar-board__board-settings-action"
                         onClick={() => { onStartRename(board.id, board.title) }}
                       >
                         {t('rename')}
                       </button>
                       <button
                         type="button"
-                        className="dsh-widget-board__board-settings-action"
+                        className="dsh-scholar-board__board-settings-action"
                         disabled={busy}
                         title={t('removeBoard')}
                         onClick={() => { onRemove(board.id) }}

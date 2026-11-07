@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import type { ItemImportRow } from '@dsh-widget-board/contracts/item-import'
+import type { ItemImportRow } from '@dsh-scholar-board/contracts/item-import'
 import type { RouteContext } from '../routes'
 import { Refusal } from '../refusal'
 

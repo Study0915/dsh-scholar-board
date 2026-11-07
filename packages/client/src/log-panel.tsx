@@ -6,7 +6,7 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { RequestLogEntry } from '@dsh-widget-board/contracts'
+import type { RequestLogEntry } from '@dsh-scholar-board/contracts'
 import { t } from './copy'
 import { fetchInstanceLog } from './snapshot'
 
@@ -52,11 +52,11 @@ export function RequestLogPanel({ instanceId }: RequestLogPanelProps): ReactNode
 
   if (error !== null) {
     return (
-      <div className="dsh-widget-board__log">
-        <p className="dsh-widget-board__editor-error" role="alert">{error}</p>
-        <div className="dsh-widget-board__editor-actions">
-          <span className="dsh-widget-board__editor-spacer" />
-          <button type="button" className="dsh-widget-board__editor-ghost" data-dsh-widget-board-log-refresh="" disabled={busy} onClick={load}>
+      <div className="dsh-scholar-board__log">
+        <p className="dsh-scholar-board__editor-error" role="alert">{error}</p>
+        <div className="dsh-scholar-board__editor-actions">
+          <span className="dsh-scholar-board__editor-spacer" />
+          <button type="button" className="dsh-scholar-board__editor-ghost" data-dsh-scholar-board-log-refresh="" disabled={busy} onClick={load}>
             {t('refresh')}
           </button>
         </div>
@@ -65,40 +65,40 @@ export function RequestLogPanel({ instanceId }: RequestLogPanelProps): ReactNode
   }
 
   if (entries === null) {
-    return <p className="dsh-widget-board__editor-empty">{t('boardListLoading')}</p>
+    return <p className="dsh-scholar-board__editor-empty">{t('boardListLoading')}</p>
   }
 
   return (
-    <div className="dsh-widget-board__log" data-dsh-widget-board-log="">
+    <div className="dsh-scholar-board__log" data-dsh-scholar-board-log="">
       {entries.length === 0
-        ? <p className="dsh-widget-board__editor-empty">{t('noRequests')}</p>
+        ? <p className="dsh-scholar-board__editor-empty">{t('noRequests')}</p>
         : (
-          <ul className="dsh-widget-board__log-list">
+          <ul className="dsh-scholar-board__log-list">
             {[...entries].reverse().map((entry) => (
               <li
                 key={`${entry.at}:${entry.method}:${entry.path}`}
-                className="dsh-widget-board__log-row"
+                className="dsh-scholar-board__log-row"
                 data-ok={entry.error === undefined ? 'true' : 'false'}
-                data-dsh-widget-board-log-row=""
+                data-dsh-scholar-board-log-row=""
               >
-                <span className="dsh-widget-board__log-time">{timeOf(entry.at)}</span>
-                <span className="dsh-widget-board__log-method">{entry.method}</span>
-                <span className="dsh-widget-board__log-target" title={`${entry.host}${entry.path}`}>
-                  <span className="dsh-widget-board__log-host">{entry.host}</span>
-                  <span className="dsh-widget-board__log-path">{entry.path.split('?')[0]}</span>
+                <span className="dsh-scholar-board__log-time">{timeOf(entry.at)}</span>
+                <span className="dsh-scholar-board__log-method">{entry.method}</span>
+                <span className="dsh-scholar-board__log-target" title={`${entry.host}${entry.path}`}>
+                  <span className="dsh-scholar-board__log-host">{entry.host}</span>
+                  <span className="dsh-scholar-board__log-path">{entry.path.split('?')[0]}</span>
                 </span>
-                <span className="dsh-widget-board__log-status">
+                <span className="dsh-scholar-board__log-status">
                   {entry.error === undefined ? entry.status : `${t('requestFailed')} · ${entry.error}`}
                 </span>
-                <span className="dsh-widget-board__log-ms">{`${String(entry.ms)} ms`}</span>
+                <span className="dsh-scholar-board__log-ms">{`${String(entry.ms)} ms`}</span>
               </li>
             ))}
           </ul>
         )}
-      <p className="dsh-widget-board__editor-note">{t('requestLogHint')}</p>
-      <div className="dsh-widget-board__editor-actions">
-        <span className="dsh-widget-board__editor-spacer" />
-        <button type="button" className="dsh-widget-board__editor-ghost" data-dsh-widget-board-log-refresh="" disabled={busy} onClick={load}>
+      <p className="dsh-scholar-board__editor-note">{t('requestLogHint')}</p>
+      <div className="dsh-scholar-board__editor-actions">
+        <span className="dsh-scholar-board__editor-spacer" />
+        <button type="button" className="dsh-scholar-board__editor-ghost" data-dsh-scholar-board-log-refresh="" disabled={busy} onClick={load}>
           {busy ? t('refreshing') : t('refresh')}
         </button>
       </div>

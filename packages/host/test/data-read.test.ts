@@ -4,7 +4,7 @@
  * 这里的上下文是替身：这一层判定的是能力自己的白名单与它转手的读路径，不是工作区的实现。
  */
 import { describe, expect, it } from 'vitest'
-import type { Board, BoardInstance, WidgetManifest } from '@dsh-widget-board/contracts'
+import type { Board, BoardInstance, WidgetManifest } from '@dsh-scholar-board/contracts'
 import { capabilityMetadataOf } from '../src/capability-metadata'
 import { DATA_READ_CAPABILITY, DATA_READ_PROVIDER, dataReadCapability, registerDataRead } from '../src/data-read'
 import type { GrantStore } from '../src/grants'

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import type { FrameHost } from '../frame-host'
 import type { ShellTheme } from '../theme'
 import { fetchCardContent, fetchWorkspace, saveCardContent } from '../snapshot'
-import { campusState, setCampusStatus, isCampusSchema } from '@dsh-widget-board/model/campus/model'
+import { campusState, setCampusStatus, isCampusSchema } from '@dsh-scholar-board/model/campus/model'
 
 const dialogs = new Map<string, () => void>()
 export function closeCampusDialog(instance: string): void { dialogs.get(instance)?.() }

@@ -5,7 +5,7 @@
  * 表里为这张卡的**这个组件版本**给过授权。看板自己的数据源与动作由本插件提供，不是第三方代码，
  * 不经过这里（D3）。
  */
-import type { ActionPermission, Board, GrantKind } from '@dsh-widget-board/contracts'
+import type { ActionPermission, Board, GrantKind } from '@dsh-scholar-board/contracts'
 import { permissionMatches, type GrantStore } from './grants'
 import { Refusal } from './refusal'
 

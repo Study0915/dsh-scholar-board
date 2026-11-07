@@ -1,5 +1,5 @@
 import type { Context } from '@deepseek-ai/cordis'
-import { PACKAGE_NAME, WIDGET_BOARD_SERVICE_NAME } from '@dsh-widget-board/contracts'
+import { PACKAGE_NAME, WIDGET_BOARD_SERVICE_NAME } from '@dsh-scholar-board/contracts'
 import { createClientService } from './native'
 import { installFrameHost } from './page-frames'
 import { registerPanel } from './panel'

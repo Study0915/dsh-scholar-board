@@ -19,9 +19,9 @@ import type {
   InstancePropsRequest,
   InstanceStateRequest,
   WidgetMinBox,
-} from '@dsh-widget-board/contracts'
-import { FLIP_GROUP_BACK, FLIP_GROUP_FRONT, PLUGIN_ROUTE, REQUEST_LOG_LIMIT, VISIBILITY_LIMIT, VISIBILITY_PATH, isVisibilityReport } from '@dsh-widget-board/contracts'
-import { isCardLayout } from '@dsh-widget-board/model'
+} from '@dsh-scholar-board/contracts'
+import { FLIP_GROUP_BACK, FLIP_GROUP_FRONT, PLUGIN_ROUTE, REQUEST_LOG_LIMIT, VISIBILITY_LIMIT, VISIBILITY_PATH, isVisibilityReport } from '@dsh-scholar-board/contracts'
+import { isCardLayout } from '@dsh-scholar-board/model'
 import { isRecord } from '../../../host/src/guards'
 import { BOARD_STATE_WRITES_PER_SECOND, STATE_WRITES_PER_SECOND, createRateLimiter } from '../../../host/src/limits'
 import type { WidgetRecord } from '../../../host/src/library'

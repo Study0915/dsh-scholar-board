@@ -16,7 +16,7 @@ import type {
   WidgetSummary,
   WorkspaceSnapshot,
   MediaBinding,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { t, textOf } from '../copy'
 import type { FrameHost } from '../frame-host'
 import type { ShellTheme } from '../theme'
@@ -33,7 +33,7 @@ import { SourceEditorPanel } from './source-panel'
 import { PreviewPanel } from './preview-panel'
 import { copyMedia, imageFormSchema, ImageDraftPreview, ImageField } from './media-field'
 import { CampusForm, isCampusSchema } from '../campus/form'
-import { campusProps, campusState } from '@dsh-widget-board/model/campus/model'
+import { campusProps, campusState } from '@dsh-scholar-board/model/campus/model'
 import { CampusMedia } from './campus-media'
 import { CampusExchange } from '../campus/exchange'
 
@@ -129,7 +129,7 @@ export function ContentEditor({
   const [previewAutoRun, setPreviewAutoRun] = useState(true)
   const [sourcePane, setSourcePane] = useState<'editor' | 'preview'>('editor')
   const currentSize = useMemo(() => {
-    const frame = anchor?.querySelector<HTMLIFrameElement>(`[data-instance="${CSS.escape(instanceId)}"] iframe.dsh-widget-board__frame`)
+    const frame = anchor?.querySelector<HTMLIFrameElement>(`[data-instance="${CSS.escape(instanceId)}"] iframe.dsh-scholar-board__frame`)
     if (frame === null || frame === undefined) return undefined
     const box = frame.getBoundingClientRect()
     return { width: box.width, height: box.height }
@@ -275,7 +275,7 @@ export function ContentEditor({
 
   return (
     <div
-      className="dsh-widget-board__editor-layer"
+      className="dsh-scholar-board__editor-layer"
       style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}
       onKeyDown={(event) => {
         if (event.key !== 'Escape') return
@@ -283,29 +283,29 @@ export function ContentEditor({
         requestClose()
       }}
     >
-      <div className="dsh-widget-board__editor-backdrop" onPointerDown={requestClose} />
+      <div className="dsh-scholar-board__editor-backdrop" onPointerDown={requestClose} />
       <div
         ref={dialogRef}
-        className="dsh-widget-board__editor dsh-widget-board__composer"
-        data-dsh-widget-board-content-editor=""
+        className="dsh-scholar-board__editor dsh-scholar-board__composer"
+        data-dsh-scholar-board-content-editor=""
         role="dialog"
-        aria-labelledby="dsh-widget-board-content-title"
+        aria-labelledby="dsh-scholar-board-content-title"
       >
-        <header className="dsh-widget-board__editor-head">
+        <header className="dsh-scholar-board__editor-head">
           <div>
-            <p className="dsh-widget-board__editor-eyebrow">{t('editContent')}</p>
-            <h2 id="dsh-widget-board-content-title" className="dsh-widget-board__editor-title">
+            <p className="dsh-scholar-board__editor-eyebrow">{t('editContent')}</p>
+            <h2 id="dsh-scholar-board-content-title" className="dsh-scholar-board__editor-title">
               {model === null ? t('editTitle') : textOf(model.widget.title)}
             </h2>
-            <p className="dsh-widget-board__editor-source">
+            <p className="dsh-scholar-board__editor-source">
               {model === null ? t('editorLoading') : `${t('formPreviewHint')} · ${model.widget.version}`}
             </p>
           </div>
           <button
             ref={closeRef}
             type="button"
-            className="dsh-widget-board__editor-close"
-            data-dsh-widget-board-content-close=""
+            className="dsh-scholar-board__editor-close"
+            data-dsh-scholar-board-content-close=""
             onClick={requestClose}
             title={t('close')}
           >
@@ -313,26 +313,26 @@ export function ContentEditor({
           </button>
         </header>
 
-        {sourceOpen ? <div className="dsh-widget-board__source-panes">{(['editor', 'preview'] as const).map((pane) => <button key={pane} type="button" className="dsh-widget-board__editor-ghost" aria-pressed={sourcePane === pane} onClick={() => { setSourcePane(pane) }}>{pane === 'editor' ? '源码' : '预览'}</button>)}</div> : null}
-        <div className="dsh-widget-board__composer-body" data-dsh-widget-board-source-pane={sourceOpen ? sourcePane : undefined}>
-          <div className="dsh-widget-board__composer-form">
+        {sourceOpen ? <div className="dsh-scholar-board__source-panes">{(['editor', 'preview'] as const).map((pane) => <button key={pane} type="button" className="dsh-scholar-board__editor-ghost" aria-pressed={sourcePane === pane} onClick={() => { setSourcePane(pane) }}>{pane === 'editor' ? '源码' : '预览'}</button>)}</div> : null}
+        <div className="dsh-scholar-board__composer-body" data-dsh-scholar-board-source-pane={sourceOpen ? sourcePane : undefined}>
+          <div className="dsh-scholar-board__composer-form">
             {model !== null && !sourceOpen && isCampusSchema(model.widget.stateSchema) ? <CampusExchange target={instanceId} disabled={!blank || campusPending || mediaBusy || saving} onPending={setExchangePending} onSaved={() => { load(false); onSaved() }} /> : null}
             {model?.widget.id === 'image' && !sourceOpen ? <ImageField target={instanceId} value={media} onChange={next => { setMedia(next); setProps(current => ({ ...current, localImage: Boolean(next.media?.background) })) }} onBusy={setMediaBusy} onPreview={setMediaPreview} disabled={saving} /> : null}
-            {model === null ? null : <button type="button" className="dsh-widget-board__editor-ghost" data-dsh-widget-board-content-source="" disabled={exchangePending || campusPending || mediaBusy || saving} onClick={() => { setSourceOpen(true) }}>{t('sourceTitle')}</button>}
+            {model === null ? null : <button type="button" className="dsh-scholar-board__editor-ghost" data-dsh-scholar-board-content-source="" disabled={exchangePending || campusPending || mediaBusy || saving} onClick={() => { setSourceOpen(true) }}>{t('sourceTitle')}</button>}
             {sourceOpen && model !== null ? <SourceEditorPanel widgetId={model.widget.id} instanceId={instanceId} theme={theme} onFilesChanged={setSourceFiles} onBinaryChanged={setSourceBinary} onRestore={() => { setPreviewAutoRun(false) }} closeRequest={sourceCloseRequest} onClose={() => { setSourceOpen(false); setSourceCloseRequest(0) }} onSaved={() => { setSourceOpen(false); load(true); onSaved() }} /> : null}
             {loadError === null
               ? null
               : (
-                <div className="dsh-widget-board__editor-failure">
+                <div className="dsh-scholar-board__editor-failure">
                   <p role="alert">{`${t('editorFailed')}：${loadError}`}</p>
-                  <button type="button" className="dsh-widget-board__editor-ghost" onClick={() => { load(false) }}>
+                  <button type="button" className="dsh-scholar-board__editor-ghost" onClick={() => { load(false) }}>
                     {t('formReload')}
                   </button>
                 </div>
               )}
             <fieldset disabled={exchangePending} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
             {model === null
-              ? <p className="dsh-widget-board__editor-empty">{t('editorLoading')}</p>
+              ? <p className="dsh-scholar-board__editor-empty">{t('editorLoading')}</p>
               : sourceOpen ? null : isCampusSchema(model.widget.stateSchema) ? <CampusForm props={props} state={state} onProps={setProps} onState={setState} onPending={setCampusPending} disabled={saving || mediaBusy} media={<CampusMedia target={instanceId} value={media} onChange={next => { setMedia(next); setProps(current => ({ ...current, hasBackground: Boolean(next.media?.background), hasIcon: Boolean(next.media?.icon) })) }} onBusy={setMediaBusy} disabled={saving || mediaBusy} />} /> : sections.map((section) => {
                 const schema = section.key === 'props'
                   ? model.widget.propsSchema
@@ -342,8 +342,8 @@ export function ContentEditor({
                   ? (next: unknown) => { setProps(next !== null && typeof next === 'object' && !Array.isArray(next) ? next as Record<string, unknown> : {}) }
                   : section.key === 'data' ? setData : setState
                 return (
-                  <section key={section.key} className="dsh-widget-board__composer-section" data-dsh-widget-board-content-section={section.key}>
-                    <h3 className="dsh-widget-board__composer-heading">{section.title}</h3>
+                  <section key={section.key} className="dsh-scholar-board__composer-section" data-dsh-scholar-board-content-section={section.key}>
+                    <h3 className="dsh-scholar-board__composer-heading">{section.title}</h3>
                     <SchemaForm
                       schema={model.widget.id === 'image' ? imageFormSchema(schema, section.key) : schema}
                       value={value}
@@ -357,16 +357,16 @@ export function ContentEditor({
                 )
               })}
             </fieldset>
-            {error === null ? null : <p className="dsh-widget-board__editor-error" role="alert">{error}</p>}
+            {error === null ? null : <p className="dsh-scholar-board__editor-error" role="alert">{error}</p>}
             {stale
               ? (
-                <div className="dsh-widget-board__composer-conflict" data-dsh-widget-board-content-stale="">
+                <div className="dsh-scholar-board__composer-conflict" data-dsh-scholar-board-content-stale="">
                   <p>{t('formStale')}</p>
-                  <div className="dsh-widget-board__editor-actions">
+                  <div className="dsh-scholar-board__editor-actions">
                     <button
                       type="button"
-                      className="dsh-widget-board__editor-ghost"
-                      data-dsh-widget-board-content-reload=""
+                      className="dsh-scholar-board__editor-ghost"
+                      data-dsh-scholar-board-content-reload=""
                       disabled={saving}
                       onClick={() => { load(false) }}
                     >
@@ -374,8 +374,8 @@ export function ContentEditor({
                     </button>
                     <button
                       type="button"
-                      className="dsh-widget-board__editor-primary"
-                      data-dsh-widget-board-content-save-as-new=""
+                      className="dsh-scholar-board__editor-primary"
+                      data-dsh-scholar-board-content-save-as-new=""
                       disabled={saving}
                       onClick={() => { void saveAsNew() }}
                     >
@@ -387,15 +387,15 @@ export function ContentEditor({
               : null}
           </div>
 
-          <aside className="dsh-widget-board__composer-preview" aria-label={t('formPreview')}>
-            <div className="dsh-widget-board__composer-preview-head">
+          <aside className="dsh-scholar-board__composer-preview" aria-label={t('formPreview')}>
+            <div className="dsh-scholar-board__composer-preview-head">
               <span>{t('formPreview')}</span>
-              {savedOnce ? <span className="dsh-widget-board__editor-ok">{t('saved')}</span> : null}
+              {savedOnce ? <span className="dsh-scholar-board__editor-ok">{t('saved')}</span> : null}
             </div>
             {sourceOpen ? <PreviewPanel files={sourceFiles} binaryFiles={sourceBinary} autoRun={previewAutoRun} currentSize={currentSize} props={props} data={data} state={state} theme={theme} frames={frames} /> : preview === undefined || model === null
-              ? <p className="dsh-widget-board__editor-empty">{t('formPreviewHint')}</p>
+              ? <p className="dsh-scholar-board__editor-empty">{t('formPreviewHint')}</p>
               : (
-                <div className="dsh-widget-board__composer-frame">
+                <div className="dsh-scholar-board__composer-frame">
                   {model.widget.id === 'image' ? <ImageDraftPreview url={mediaPreview} props={props} data={data} /> : <WidgetPreview
                     id={`content:${instanceId}`}
                     widgetId={model.widget.id}
@@ -411,21 +411,21 @@ export function ContentEditor({
 
         {confirmClose
           ? (
-            <footer className="dsh-widget-board__editor-foot">
-              <p className="dsh-widget-board__editor-note">{t('formUnsaved')}</p>
-              <div className="dsh-widget-board__editor-actions">
+            <footer className="dsh-scholar-board__editor-foot">
+              <p className="dsh-scholar-board__editor-note">{t('formUnsaved')}</p>
+              <div className="dsh-scholar-board__editor-actions">
                 <button
                   type="button"
-                  className="dsh-widget-board__editor-ghost"
-                  data-dsh-widget-board-content-keep=""
+                  className="dsh-scholar-board__editor-ghost"
+                  data-dsh-scholar-board-content-keep=""
                   onClick={() => { setConfirmClose(false) }}
                 >
                   {t('formKeepEditing')}
                 </button>
                 <button
                   type="button"
-                  className="dsh-widget-board__editor-primary"
-                  data-dsh-widget-board-content-discard=""
+                  className="dsh-scholar-board__editor-primary"
+                  data-dsh-scholar-board-content-discard=""
                   onClick={onClose}
                 >
                   {t('formDiscard')}
@@ -434,13 +434,13 @@ export function ContentEditor({
             </footer>
           )
           : (
-            <footer className="dsh-widget-board__editor-foot">
-              <button type="button" className="dsh-widget-board__editor-ghost" onClick={requestClose}>{t('cancel')}</button>
-              <span className="dsh-widget-board__editor-spacer" />
+            <footer className="dsh-scholar-board__editor-foot">
+              <button type="button" className="dsh-scholar-board__editor-ghost" onClick={requestClose}>{t('cancel')}</button>
+              <span className="dsh-scholar-board__editor-spacer" />
               <button
                 type="button"
-                className="dsh-widget-board__editor-primary"
-                data-dsh-widget-board-content-save=""
+                className="dsh-scholar-board__editor-primary"
+                data-dsh-scholar-board-content-save=""
                 disabled={saving || mediaBusy || campusPending || exchangePending || model === null || !dirty || sourceOpen}
                 onClick={() => { void save() }}
               >

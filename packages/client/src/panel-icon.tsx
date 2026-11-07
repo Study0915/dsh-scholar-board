@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
-import tokens from '@dsh-widget-board/contracts/tokens.json'
+import tokens from '@dsh-scholar-board/contracts/tokens.json'
 import { t } from './copy'
 import { notificationStore } from './notifications'
 
@@ -44,14 +44,14 @@ export function PanelIcon({ size, active }: PanelIconProps): ReactNode {
     : `${String(unread)} ${t('unread')}：${latest.title}${latest.body === undefined ? '' : ` · ${latest.body}`}`
   return (
     <span
-      className="dsh-widget-board__panel-icon"
+      className="dsh-scholar-board__panel-icon"
       style={BADGE_STYLE}
-      data-dsh-widget-board-panel-icon=""
+      data-dsh-scholar-board-panel-icon=""
       title={open ? summary : undefined}
       onClick={() => { notificationStore.markAllRead() }}
     >
       <svg
-        className="dsh-widget-board__icon"
+        className="dsh-scholar-board__icon"
         viewBox="0 0 16 16"
         width={size}
         height={size}
@@ -67,14 +67,14 @@ export function PanelIcon({ size, active }: PanelIconProps): ReactNode {
         <rect x="8.5" y="11.5" width="5.7" height="2.3" rx="1.2" />
       </svg>
       <span
-        className="dsh-widget-board__badge"
-        data-dsh-widget-board-badge=""
+        className="dsh-scholar-board__badge"
+        data-dsh-scholar-board-badge=""
         data-open={open ? 'true' : 'false'}
         role="status"
         aria-live="polite"
         aria-label={open ? summary : undefined}
       >
-        <span className="dsh-widget-board__badge-dot" aria-hidden="true">{open ? (unread > 99 ? '99+' : String(unread)) : ''}</span>
+        <span className="dsh-scholar-board__badge-dot" aria-hidden="true">{open ? (unread > 99 ? '99+' : String(unread)) : ''}</span>
       </span>
     </span>
   )

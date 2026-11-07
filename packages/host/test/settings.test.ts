@@ -16,8 +16,8 @@ import type {
   HostRequest,
   HostResponse,
   WidgetManifest,
-} from '@dsh-widget-board/contracts'
-import { PLUGIN_ROUTE, grantKey } from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
+import { PLUGIN_ROUTE, grantKey } from '@dsh-scholar-board/contracts'
 import type { GrantStore } from '../src/grants'
 import type { WidgetRecord } from '../src/library'
 import type { RouteContext } from '../src/routes'

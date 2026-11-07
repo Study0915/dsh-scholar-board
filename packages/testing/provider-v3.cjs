@@ -28,10 +28,10 @@ const {
 } = require('./providing.cjs')
 
 /** 新把手的提供方包名。 */
-const V3_PROVIDER = 'dsh-widget-board-test-provider-v3'
+const V3_PROVIDER = 'dsh-scholar-board-test-provider-v3'
 
 /** 旧入口的提供方包名；同一台宿主上两个都装着。 */
-const V2_PROVIDER = 'dsh-widget-board-test-provider'
+const V2_PROVIDER = 'dsh-scholar-board-test-provider'
 
 /** 新把手两个组件目录里的组件：甲走原生，乙走沙箱。 */
 const ALPHA = 'testv3.alpha'
@@ -95,7 +95,7 @@ function surfaceRead(rootSelector) {
 /** 一张卡的可观察表面：原生画在父页面里，沙箱画在它自己的 iframe 里。 */
 async function surfaceOf(page, instance, kind) {
   if (kind === SANDBOX) {
-    const frame = await frameOf(page, `${cardOf(instance)} iframe.dsh-widget-board__frame`)
+    const frame = await frameOf(page, `${cardOf(instance)} iframe.dsh-scholar-board__frame`)
     return await frame.evaluate(surfaceRead, rootOf(kind))
   }
   return await page.evaluate(surfaceRead, `${cardOf(instance)} ${rootOf(kind)}`)
@@ -121,7 +121,7 @@ async function waitSurface(page, instance, kind, spec, label) {
   const wanted = { ...spec, root: kind === SANDBOX ? rootOf(kind) : `${cardOf(instance)} ${rootOf(kind)}` }
   try {
     if (kind === SANDBOX) {
-      const frame = await frameOf(page, `${cardOf(instance)} iframe.dsh-widget-board__frame`)
+      const frame = await frameOf(page, `${cardOf(instance)} iframe.dsh-scholar-board__frame`)
       await frame.waitForFunction(surfaceWait, wanted, { timeout: 20000, polling: 100 })
     } else {
       await page.waitForFunction(surfaceWait, wanted, { timeout: 20000, polling: 100 })
@@ -136,7 +136,7 @@ async function waitSurface(page, instance, kind, spec, label) {
 async function clickSurface(page, instance, kind, selector, label) {
   try {
     if (kind === SANDBOX) {
-      const frame = await frameOf(page, `${cardOf(instance)} iframe.dsh-widget-board__frame`)
+      const frame = await frameOf(page, `${cardOf(instance)} iframe.dsh-scholar-board__frame`)
       await frame.locator(selector).click({ timeout: 15000 })
       return
     }
@@ -263,7 +263,7 @@ async function settleRow(page, alpha, beta) {
     await page.waitForFunction(sameRowWait, spec, { timeout: 20000, polling: 100 })
   } catch (error) {
     const rects = await page.evaluate((wanted) => {
-      const shell = document.querySelector('[data-dsh-widget-board-view]')
+      const shell = document.querySelector('[data-dsh-scholar-board-view]')
       const box = (selector) => {
         const node = document.querySelector(selector)
         if (node === null) return null
@@ -289,7 +289,7 @@ async function revealCards(page, alpha, beta) {
   const selectors = [cardOf(alpha), cardOf(beta)]
   try {
     await page.waitForFunction((wanted) => {
-      const shell = document.querySelector('[data-dsh-widget-board-view]')
+      const shell = document.querySelector('[data-dsh-scholar-board-view]')
       if (shell === null) return false
       const box = shell.getBoundingClientRect()
       const rects = wanted.map((selector) => document.querySelector(selector)?.getBoundingClientRect() ?? null)
@@ -304,7 +304,7 @@ async function revealCards(page, alpha, beta) {
   } catch (error) {
     const now = await page.evaluate((wanted) => wanted.map((selector) => {
       const node = document.querySelector(selector)
-      const shell = document.querySelector('[data-dsh-widget-board-view]')
+      const shell = document.querySelector('[data-dsh-scholar-board-view]')
       if (node === null || shell === null) return { selector, missing: true }
       const rect = node.getBoundingClientRect()
       const box = shell.getBoundingClientRect()
@@ -316,10 +316,10 @@ async function revealCards(page, alpha, beta) {
 
 /** 收起组件库面板：它盖住卡片时点不到卡片里的按钮。 */
 async function closeLibrary(page) {
-  const close = page.locator('.dsh-widget-board__library-close')
+  const close = page.locator('.dsh-scholar-board__library-close')
   if (await close.count() === 0) return
   await close.click()
-  await page.waitForSelector('[data-dsh-widget-board-library][data-open="false"]', { timeout: 10000 })
+  await page.waitForSelector('[data-dsh-scholar-board-library][data-open="false"]', { timeout: 10000 })
 }
 
 /** 两个 JSON 值按键序无关的方式比较。 */
@@ -340,12 +340,12 @@ function sameJson(left, right) {
 
 /** 设置页健康表里一个提供方那一行；设置面板的看板那一节已经打开。 */
 async function healthOf(page, provider) {
-  await page.waitForSelector(`[data-dsh-widget-board-provider="${provider}"]`, { timeout: 20000 })
+  await page.waitForSelector(`[data-dsh-scholar-board-provider="${provider}"]`, { timeout: 20000 })
   return await page.evaluate((wanted) => {
-    const row = document.querySelector(`[data-dsh-widget-board-provider="${wanted}"]`)
+    const row = document.querySelector(`[data-dsh-scholar-board-provider="${wanted}"]`)
     if (row === null) return null
     const numbers = Array.from(row.querySelectorAll('td'))
-      .filter((cell) => cell.className.includes('dsh-widget-board__provider-health-number'))
+      .filter((cell) => cell.className.includes('dsh-scholar-board__provider-health-number'))
       .map((cell) => Number.parseInt(cell.textContent ?? '', 10))
     return {
       available: row.getAttribute('data-available') === 'true',
@@ -505,7 +505,7 @@ async function providerV3Pass(page, check, options) {
 
   // 一个把手挂的两个目录都进了组件库，旧入口的扁平 id 与它并排可用。
   await openLibrary(page)
-  const listed = await page.evaluate((ids) => ids.map((id) => document.querySelector(`[data-dsh-widget-board-add="${id}"]`) !== null), [ALPHA, BETA, LEGACY])
+  const listed = await page.evaluate((ids) => ids.map((id) => document.querySelector(`[data-dsh-scholar-board-add="${id}"]`) !== null), [ALPHA, BETA, LEGACY])
   check('新把手两个组件目录的组件与旧入口的组件一起列在组件库里', listed.every(Boolean), listed.join(' / '))
 
   const alpha = await addWidget(page, ALPHA)
@@ -524,7 +524,7 @@ async function providerV3Pass(page, check, options) {
   }
   check('一个把手上的原生组件画在父页面里', true)
   try {
-    const frame = await frameOf(page, `${cardOf(beta)} iframe.dsh-widget-board__frame`)
+    const frame = await frameOf(page, `${cardOf(beta)} iframe.dsh-scholar-board__frame`)
     await frame.waitForSelector('[data-testv3="beta"]', { timeout: 20000 })
   } catch (error) {
     const html = await page.locator(cardOf(beta)).evaluate((element) => element.outerHTML).catch(() => '')
@@ -663,7 +663,7 @@ async function providerV3Pass(page, check, options) {
   }
   check('新把手停用后两张卡都保留并显示不可用', true)
   check('原生组件从卡片上撤下', await page.locator(`${cardOf(alpha)} [data-native-widget="${V3_PROVIDER}"]`).count() === 0)
-  check('沙箱组件的文档也从卡片上撤下', await page.locator(`${cardOf(beta)} iframe.dsh-widget-board__frame`).count() === 0)
+  check('沙箱组件的文档也从卡片上撤下', await page.locator(`${cardOf(beta)} iframe.dsh-scholar-board__frame`).count() === 0)
   const readGone = await readSource(page, alpha, 'testv3.count')
   check('新把手停用后数据源不再解析', readGone.status === 400 && String(readGone.body.error).includes('没有数据源'), `${readGone.status} ${JSON.stringify(readGone.body).slice(0, 90)}`)
   const callGone = await callCapability(page, alpha, 'testv3.echo', { text: 'x' })
@@ -678,7 +678,7 @@ async function providerV3Pass(page, check, options) {
   await setProviderEnabled(page, V3_PROVIDER, true)
   await openBoard(page)
   await page.waitForSelector(`${cardOf(alpha)} [data-native-widget="${V3_PROVIDER}"]`, { timeout: 30000 })
-  await frameOf(page, `${cardOf(beta)} iframe.dsh-widget-board__frame`)
+  await frameOf(page, `${cardOf(beta)} iframe.dsh-scholar-board__frame`)
   check('启用后原生组件与沙箱文档都回到卡片', true)
   await settleRow(page, alpha, beta)
   await revealCards(page, alpha, beta)

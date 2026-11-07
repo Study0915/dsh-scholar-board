@@ -8,7 +8,7 @@
     "zh": "窗景天气卡：数据由 Open-Meteo 提供，组件把原始响应映射成五天预报。窗外是一幅现画的景，黄金时刻、黎明、暮色与夜幕各自有光、云的颜色和城市轮廓；雨雪落在玻璃上顺着玻璃流，切换预报日时整片天空跟着换。",
     "en": "A window-view weather card: Open-Meteo supplies the raw reading and the widget maps it into a five-day forecast. Outside is a painted scene whose light, clouds and skyline change through golden hour, dawn, dusk and night; rain and snow run down the glass, and switching days changes the whole sky."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.4.1",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 22 },

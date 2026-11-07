@@ -273,7 +273,7 @@ export interface WidgetManifest {
    * 这个组件的默认数据源（D17）：加卡片时用它读第一次数据。
    *
    * 数据源不在时卡片照样加得进来，数据留空——提供方可能只是还没装好。`"http"`（或写全的
-   * `"dsh-widget-board:http"`）是宿主自己的数据源，需要同时给出 `request`。
+   * `"dsh-scholar-board:http"`）是宿主自己的数据源，需要同时给出 `request`。
    */
   source?: string
   /** `source` 是 `"http"` 时，宿主代发的那次请求（D6）。 */
@@ -390,7 +390,7 @@ export const WIDGET_REQUIRES_SCHEMA = {
 
 /** 校验 manifest 用的 JSON Schema；与 `WidgetManifest` 一一对应。 */
 export const WIDGET_MANIFEST_SCHEMA = {
-  $id: 'https://dsh-widget-board/widget.json',
+  $id: 'https://dsh-scholar-board/widget.json',
   type: 'object',
   additionalProperties: false,
   required: ['id', 'title', 'version', 'sizes'],

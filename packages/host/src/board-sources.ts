@@ -9,7 +9,7 @@
 import os from 'node:os'
 import { statfs } from 'node:fs/promises'
 import { basename } from 'node:path'
-import type { DataSourceRegistration, HostSessions, HostWorkspaceRegistry, InstanceFace } from '@dsh-widget-board/contracts'
+import type { DataSourceRegistration, HostSessions, HostWorkspaceRegistry, InstanceFace } from '@dsh-scholar-board/contracts'
 import type { ProviderHealth } from './provider-health'
 import type { Workspace } from './workspace'
 import type { WidgetRecord } from './library'
@@ -566,7 +566,7 @@ export function createRuntimeKvSource(deps: BoardSourceDeps): DataSourceRegistra
     const cards = boards.reduce((sum, board) => sum + board.instances.length, 0)
     return {
       items: [
-        { key: '插件', value: 'dsh-widget-board', note: `v${deps.version}` },
+        { key: '插件', value: 'dsh-scholar-board', note: `v${deps.version}` },
         { key: 'Node.js', value: process.version, note: `${process.platform} ${process.arch}` },
         { key: '看板', value: boards.length, note: `${cards} 张卡片` },
         { key: '组件库', value: deps.records().size, note: '内置与扩展组件' },

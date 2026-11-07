@@ -8,7 +8,7 @@
     "zh": "通用磁吸卡模板：指针在卡片上移动时卡片跟过去，移开后弹性回到原位。",
     "en": "A reusable magnetic-card template: the card follows the pointer and springs back when it leaves."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 18 },

@@ -1,6 +1,6 @@
 /** 卡片创建、内容读取与保存；失败沿用快照层的统一响应解码。 */
-import type { CardContentModel, CardContentSaved, ContentIssue, InstanceComposeRequest, InstanceContentRequest, WidgetFormModel, WorkspaceSnapshot } from '@dsh-widget-board/contracts'
-import { boardComposePath, instanceContentPath, libraryFormPath } from '@dsh-widget-board/contracts'
+import type { CardContentModel, CardContentSaved, ContentIssue, InstanceComposeRequest, InstanceContentRequest, WidgetFormModel, WorkspaceSnapshot } from '@dsh-scholar-board/contracts'
+import { boardComposePath, instanceContentPath, libraryFormPath } from '@dsh-scholar-board/contracts'
 import { failureBodyOf, isWorkspace } from './snapshot'
 
 /**

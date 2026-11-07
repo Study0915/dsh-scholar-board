@@ -16,7 +16,7 @@ import {
   SETTINGS_SECTION_SLOT,
   SIDEBAR_PANELLIST_SLOT,
   WIDGET_BOARD_PANEL_ID,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { registerPanel } from '../src/panel'
 
 /** 一次注册留下的记录。 */

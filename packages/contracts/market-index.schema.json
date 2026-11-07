@@ -1,5 +1,5 @@
 {
-  "$id": "https://dsh-widget-board/market-index.json",
+  "$id": "https://dsh-scholar-board/market-index.json",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "market", "widgets"],

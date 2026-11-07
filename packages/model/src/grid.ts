@@ -6,7 +6,7 @@
  *
  * 纯逻辑：不碰 DOM，同样的输入总是同样的位置。
  */
-import type { CardLayout, WidgetMinBox } from '@dsh-widget-board/contracts'
+import type { CardLayout, WidgetMinBox } from '@dsh-scholar-board/contracts'
 
 /** 一列的最小宽度，按根字号的倍数。 */
 export const MIN_COLUMN_REM = 18

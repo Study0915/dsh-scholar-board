@@ -9,7 +9,7 @@
  * 直接报错：一份缺图的文档比一次启动失败更难查。
  */
 import { randomBytes } from 'node:crypto'
-import type { LocalizedText } from '@dsh-widget-board/contracts'
+import type { LocalizedText } from '@dsh-scholar-board/contracts'
 import type { WidgetRecord } from './library'
 
 /** 一次文档请求要内联的共用资产，由构建写出、宿主启动时读入。 */

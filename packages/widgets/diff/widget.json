@@ -8,7 +8,7 @@
     "zh": "一份统一的改动视图：新增行与删除行标着加减号，改动按文件分组，宽盒子左边给文件清单，窄盒子收成手风琴。",
     "en": "A unified diff view: added and removed lines carry a sign, and changes are grouped by file — a file list on the left in wide boxes, an accordion in narrow ones."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.3.0",
   "sizes": [
     "s",

@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, utimes, writeFile } from 'node:fs/promise
 import { resolve, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import sharp from 'sharp'
-import { MEDIA_CHUNK_BYTES, withinLimit } from '@dsh-widget-board/contracts'
+import { MEDIA_CHUNK_BYTES, withinLimit } from '@dsh-scholar-board/contracts'
 import { createMediaStore } from '../src/media/store'
 import { processImage } from '../src/media/process'
 import { openWorkspace } from '../src/workspace'

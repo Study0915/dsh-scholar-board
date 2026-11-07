@@ -8,7 +8,7 @@
     "zh": "一组链接：首字母色块、标题、域名与一行说明，适合书签、文档入口与常用服务。",
     "en": "A set of links with a letter mark, title, host and one line of context; for bookmarks, docs and services."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 22 },

@@ -8,7 +8,7 @@
     "zh": "拖刻度选 5 到 60 分钟，或按 5 分钟、25 分钟直接开始倒计时；剩余的分秒、进度刻度与按钮文字跟着走。",
     "en": "Drag for 5 to 60 minutes, or press 5 minutes or 25 minutes to start at once; the remaining minutes and seconds, the ticks and the button label follow the session."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 22 },

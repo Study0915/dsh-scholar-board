@@ -4,8 +4,8 @@
  * 构建时把「第一次启动的默认看板」「组件清单」和每份组件文档写成静态文件；演示宿主在浏览器里
  * 按这些名字取回，不再需要任何服务进程。
  */
-import type { LocalizedText, WidgetManifest, WorkspaceSnapshot } from '@dsh-widget-board/contracts'
-import { CLIENT_ROUTE, WIDGET_ROUTE } from '@dsh-widget-board/contracts'
+import type { LocalizedText, WidgetManifest, WorkspaceSnapshot } from '@dsh-scholar-board/contracts'
+import { CLIENT_ROUTE, WIDGET_ROUTE } from '@dsh-scholar-board/contracts'
 
 /** 静态数据目录，相对演示页的根。 */
 export const DATA_DIR = 'demo-data'

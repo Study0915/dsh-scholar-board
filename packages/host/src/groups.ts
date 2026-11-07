@@ -4,8 +4,8 @@
  * 组卡仍是两条普通实例共享一个盒子（D19）；换槽只改其中一条的组件、版本、props、数据、状态与数据源，
  * 再按两个槽当前组件的最小盒子把共享盒子抬一次。写入走工作区唯一的写入链，推一整份新快照。
  */
-import type { GroupSide, GroupSlotRequest } from '@dsh-widget-board/contracts'
-import { GROUP_SIDES } from '@dsh-widget-board/contracts'
+import type { GroupSide, GroupSlotRequest } from '@dsh-scholar-board/contracts'
+import { GROUP_SIDES } from '@dsh-scholar-board/contracts'
 import { readJson } from './body'
 import { isRecord } from './guards'
 import { Refusal } from './refusal'

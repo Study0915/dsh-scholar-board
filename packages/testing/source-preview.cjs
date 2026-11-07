@@ -19,7 +19,7 @@ async function previewIsolationPass(page, check) {
   check('建立真实预览检查组件', response.status === 201, response.body.slice(0, 120))
   if (response.status !== 201) return
   await openSource(page, id)
-  const locator = '[data-dsh-widget-board-preview-frame]'
+  const locator = '[data-dsh-scholar-board-preview-frame]'
   const preview = page.frameLocator(locator)
   await preview.locator('#probe').waitFor({ timeout: 20000 })
   await preview.locator('html[data-placement="preview"]').waitFor({ timeout: 10000 })
@@ -37,14 +37,14 @@ async function previewIsolationPass(page, check) {
     const after = await page.evaluate(async () => await (await fetch('api/widget-board/boards')).text())
     check('预览交互不改变正式工作区', before === after)
     const src = await page.locator(locator).getAttribute('src')
-    await page.locator('[data-dsh-widget-board-preview-width="wide"]').click()
-    await page.locator('[data-dsh-widget-board-preview-height="tall"]').click()
+    await page.locator('[data-dsh-scholar-board-preview-width="wide"]').click()
+    await page.locator('[data-dsh-scholar-board-preview-height="tall"]').click()
     check('尺寸切换不重载文档也不丢预览状态', await page.locator(locator).getAttribute('src') === src && await preview.locator('#result').textContent() === '7')
     const frame = await (await page.locator(locator).elementHandle()).contentFrame()
     for (const scheme of ['dark', 'light']) {
       await page.emulateMedia({ colorScheme: scheme })
       check(`预览跟随宿主${scheme}配色`, await waitFor(async () => {
-        const expected = await page.locator('[data-dsh-widget-board-view]').evaluate((element) => getComputedStyle(element).getPropertyValue('--dsw-alias-bg-base').trim())
+        const expected = await page.locator('[data-dsh-scholar-board-view]').evaluate((element) => getComputedStyle(element).getPropertyValue('--dsw-alias-bg-base').trim())
         const actual = await frame.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--w-color-bg').trim())
         return expected !== '' && expected === actual
       }, 5000))
@@ -52,11 +52,11 @@ async function previewIsolationPass(page, check) {
     check('主题切换仍保留预览状态', await preview.locator('#result').textContent() === '7')
     const sandbox = await page.locator(locator).getAttribute('sandbox')
     check('真实预览仅有 allow-scripts', sandbox === 'allow-scripts', String(sandbox))
-    await page.locator('[data-dsh-widget-board-source-close]').click()
+    await page.locator('[data-dsh-scholar-board-source-close]').click()
     const path = src?.split('?')[0]
     check('关闭面板释放当前预览会话', await waitFor(async () => await page.evaluate(async (path) => (await fetch(path)).status, path) === 404, 10000))
-    await page.locator('[data-dsh-widget-board-composer-close]').click()
-    const discard = page.locator('[data-dsh-widget-board-composer-discard]')
+    await page.locator('[data-dsh-scholar-board-composer-close]').click()
+    const discard = page.locator('[data-dsh-scholar-board-composer-discard]')
     if (await discard.count() > 0) await discard.click()
   } finally { page.off('request', listener) }
 }

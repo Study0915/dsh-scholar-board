@@ -6,8 +6,8 @@
  */
 import { useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
-import type { MarketListing, MarketSectionSnapshot, WidgetLibraryEntry, WidgetSummary } from '@dsh-widget-board/contracts'
-import { libraryImportPath, libraryMarketInstallPath } from '@dsh-widget-board/contracts'
+import type { MarketListing, MarketSectionSnapshot, WidgetLibraryEntry, WidgetSummary } from '@dsh-scholar-board/contracts'
+import { libraryImportPath, libraryMarketInstallPath } from '@dsh-scholar-board/contracts'
 import { t } from './copy'
 import { BoardError, failureOf } from './snapshot'
 import type { FrameHost } from './frame-host'
@@ -139,24 +139,24 @@ export function LibraryPanel({
     // 面板不占 `dialog` 这个角色：别的插件给所有对话窗统一定尺寸时，那条规则会盖过 library.css 里
     // 按看板这一栏算出的四边，面板会被拉出看板之外。
     <div
-      className="dsh-widget-board__library"
-      data-dsh-widget-board-library=""
+      className="dsh-scholar-board__library"
+      data-dsh-scholar-board-library=""
       data-open={open ? 'true' : 'false'}
       role="region"
       aria-label={t('library')}
     >
-      <header className="dsh-widget-board__library-head">
+      <header className="dsh-scholar-board__library-head">
         <div>
-          <h2 className="dsh-widget-board__library-title">{t('library')}</h2>
-          <p className="dsh-widget-board__library-hint">{t('libraryHint')}</p>
-          {importError === null ? null : <p className="dsh-widget-board__library-error" role="status">{importError}</p>}
+          <h2 className="dsh-scholar-board__library-title">{t('library')}</h2>
+          <p className="dsh-scholar-board__library-hint">{t('libraryHint')}</p>
+          {importError === null ? null : <p className="dsh-scholar-board__library-error" role="status">{importError}</p>}
           {conflict === null ? null : (
-            <p className="dsh-widget-board__library-error" role="status">
+            <p className="dsh-scholar-board__library-error" role="status">
               {t('importConflict')}
               {' '}
               <button
                 type="button"
-                data-dsh-widget-board-import-replace=""
+                data-dsh-scholar-board-import-replace=""
                 onClick={() => { install(conflict, true) }}
               >
                 {t('overwrite')}
@@ -165,25 +165,25 @@ export function LibraryPanel({
             </p>
           )}
         </div>
-        <div className="dsh-widget-board__library-actions">
+        <div className="dsh-scholar-board__library-actions">
           {onCreate === undefined
             ? null
             : (
               <button
                 type="button"
-                className="dsh-widget-board__library-create"
-                data-dsh-widget-board-library-create=""
+                className="dsh-scholar-board__library-create"
+                data-dsh-scholar-board-library-create=""
                 onClick={onCreate}
               >
                 {t('create')}
               </button>
             )}
-          <label className="dsh-widget-board__library-import">
+          <label className="dsh-scholar-board__library-import">
             {t('import')}
             <input
               type="file"
               accept=".dshw"
-              data-dsh-widget-board-import=""
+              data-dsh-scholar-board-import=""
               onChange={(event) => {
                 const file = event.target.files?.[0]
                 event.target.value = ''
@@ -193,11 +193,11 @@ export function LibraryPanel({
               }}
             />
           </label>
-          <button type="button" className="dsh-widget-board__library-close" onClick={onClose}>{t('close')}</button>
+          <button type="button" className="dsh-scholar-board__library-close" onClick={onClose}>{t('close')}</button>
         </div>
       </header>
-      <div className="dsh-widget-board__library-body">
-        {marketError === null ? null : <p className="dsh-widget-board__library-error" role="status">{marketError}</p>}
+      <div className="dsh-scholar-board__library-body">
+        {marketError === null ? null : <p className="dsh-scholar-board__library-error" role="status">{marketError}</p>}
         <WidgetGrid
           entries={entries}
           widgets={widgets}

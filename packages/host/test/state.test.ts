@@ -6,7 +6,7 @@
 import { afterAll, describe, expect, it } from 'vitest'
 import { readFile, rmdir, unlink } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { Board, BoardInstance, WidgetMinBox } from '@dsh-widget-board/contracts'
+import type { Board, BoardInstance, WidgetMinBox } from '@dsh-scholar-board/contracts'
 import type { WidgetRecord } from '../src/library'
 import { readBoard, withArrangementUnits, withBoardArrangement, withBoardLayouts, withDefaultSources, withGroupAdded, withGroupRemoved, withInstanceAdded, withInstanceData, withInstanceRemoved, withInstanceState, withLayouts, writeBoard } from '../src/state'
 

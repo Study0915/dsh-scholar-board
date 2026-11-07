@@ -3,7 +3,7 @@
  *
  * 单独一个模块是为了能在没有 DOM 的地方判定：视图只做画，形状的判定放在这里。
  */
-import type { ShowValue, WidgetSummary } from '@dsh-widget-board/contracts'
+import type { ShowValue, WidgetSummary } from '@dsh-scholar-board/contracts'
 
 /** 判断一个外来值是不是普通对象。 */
 function isRecord(value: unknown): value is Record<string, unknown> {

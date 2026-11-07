@@ -21,8 +21,8 @@ import type {
   HostSessions,
   HostTokenUsage,
   InstanceFace,
-} from '@dsh-widget-board/contracts'
-import { WIDGET_BOARD_API_VERSION, onSessionEvent, sessionsOf } from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
+import { WIDGET_BOARD_API_VERSION, onSessionEvent, sessionsOf } from '@dsh-scholar-board/contracts'
 import { historyOf, historyTallyOf, hostOriginOf, readUsageHistory } from './dsh-usage'
 import type { SessionUsageHistory, UsageHistoryDeps, UsageHistoryProjection, UsageHistoryTally } from './dsh-usage'
 import { isRecord } from './guards'

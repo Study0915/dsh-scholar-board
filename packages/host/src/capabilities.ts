@@ -4,8 +4,8 @@
  * 这里没有按功能分支的代码：余额、回声或别的能力都走同一条路，形状由提供方注册的 schema 决定。
  * 超时与并发由 `provider-health.ts` 的执行器管——这一层只把连接断开的中止信号传下去，不再自己计时。
  */
-import type { InstanceCallRequest } from '@dsh-widget-board/contracts'
-import { withRequestSignal } from '@dsh-widget-board/contracts'
+import type { InstanceCallRequest } from '@dsh-scholar-board/contracts'
+import { withRequestSignal } from '@dsh-scholar-board/contracts'
 import { readJson } from './body'
 import { isRecord } from './guards'
 import { refusalOf } from './instance-operations'

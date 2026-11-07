@@ -8,8 +8,8 @@
  * 白名单是 manifest 的内容：默认源（`source`，以及卡片当前绑定的那个）总可读，额外的源必须列进
  * `sources`。改白名单就改了组件的内容哈希，已有授权随之失效。
  */
-import type { CapabilityRegistration, InstanceFace, WidgetManifest } from '@dsh-widget-board/contracts'
-import { REGISTRATION_NAME_PATTERN, WIDGET_BOARD_API_VERSION } from '@dsh-widget-board/contracts'
+import type { CapabilityRegistration, InstanceFace, WidgetManifest } from '@dsh-scholar-board/contracts'
+import { REGISTRATION_NAME_PATTERN, WIDGET_BOARD_API_VERSION } from '@dsh-scholar-board/contracts'
 import { isRecord } from './guards'
 import { loadData } from './instance-operations'
 import { locate } from './lookup'

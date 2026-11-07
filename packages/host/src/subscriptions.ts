@@ -14,7 +14,7 @@
  * 推送归数据源，写入归看板：每一条都按组件的 data schema 核对，再交给唯一的写入者（D5、D23）。同一张
  * 卡的推送按发出的顺序串行写；一条坏数据只停它自己，记在提供方的健康记录里，别的卡照常收。
  */
-import type { ActionPermission, Board, DataSourceRegistration } from '@dsh-widget-board/contracts'
+import type { ActionPermission, Board, DataSourceRegistration } from '@dsh-scholar-board/contracts'
 import { faceOf, grantFacts } from './lookup'
 import { storeData } from './instance-operations'
 import { grantProblemOf } from './permissions'

@@ -37,14 +37,14 @@ async function openPass(page, frame, check) {
     const row = document.createElement('button')
     row.type = 'button'
     row.className = 'gh__row'
-    row.dataset.url = 'https://github.com/Nwflower/dsh-widget-board/issues/1'
+    row.dataset.url = 'https://github.com/Nwflower/dsh-scholar-board/issues/1'
     row.textContent = '跳转'
     list.appendChild(row)
     row.click()
   })
   await new Promise((resolve) => setTimeout(resolve, 400))
   const asked = await page.evaluate(() => window.__opened ?? [])
-  check('点一行就请父页面开那条 issue', asked.includes('https://github.com/Nwflower/dsh-widget-board/issues/1'), JSON.stringify(asked))
+  check('点一行就请父页面开那条 issue', asked.includes('https://github.com/Nwflower/dsh-scholar-board/issues/1'), JSON.stringify(asked))
 
   // 脚本地址不往父页面走：桥上的形状判定先把它拦下，父页面一次都没有收到。
   await frame.evaluate(() => {
@@ -66,7 +66,7 @@ async function githubPass(page, check) {
   const id = await addInstance(page, 'github-issues')
   check('「今日宜休」卡加得进看板', id !== '')
   if (id === '') return
-  const frame = await frameOf(page, `[data-instance="${id}"] iframe.dsh-widget-board__frame[title="${TITLE}"]`)
+  const frame = await frameOf(page, `[data-instance="${id}"] iframe.dsh-scholar-board__frame[title="${TITLE}"]`)
   await frame.waitForFunction(
     () => document.querySelector('.gh')?.getAttribute('data-state') === 'ready',
     undefined,
@@ -88,7 +88,7 @@ async function githubPass(page, check) {
   await openPass(page, frame, check)
 
   // 后面的场景从原来的看板开始：查完把这张卡收掉。
-  await page.locator(`[data-instance="${id}"] [data-dsh-widget-board-handle="remove"]`).click()
+  await page.locator(`[data-instance="${id}"] [data-dsh-scholar-board-handle="remove"]`).click()
   const gone = await page.waitForFunction(
     (cardId) => document.querySelector(`[data-instance="${cardId}"]`) === null,
     id,

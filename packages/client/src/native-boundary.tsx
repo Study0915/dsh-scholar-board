@@ -48,7 +48,7 @@ export class NativeBoundary extends Component<NativeBoundaryProps, NativeBoundar
    */
   render(): ReactNode {
     if (this.state.failure !== null) {
-      return <p className="dsh-widget-board__failure-strip" role="status">{`${this.props.label}：${this.state.failure}`}</p>
+      return <p className="dsh-scholar-board__failure-strip" role="status">{`${this.props.label}：${this.state.failure}`}</p>
     }
     return this.props.children
   }

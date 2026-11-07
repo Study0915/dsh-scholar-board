@@ -8,8 +8,8 @@
 import { createElement } from 'react'
 import type { ComponentType, ReactNode } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
-import type { ToolViewProps } from '@dsh-widget-board/contracts'
-import { TOOL_VIEW_SLOT, WIDGET_TOOL_NAMES, slotsOf } from '@dsh-widget-board/contracts'
+import type { ToolViewProps } from '@dsh-scholar-board/contracts'
+import { TOOL_VIEW_SLOT, WIDGET_TOOL_NAMES, slotsOf } from '@dsh-scholar-board/contracts'
 import { InlineWidget } from './inline'
 import { DefineView } from './tool-define'
 

@@ -1,5 +1,5 @@
 /** 能力处理器只相信 Workspace 中由真实调用 id 找到的实例。 */
-import { MEDIA_CHUNK_BYTES, WIDGET_BOARD_API_VERSION, type CapabilityRegistration } from '@dsh-widget-board/contracts'
+import { MEDIA_CHUNK_BYTES, WIDGET_BOARD_API_VERSION, type CapabilityRegistration } from '@dsh-scholar-board/contracts'
 import type { MediaStore } from './store'
 
 export function mediaCapability(store: MediaStore): CapabilityRegistration {

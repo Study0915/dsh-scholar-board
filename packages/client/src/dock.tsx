@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 'react'
-import type { MarketSectionSnapshot, WidgetLibraryEntry, WidgetSummary } from '@dsh-widget-board/contracts'
-import tokens from '@dsh-widget-board/contracts/tokens.json'
+import type { MarketSectionSnapshot, WidgetLibraryEntry, WidgetSummary } from '@dsh-scholar-board/contracts'
+import tokens from '@dsh-scholar-board/contracts/tokens.json'
 import { isChinese, sourceLabel, t } from './copy'
 import type { FrameHost } from './frame-host'
 import { LibraryPanel } from './library'
@@ -219,14 +219,14 @@ function DockMenu({ busy, arrangement, onCreate, onAdd, onTidy, onToggleArrangem
 
   return (
     <div
-      className={`dsh-widget-board__dock${anticipating ? ' is-anticipating' : ''}`}
+      className={`dsh-scholar-board__dock${anticipating ? ' is-anticipating' : ''}`}
       ref={rootRef}
       data-open={open ? 'true' : 'false'}
     >
-      <svg className="dsh-widget-board__goo-svg" viewBox="0 0 200 140" aria-hidden="true" focusable="false">
+      <svg className="dsh-scholar-board__goo-svg" viewBox="0 0 200 140" aria-hidden="true" focusable="false">
         <defs>
           <filter
-            id="dsh-widget-board-goo"
+            id="dsh-scholar-board-goo"
             filterUnits="userSpaceOnUse"
             x="-85"
             y="-85"
@@ -267,26 +267,26 @@ function DockMenu({ busy, arrangement, onCreate, onAdd, onTidy, onToggleArrangem
             </feMerge>
           </filter>
         </defs>
-        <g filter="url(#dsh-widget-board-goo)">
+        <g filter="url(#dsh-scholar-board-goo)">
           {GOO_ACTIONS.map((action) => (
             <circle
               key={action.kind}
-              className="dsh-widget-board__goo-circle"
+              className="dsh-scholar-board__goo-circle"
               cx="100"
               cy="100"
               r="20"
               style={{ '--fx': action.fx, '--fy': action.fy, '--i': action.i } as CSSProperties}
             />
           ))}
-          <circle className="dsh-widget-board__goo-circle dsh-widget-board__goo-circle--trigger" cx="100" cy="100" r="20" />
+          <circle className="dsh-scholar-board__goo-circle dsh-scholar-board__goo-circle--trigger" cx="100" cy="100" r="20" />
         </g>
       </svg>
       {GOO_ACTIONS.map((action) => (
         <button
           key={action.kind}
           type="button"
-          className="dsh-widget-board__dock-action"
-          data-dsh-widget-board-dock-action={action.kind}
+          className="dsh-scholar-board__dock-action"
+          data-dsh-scholar-board-dock-action={action.kind}
           style={{ '--fx': action.fx, '--fy': action.fy, '--i': action.i } as CSSProperties}
           title={action.kind === 'arrange' ? (arrangement === 'aligned' ? t('arrangeFree') : t('arrangeAligned')) : t(action.kind)}
           aria-label={action.kind === 'arrange' ? (arrangement === 'aligned' ? t('arrangeFree') : t('arrangeAligned')) : t(action.kind)}
@@ -302,14 +302,14 @@ function DockMenu({ busy, arrangement, onCreate, onAdd, onTidy, onToggleArrangem
       ))}
       <button
         type="button"
-        className="dsh-widget-board__dock-trigger"
-        data-dsh-widget-board-dock-toggle=""
+        className="dsh-scholar-board__dock-trigger"
+        data-dsh-scholar-board-dock-toggle=""
         aria-label={open ? t('closeMenu') : t('menu')}
         aria-expanded={open}
         title={open ? t('closeMenu') : t('menu')}
         onClick={toggle}
       >
-        <span className="dsh-widget-board__dock-trigger-icon" aria-hidden="true">
+        <span className="dsh-scholar-board__dock-trigger-icon" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
             <path d="M10 4V16M4 10H16" />
           </svg>
@@ -414,7 +414,7 @@ export function BoardDock({
       return rect !== undefined && event.clientX >= rect.left && event.clientX <= rect.right
         && event.clientY >= rect.top && event.clientY <= rect.bottom
     }
-    const trigger = dockRef.current?.querySelector('.dsh-widget-board__dock-trigger')
+    const trigger = dockRef.current?.querySelector('.dsh-scholar-board__dock-trigger')
     if (over(trigger)) return
     onAddAt(drag.entry.id, event.clientX, event.clientY).catch((error: Error) => {
       console.error(`widget-board: 拖放没有完成：${error.message}`)
@@ -492,11 +492,11 @@ export function BoardDock({
     if (board === null || layer === null) return
     const update = (): void => {
       const rect = board.getBoundingClientRect()
-      layer.style.setProperty('--dsh-widget-board-anchor', `${String(rect.left + board.clientWidth / 2)}px`)
-      layer.style.setProperty('--dsh-widget-board-left', `${String(rect.left)}px`)
-      layer.style.setProperty('--dsh-widget-board-width', `${String(rect.width)}px`)
-      layer.style.setProperty('--dsh-widget-board-top', `${String(rect.top)}px`)
-      layer.style.setProperty('--dsh-widget-board-height', `${String(rect.height)}px`)
+      layer.style.setProperty('--dsh-scholar-board-anchor', `${String(rect.left + board.clientWidth / 2)}px`)
+      layer.style.setProperty('--dsh-scholar-board-left', `${String(rect.left)}px`)
+      layer.style.setProperty('--dsh-scholar-board-width', `${String(rect.width)}px`)
+      layer.style.setProperty('--dsh-scholar-board-top', `${String(rect.top)}px`)
+      layer.style.setProperty('--dsh-scholar-board-height', `${String(rect.height)}px`)
     }
     update()
     const observer = new ResizeObserver(update)
@@ -515,7 +515,7 @@ export function BoardDock({
       setLibraryPanel((current) => current.mounted ? current : { mounted: true, open: false })
       const frame = requestAnimationFrame(() => {
         // 先把关闭态算一次样式；否则首帧直接是打开态，过渡不会发生。
-        void libraryRef.current?.querySelector('[data-dsh-widget-board-library]')?.getBoundingClientRect()
+        void libraryRef.current?.querySelector('[data-dsh-scholar-board-library]')?.getBoundingClientRect()
         setLibraryPanel({ mounted: true, open: true })
       })
       return () => cancelAnimationFrame(frame)
@@ -550,8 +550,8 @@ export function BoardDock({
   }, [libraryOpen, onCloseLibrary])
 
   return (
-    <div className="dsh-widget-board__dock-layer" ref={layerRef} style={LAYER_STYLE}>
-      <div className="dsh-widget-board__dock-fade" aria-hidden="true" />
+    <div className="dsh-scholar-board__dock-layer" ref={layerRef} style={LAYER_STYLE}>
+      <div className="dsh-scholar-board__dock-fade" aria-hidden="true" />
       <div ref={dockRef}>
         <DockMenu
           busy={busy}
@@ -588,8 +588,8 @@ export function BoardDock({
         : (
           <div
             ref={shieldRef}
-            className="dsh-widget-board__drag-shield"
-            data-dsh-widget-board-drag-shield=""
+            className="dsh-scholar-board__drag-shield"
+            data-dsh-scholar-board-drag-shield=""
             onPointerMove={moveDrag}
             onPointerUp={finishDrag}
             onPointerCancel={cancelDrag}
@@ -598,11 +598,11 @@ export function BoardDock({
       {proxy === null
         ? null
         : (
-          <div className="dsh-widget-board__drag-proxy" ref={proxyRef} data-dsh-widget-board-drag-proxy="">
-            <span className="dsh-widget-board__drag-proxy-kicker">{sourceLabel(proxy.source)}</span>
-            <span className="dsh-widget-board__drag-proxy-title">{isChinese() ? proxy.title.zh : proxy.title.en}</span>
-            <span className="dsh-widget-board__drag-proxy-hint">
-              <span className="dsh-widget-board__dot" aria-hidden="true" />
+          <div className="dsh-scholar-board__drag-proxy" ref={proxyRef} data-dsh-scholar-board-drag-proxy="">
+            <span className="dsh-scholar-board__drag-proxy-kicker">{sourceLabel(proxy.source)}</span>
+            <span className="dsh-scholar-board__drag-proxy-title">{isChinese() ? proxy.title.zh : proxy.title.en}</span>
+            <span className="dsh-scholar-board__drag-proxy-hint">
+              <span className="dsh-scholar-board__dot" aria-hidden="true" />
               {t('dropHint')}
             </span>
           </div>

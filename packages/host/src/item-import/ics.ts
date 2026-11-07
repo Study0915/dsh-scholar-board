@@ -1,9 +1,9 @@
 /** 标准解析与重复展开交给ical.js；Luxon负责IANA及DST歧义，外来时区注册只在本次同步解析期间生效。 */
 import ICAL from 'ical.js'
 import { DateTime } from 'luxon'
-import type { Due } from '@dsh-widget-board/contracts/campus'
-import type { ItemImportRequest, ItemImportRow } from '@dsh-widget-board/contracts/item-import'
-import { dueFromInput, validZone } from '@dsh-widget-board/model/campus/time'
+import type { Due } from '@dsh-scholar-board/contracts/campus'
+import type { ItemImportRequest, ItemImportRow } from '@dsh-scholar-board/contracts/item-import'
+import { dueFromInput, validZone } from '@dsh-scholar-board/model/campus/time'
 import { CANDIDATE_LIMIT, importRow, sourceKey } from './common'
 
 type Component = InstanceType<typeof ICAL.Component>

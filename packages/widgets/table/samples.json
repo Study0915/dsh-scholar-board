@@ -27,7 +27,7 @@
         { "key": "state", "label": "State", "align": "right" }
       ],
       "rows": [
-        { "provider": "dsh-widget-board", "kind": "builtin", "sources": 7, "state": "ready" },
+        { "provider": "dsh-scholar-board", "kind": "builtin", "sources": 7, "state": "ready" },
         { "provider": "dsh-task-board", "kind": "plugin", "sources": 3, "state": "ready" },
         { "provider": "acme.widgets", "kind": "market", "sources": 12, "state": "pending" },
         { "provider": "local.author", "kind": "user", "sources": 1, "state": "ready" }

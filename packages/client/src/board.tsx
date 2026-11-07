@@ -16,11 +16,11 @@ import type {
   WidgetNotification,
   WidgetSummary,
   WorkspaceSnapshot,
-} from '@dsh-widget-board/contracts'
-import { FLIP_GROUP_ID, WIDGET_BOARD_PANEL_ID } from '@dsh-widget-board/contracts'
-import tokens from '@dsh-widget-board/contracts/tokens.json'
-import type { GridMetrics } from '@dsh-widget-board/model'
-import { DEFAULT_HEIGHT_REM, gridMetrics, snapCardY } from '@dsh-widget-board/model'
+} from '@dsh-scholar-board/contracts'
+import { FLIP_GROUP_ID, WIDGET_BOARD_PANEL_ID } from '@dsh-scholar-board/contracts'
+import tokens from '@dsh-scholar-board/contracts/tokens.json'
+import type { GridMetrics } from '@dsh-scholar-board/model'
+import { DEFAULT_HEIGHT_REM, gridMetrics, snapCardY } from '@dsh-scholar-board/model'
 import { BoardGrid } from './board-grid'
 import { useBoardArrangement } from './board-arrangement'
 import { CardComposer } from './composer/composer'
@@ -615,16 +615,16 @@ export function BoardPage({ context }: BoardPageProps): ReactNode {
   }, [activeBoard?.id, metrics, instanceIds, refreshGeneration, reporting])
 
   let body: ReactNode = null
-  if (failure !== null) body = <div className="dsh-widget-board__notice">{failure}</div>
-  else if (snapshot === null) body = <div className="dsh-widget-board__notice">{t('loading')}</div>
+  if (failure !== null) body = <div className="dsh-scholar-board__notice">{failure}</div>
+  else if (snapshot === null) body = <div className="dsh-scholar-board__notice">{t('loading')}</div>
 
   return (
     <>
       <div
         ref={shellRef}
-        className="dsh-widget-board"
-        data-dsh-widget-board-view={WIDGET_BOARD_PANEL_ID}
-        data-dsh-widget-board-columns={metrics?.columns ?? 0}
+        className="dsh-scholar-board"
+        data-dsh-scholar-board-view={WIDGET_BOARD_PANEL_ID}
+        data-dsh-scholar-board-columns={metrics?.columns ?? 0}
         style={SHELL_STYLE}
       >
         <BoardTabs
@@ -638,7 +638,7 @@ export function BoardPage({ context }: BoardPageProps): ReactNode {
           onDelete={onDeleteBoard}
         />
         {body}
-        <div ref={boardsRef} className="dsh-widget-board__boards">
+        <div ref={boardsRef} className="dsh-scholar-board__boards">
           {activeBoard === null
             ? null
             : (

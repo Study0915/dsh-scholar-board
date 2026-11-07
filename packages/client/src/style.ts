@@ -1,4 +1,4 @@
-import { PACKAGE_NAME } from '@dsh-widget-board/contracts'
+import { PACKAGE_NAME } from '@dsh-scholar-board/contracts'
 import visual from './visual.css'
 import badge from './badge.css'
 import board from './board.css'

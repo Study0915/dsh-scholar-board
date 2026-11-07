@@ -1,5 +1,5 @@
 /** 共享分块读取器：任何一次元数据或长度不一致都停止组装。 */
-import { MEDIA_CHUNK_BYTES, MEDIA_READ_CAPABILITY, type MediaChunk, type WidgetHandles } from '@dsh-widget-board/contracts'
+import { MEDIA_CHUNK_BYTES, MEDIA_READ_CAPABILITY, type MediaChunk, type WidgetHandles } from '@dsh-scholar-board/contracts'
 
 export async function readMedia(call: WidgetHandles['call'], ref: string, signal: AbortSignal): Promise<Blob> {
   const chunks: Uint8Array<ArrayBuffer>[] = []

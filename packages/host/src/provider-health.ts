@@ -13,7 +13,7 @@
  *
  * 调用方的中止信号与超时合成为一个信号交给提供方：谁先到都中止它，调用方拿到的原因按先到的那个算。
  */
-import type { WidgetBoardFeature, WidgetProviderHealth } from '@dsh-widget-board/contracts'
+import type { WidgetBoardFeature, WidgetProviderHealth } from '@dsh-scholar-board/contracts'
 import { Refusal } from './refusal'
 
 /** 读取与动作的默认超时。 */

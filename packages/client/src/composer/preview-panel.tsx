@@ -10,8 +10,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { ParentMessage, WidgetMessage } from '@dsh-widget-board/contracts'
-import { MESSAGE_RATE_LIMIT, isWidgetMessage, withinLimit } from '@dsh-widget-board/contracts'
+import type { ParentMessage, WidgetMessage } from '@dsh-scholar-board/contracts'
+import { MESSAGE_RATE_LIMIT, isWidgetMessage, withinLimit } from '@dsh-scholar-board/contracts'
 import { t } from '../copy'
 import type { FrameHost } from '../frame-host'
 import type { ShellTheme } from '../theme'
@@ -255,15 +255,15 @@ export function PreviewPanel({ files, binaryFiles, props, data, state, theme, fr
   }, [theme])
 
   return (
-    <div className="dsh-widget-board__preview" data-dsh-widget-board-preview="">
-      <div className="dsh-widget-board__preview-bar">
-        <span className="dsh-widget-board__preview-group" role="group" aria-label={t('previewWidth')}>
+    <div className="dsh-scholar-board__preview" data-dsh-scholar-board-preview="">
+      <div className="dsh-scholar-board__preview-bar">
+        <span className="dsh-scholar-board__preview-group" role="group" aria-label={t('previewWidth')}>
           {WIDTHS.map((entry) => (
             <button
               key={entry.key}
               type="button"
-              className="dsh-widget-board__preview-size"
-              data-dsh-widget-board-preview-width={entry.key}
+              className="dsh-scholar-board__preview-size"
+              data-dsh-scholar-board-preview-width={entry.key}
               aria-pressed={width === entry.px}
               onClick={() => { setWidth(entry.px) }}
             >
@@ -271,13 +271,13 @@ export function PreviewPanel({ files, binaryFiles, props, data, state, theme, fr
             </button>
           ))}
         </span>
-        <span className="dsh-widget-board__preview-group" role="group" aria-label={t('previewHeight')}>
+        <span className="dsh-scholar-board__preview-group" role="group" aria-label={t('previewHeight')}>
           {HEIGHTS.map((entry) => (
             <button
               key={entry.key}
               type="button"
-              className="dsh-widget-board__preview-size"
-              data-dsh-widget-board-preview-height={entry.key}
+              className="dsh-scholar-board__preview-size"
+              data-dsh-scholar-board-preview-height={entry.key}
               aria-pressed={height === entry.px}
               onClick={() => { setHeight(entry.px) }}
             >
@@ -285,30 +285,30 @@ export function PreviewPanel({ files, binaryFiles, props, data, state, theme, fr
             </button>
           ))}
         </span>
-        <span className="dsh-widget-board__editor-spacer" />
-        {currentSize === undefined ? null : <button type="button" className="dsh-widget-board__editor-ghost" data-dsh-widget-board-preview-current="" onClick={() => { setWidth(currentSize.width); setHeight(currentSize.height) }}>当前尺寸</button>}
-        <span className="dsh-widget-board__source-note">主题随宿主切换</span>
+        <span className="dsh-scholar-board__editor-spacer" />
+        {currentSize === undefined ? null : <button type="button" className="dsh-scholar-board__editor-ghost" data-dsh-scholar-board-preview-current="" onClick={() => { setWidth(currentSize.width); setHeight(currentSize.height) }}>当前尺寸</button>}
+        <span className="dsh-scholar-board__source-note">主题随宿主切换</span>
         <button
           type="button"
-          className="dsh-widget-board__editor-ghost"
-          data-dsh-widget-board-preview-run=""
+          className="dsh-scholar-board__editor-ghost"
+          data-dsh-scholar-board-preview-run=""
           disabled={running}
           onClick={() => { void start() }}
         >
           {running ? t('previewRunning') : t('previewRun')}
         </button>
       </div>
-      <div className="dsh-widget-board__preview-stage">
+      <div className="dsh-scholar-board__preview-stage">
         <iframe
           ref={frameRef}
-          className="dsh-widget-board__preview-frame"
-          data-dsh-widget-board-preview-frame=""
+          className="dsh-scholar-board__preview-frame"
+          data-dsh-scholar-board-preview-frame=""
           sandbox="allow-scripts"
           title={t('preview')}
           style={{ width: `${String(width)}px`, height: `${String(height)}px` }}
         />
       </div>
-      {failure === null ? null : <p className="dsh-widget-board__editor-error" role="status">{failure}</p>}
+      {failure === null ? null : <p className="dsh-scholar-board__editor-error" role="status">{failure}</p>}
     </div>
   )
 }

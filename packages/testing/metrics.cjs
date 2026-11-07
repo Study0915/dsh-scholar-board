@@ -1,6 +1,6 @@
 'use strict'
 const { centerCard, frameOf } = require('./frames.cjs')
-const METRICS_FRAME = 'iframe.dsh-widget-board__frame[title="运行成本"]'
+const METRICS_FRAME = 'iframe.dsh-scholar-board__frame[title="运行成本"]'
 
 /** 运行成本的可见读数；静态结构与订阅生命周期场景共用同一份判据。 */
 async function metricsViewPass(frame, check) {

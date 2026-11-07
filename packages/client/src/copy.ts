@@ -4,7 +4,7 @@
  * 语言取自宿主页面的 `lang`；宿主没有给时按 `navigator.language` 判断。文案随插件一起发布，
  * 不需要等任何请求到达。
  */
-import type { LocalizedText, WidgetSource } from '@dsh-widget-board/contracts'
+import type { LocalizedText, WidgetSource } from '@dsh-scholar-board/contracts'
 
 /** 一条文案的两种说法。 */
 interface Pair {

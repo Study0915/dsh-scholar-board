@@ -3,8 +3,8 @@
  * 提供方算。
  */
 import { describe, expect, it } from 'vitest'
-import type { WidgetBoardFeature, WidgetRoot, WidgetTypeHandle } from '@dsh-widget-board/contracts'
-import { WIDGET_BOARD_FEATURES, WIDGET_BOARD_PROVIDER_API_VERSION } from '@dsh-widget-board/contracts'
+import type { WidgetBoardFeature, WidgetRoot, WidgetTypeHandle } from '@dsh-scholar-board/contracts'
+import { WIDGET_BOARD_FEATURES, WIDGET_BOARD_PROVIDER_API_VERSION } from '@dsh-scholar-board/contracts'
 import type { ProviderDeps } from '../src/providers'
 import {
   PROVIDER_CAPABILITY_LIMIT,

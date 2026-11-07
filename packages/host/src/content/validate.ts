@@ -5,8 +5,8 @@
  * 重新读」这两种不同的说法。校验顺序固定：先看请求形状，再看 schema，最后看额度——形状都不对
  * 的请求不必编译 schema。
  */
-import type { ContentIssue, WidgetManifest } from '@dsh-widget-board/contracts'
-import { PARENT_MESSAGE_LIMIT } from '@dsh-widget-board/contracts'
+import type { ContentIssue, WidgetManifest } from '@dsh-scholar-board/contracts'
+import { PARENT_MESSAGE_LIMIT } from '@dsh-scholar-board/contracts'
 import { BOARD_STATE_BYTES_LIMIT, STATE_BYTES_LIMIT } from '../limits'
 import { Refusal } from '../refusal'
 import { stateBytes } from '../state'

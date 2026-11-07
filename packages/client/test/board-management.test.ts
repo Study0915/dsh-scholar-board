@@ -4,7 +4,7 @@
  * 判定函数住在 contracts，宿主与界面读同一份；这里核对界面这一侧不会自己发明另一套说法。
  */
 import { describe, expect, it } from 'vitest'
-import type { Board, BoardInstance } from '@dsh-widget-board/contracts'
+import type { Board, BoardInstance } from '@dsh-scholar-board/contracts'
 import { BOARD_TITLE_LIMIT, boardTitleLength, boardTitleProblem } from '../src/board-management/actions'
 import { factsOf } from '../src/board-management/actions'
 

@@ -1,8 +1,8 @@
 import ICAL from 'ical.js'
 import Papa from 'papaparse'
 import { DateTime } from 'luxon'
-import type { CampusItem } from '@dsh-widget-board/contracts/campus'
-import type { ImportFormat } from '@dsh-widget-board/contracts/item-import'
+import type { CampusItem } from '@dsh-scholar-board/contracts/campus'
+import type { ImportFormat } from '@dsh-scholar-board/contracts/item-import'
 import { CSV_FIELDS } from './common'
 
 export function exportItems(items: readonly CampusItem[], format: ImportFormat): { name: string, mime: string, text: string, count: number } {
@@ -13,10 +13,10 @@ export function exportItems(items: readonly CampusItem[], format: ImportFormat):
   }
   const calendar = new ICAL.Component(['vcalendar', [], []])
   calendar.addPropertyWithValue('version', '2.0')
-  calendar.addPropertyWithValue('prodid', '-//dsh-widget-board//Campus//EN')
+  calendar.addPropertyWithValue('prodid', '-//dsh-scholar-board//Campus//EN')
   for (const item of items) {
     const component = new ICAL.Component('vevent')
-    component.addPropertyWithValue('uid', `${item.id}@dsh-widget-board.local`)
+    component.addPropertyWithValue('uid', `${item.id}@dsh-scholar-board.local`)
     component.addPropertyWithValue('summary', item.title)
     component.addPropertyWithValue('description', item.note ?? '')
     if (item.url) component.addPropertyWithValue('url', item.url)

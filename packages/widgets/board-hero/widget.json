@@ -8,7 +8,7 @@
     "zh": "一块活的看板的标题、说明与字模图案；像普通卡片一样拖动、缩放与移除。",
     "en": "The title, tagline and type specimen of a living board; drag, resize and remove it like any other card."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.1.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 2, "h": 18 },

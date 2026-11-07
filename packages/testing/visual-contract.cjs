@@ -3,8 +3,8 @@
 const tokens = require('../contracts/tokens.json')
 
 async function visualContractPass(page, check) {
-  const expectedFont = await page.locator('[data-dsh-widget-board-view]').evaluate((element) => getComputedStyle(element).fontFamily)
-  const handles = await page.locator('.dsh-widget-board__flow[data-active="true"] iframe.dsh-widget-board__frame').elementHandles()
+  const expectedFont = await page.locator('[data-dsh-scholar-board-view]').evaluate((element) => getComputedStyle(element).fontFamily)
+  const handles = await page.locator('.dsh-scholar-board__flow[data-active="true"] iframe.dsh-scholar-board__frame').elementHandles()
   check('视觉契约检查真实卡片', handles.length > 0, String(handles.length))
   for (const handle of handles) {
     const frame = await handle.contentFrame()

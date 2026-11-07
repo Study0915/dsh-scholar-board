@@ -4,7 +4,7 @@
  * 这里用替身账户服务，不碰真实登录；几项判据只针对包装层的输入输出与失败说法。
  */
 import { describe, expect, it } from 'vitest'
-import type { AccountBalance, InstanceFace } from '@dsh-widget-board/contracts'
+import type { AccountBalance, InstanceFace } from '@dsh-scholar-board/contracts'
 import { DSH_ACCOUNT_CAPABILITY, DSH_ACCOUNT_PROVIDER, dshAccountCapability } from '../src/dsh-account'
 
 const FACE: InstanceFace = { id: 'card', widget: 'dsh-balance', props: {} }

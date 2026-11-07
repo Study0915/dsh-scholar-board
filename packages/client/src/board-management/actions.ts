@@ -4,8 +4,8 @@
  * 标题合不合规矩由 contracts 判定，宿主与界面因此不会各说各的；这里只把原因翻成当前语言的
  * 一句话。删除确认要说的「几格、几张卡」也从这里算：组卡是一格两张卡（D19）。
  */
-import type { Board, BoardTitleProblem, WorkspaceSnapshot } from '@dsh-widget-board/contracts'
-import { BOARD_TITLE_LIMIT, boardTitleLength, boardTitleProblem } from '@dsh-widget-board/contracts'
+import type { Board, BoardTitleProblem, WorkspaceSnapshot } from '@dsh-scholar-board/contracts'
+import { BOARD_TITLE_LIMIT, boardTitleLength, boardTitleProblem } from '@dsh-scholar-board/contracts'
 import { t } from '../copy'
 import { groupCards } from '../group'
 import { removeBoard, renameBoard } from '../snapshot'

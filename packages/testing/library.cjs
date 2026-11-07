@@ -16,11 +16,11 @@
  * @param kind - 动作的 kind。
  */
 async function openDockAction(page, kind) {
-  const toggle = page.locator('[data-dsh-widget-board-dock-toggle]')
+  const toggle = page.locator('[data-dsh-scholar-board-dock-toggle]')
   if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click()
-  await page.waitForFunction(() => document.querySelector('[data-dsh-widget-board-dock-toggle]')?.getAttribute('aria-expanded') === 'true', undefined, { timeout: 5000 })
+  await page.waitForFunction(() => document.querySelector('[data-dsh-scholar-board-dock-toggle]')?.getAttribute('aria-expanded') === 'true', undefined, { timeout: 5000 })
   await new Promise((resolve) => setTimeout(resolve, 500))
-  await page.locator(`[data-dsh-widget-board-dock-action="${kind}"]`).click()
+  await page.locator(`[data-dsh-scholar-board-dock-action="${kind}"]`).click()
 }
 
 /**
@@ -29,18 +29,18 @@ async function openDockAction(page, kind) {
  * @param page - 宿主页面，看板已经打开。
  */
 async function openLibrary(page) {
-  const panel = page.locator('[data-dsh-widget-board-library]')
+  const panel = page.locator('[data-dsh-scholar-board-library]')
   if (await panel.count() > 0) {
-    if (await page.locator('[data-dsh-widget-board-library][data-open="true"]').count() > 0) return
-    await page.waitForSelector('[data-dsh-widget-board-library]', { state: 'detached', timeout: 5000 })
+    if (await page.locator('[data-dsh-scholar-board-library][data-open="true"]').count() > 0) return
+    await page.waitForSelector('[data-dsh-scholar-board-library]', { state: 'detached', timeout: 5000 })
   }
-  const toggle = page.locator('[data-dsh-widget-board-dock-toggle]')
+  const toggle = page.locator('[data-dsh-scholar-board-dock-toggle]')
   if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click()
-  await page.waitForFunction(() => document.querySelector('[data-dsh-widget-board-dock-toggle]')?.getAttribute('aria-expanded') === 'true', undefined, { timeout: 5000 })
+  await page.waitForFunction(() => document.querySelector('[data-dsh-scholar-board-dock-toggle]')?.getAttribute('aria-expanded') === 'true', undefined, { timeout: 5000 })
   // 等扇面展开完再点：动作从加号中心飞出去，动画中途点击会落回关闭按钮。
   await new Promise((resolve) => setTimeout(resolve, 500))
-  await page.locator('[data-dsh-widget-board-dock-action="add"]').click()
-  await page.waitForSelector('[data-dsh-widget-board-library][data-open="true"]', { timeout: 10000 })
+  await page.locator('[data-dsh-scholar-board-dock-action="add"]').click()
+  await page.waitForSelector('[data-dsh-scholar-board-library][data-open="true"]', { timeout: 10000 })
 }
 
 module.exports = { openDockAction, openLibrary }

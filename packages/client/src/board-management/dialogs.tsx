@@ -7,8 +7,8 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react'
-import type { Board } from '@dsh-widget-board/contracts'
-import { BOARD_TITLE_LIMIT, boardTitleLength, boardTitleProblem } from '@dsh-widget-board/contracts'
+import type { Board } from '@dsh-scholar-board/contracts'
+import { BOARD_TITLE_LIMIT, boardTitleLength, boardTitleProblem } from '@dsh-scholar-board/contracts'
 import { t } from '../copy'
 import { factsOf, titleProblemText } from './actions'
 
@@ -47,8 +47,8 @@ function Layer({ anchor, children, onDismiss }: LayerProps): ReactNode {
     ? { top: 0, left: 0, width: '100vw', height: '100vh' }
     : { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
   return (
-    <div className="dsh-widget-board__board-dialog-layer" style={box}>
-      <div className="dsh-widget-board__board-dialog-backdrop" onPointerDown={onDismiss} />
+    <div className="dsh-scholar-board__board-dialog-layer" style={box}>
+      <div className="dsh-scholar-board__board-dialog-backdrop" onPointerDown={onDismiss} />
       {children}
     </div>
   )
@@ -148,51 +148,51 @@ export function RenameBoardDialog({ board, anchor, busy, failure, onConfirm, onC
     <Layer anchor={anchor} onDismiss={onCancel}>
       <div
         ref={dialogRef}
-        className="dsh-widget-board__board-dialog dsh-widget-board__board-dialog--rename"
-        data-dsh-widget-board-rename-board={board.id}
+        className="dsh-scholar-board__board-dialog dsh-scholar-board__board-dialog--rename"
+        data-dsh-scholar-board-rename-board={board.id}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="dsh-widget-board-rename-title"
+        aria-labelledby="dsh-scholar-board-rename-title"
       >
-        <header className="dsh-widget-board__board-dialog-head">
-          <p className="dsh-widget-board__board-dialog-eyebrow">{t('rename')}</p>
-          <h2 id="dsh-widget-board-rename-title" className="dsh-widget-board__board-dialog-title">{t('renameBoardTitle')}</h2>
+        <header className="dsh-scholar-board__board-dialog-head">
+          <p className="dsh-scholar-board__board-dialog-eyebrow">{t('rename')}</p>
+          <h2 id="dsh-scholar-board-rename-title" className="dsh-scholar-board__board-dialog-title">{t('renameBoardTitle')}</h2>
         </header>
-        <div className="dsh-widget-board__board-dialog-body">
-          <label className="dsh-widget-board__board-dialog-label" htmlFor="dsh-widget-board-rename-input">{t('boardName')}</label>
+        <div className="dsh-scholar-board__board-dialog-body">
+          <label className="dsh-scholar-board__board-dialog-label" htmlFor="dsh-scholar-board-rename-input">{t('boardName')}</label>
           <input
-            id="dsh-widget-board-rename-input"
+            id="dsh-scholar-board-rename-input"
             ref={inputRef}
-            className="dsh-widget-board__board-dialog-input"
-            data-dsh-widget-board-rename-input=""
+            className="dsh-scholar-board__board-dialog-input"
+            data-dsh-scholar-board-rename-input=""
             value={title}
             disabled={busy}
             aria-invalid={touched && problem !== null}
-            aria-describedby="dsh-widget-board-rename-foot"
+            aria-describedby="dsh-scholar-board-rename-foot"
             onChange={(event) => { setTitle(event.target.value); setTouched(false) }}
             onBlur={() => { setTouched(true) }}
             onKeyDown={onKeyDown}
           />
           <p
-            id="dsh-widget-board-rename-foot"
-            className="dsh-widget-board__board-dialog-note"
-            data-dsh-widget-board-rename-note=""
+            id="dsh-scholar-board-rename-foot"
+            className="dsh-scholar-board__board-dialog-note"
+            data-dsh-scholar-board-rename-note=""
             data-state={(touched || length > 0) && problem !== null ? 'error' : 'hint'}
           >
             {(touched || length > 0) && problem !== null
               ? titleProblemText(problem)
               : `${String(length)} / ${String(BOARD_TITLE_LIMIT)} ${t('boardTitleCount')}`}
           </p>
-          {failure === null ? null : <p className="dsh-widget-board__board-dialog-note" data-state="error">{failure}</p>}
+          {failure === null ? null : <p className="dsh-scholar-board__board-dialog-note" data-state="error">{failure}</p>}
         </div>
-        <footer className="dsh-widget-board__board-dialog-foot">
-          <button type="button" className="dsh-widget-board__board-dialog-ghost" data-dsh-widget-board-rename-cancel="" onClick={onCancel}>
+        <footer className="dsh-scholar-board__board-dialog-foot">
+          <button type="button" className="dsh-scholar-board__board-dialog-ghost" data-dsh-scholar-board-rename-cancel="" onClick={onCancel}>
             {t('cancel')}
           </button>
           <button
             type="button"
-            className="dsh-widget-board__board-dialog-primary"
-            data-dsh-widget-board-rename-save=""
+            className="dsh-scholar-board__board-dialog-primary"
+            data-dsh-scholar-board-rename-save=""
             disabled={busy || problem !== null}
             onClick={() => { request() }}
           >
@@ -239,33 +239,33 @@ export function DeleteBoardDialog({ board, anchor, boardCount, busy, failure, on
     <Layer anchor={anchor} onDismiss={onCancel}>
       <div
         ref={dialogRef}
-        className="dsh-widget-board__board-dialog dsh-widget-board__board-dialog--delete"
-        data-dsh-widget-board-delete-board={board.id}
+        className="dsh-scholar-board__board-dialog dsh-scholar-board__board-dialog--delete"
+        data-dsh-scholar-board-delete-board={board.id}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="dsh-widget-board-delete-title"
-        aria-describedby="dsh-widget-board-delete-body"
+        aria-labelledby="dsh-scholar-board-delete-title"
+        aria-describedby="dsh-scholar-board-delete-body"
       >
-        <header className="dsh-widget-board__board-dialog-head">
-          <p className="dsh-widget-board__board-dialog-eyebrow">{t('removeBoard')}</p>
-          <h2 id="dsh-widget-board-delete-title" className="dsh-widget-board__board-dialog-title">{t('removeBoardTitle')}</h2>
+        <header className="dsh-scholar-board__board-dialog-head">
+          <p className="dsh-scholar-board__board-dialog-eyebrow">{t('removeBoard')}</p>
+          <h2 id="dsh-scholar-board-delete-title" className="dsh-scholar-board__board-dialog-title">{t('removeBoardTitle')}</h2>
         </header>
-        <div className="dsh-widget-board__board-dialog-body" id="dsh-widget-board-delete-body">
-          <p className="dsh-widget-board__board-dialog-target" data-dsh-widget-board-delete-name="">{board.title}</p>
-          <p className="dsh-widget-board__board-dialog-counts">
-            <span data-dsh-widget-board-delete-cells="">{t('cellsCount').replace('{n}', String(facts.cells))}</span>
-            <span data-dsh-widget-board-delete-cards="">{t('cardsCount').replace('{n}', String(facts.cards))}</span>
+        <div className="dsh-scholar-board__board-dialog-body" id="dsh-scholar-board-delete-body">
+          <p className="dsh-scholar-board__board-dialog-target" data-dsh-scholar-board-delete-name="">{board.title}</p>
+          <p className="dsh-scholar-board__board-dialog-counts">
+            <span data-dsh-scholar-board-delete-cells="">{t('cellsCount').replace('{n}', String(facts.cells))}</span>
+            <span data-dsh-scholar-board-delete-cards="">{t('cardsCount').replace('{n}', String(facts.cards))}</span>
           </p>
-          <p className="dsh-widget-board__board-dialog-note">{t('deleteBoardWarning')}</p>
-          {boardCount <= 1 ? <p className="dsh-widget-board__board-dialog-note">{t('deleteBoardLast')}</p> : null}
-          {failure === null ? null : <p className="dsh-widget-board__board-dialog-note" data-state="error">{failure}</p>}
+          <p className="dsh-scholar-board__board-dialog-note">{t('deleteBoardWarning')}</p>
+          {boardCount <= 1 ? <p className="dsh-scholar-board__board-dialog-note">{t('deleteBoardLast')}</p> : null}
+          {failure === null ? null : <p className="dsh-scholar-board__board-dialog-note" data-state="error">{failure}</p>}
         </div>
-        <footer className="dsh-widget-board__board-dialog-foot">
+        <footer className="dsh-scholar-board__board-dialog-foot">
           <button
             ref={cancelRef}
             type="button"
-            className="dsh-widget-board__board-dialog-ghost"
-            data-dsh-widget-board-delete-cancel=""
+            className="dsh-scholar-board__board-dialog-ghost"
+            data-dsh-scholar-board-delete-cancel=""
             onClick={onCancel}
             disabled={busy}
           >
@@ -273,8 +273,8 @@ export function DeleteBoardDialog({ board, anchor, boardCount, busy, failure, on
           </button>
           <button
             type="button"
-            className="dsh-widget-board__board-dialog-danger"
-            data-dsh-widget-board-delete-confirm=""
+            className="dsh-scholar-board__board-dialog-danger"
+            data-dsh-scholar-board-delete-confirm=""
             disabled={busy}
             onClick={onConfirm}
           >

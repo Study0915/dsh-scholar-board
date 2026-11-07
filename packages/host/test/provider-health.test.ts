@@ -5,7 +5,7 @@
  * 提供方出错时别的提供方还跑不跑。
  */
 import { describe, expect, it } from 'vitest'
-import type { InstanceFace } from '@dsh-widget-board/contracts'
+import type { InstanceFace } from '@dsh-scholar-board/contracts'
 import {
   PROVIDER_CONCURRENCY,
   PROVIDER_TIMEOUT_MS,

@@ -8,7 +8,7 @@
     "zh": "一个主数字、单位、趋势与一行说明，适合 KPI、额度和耗时。",
     "en": "A headline number with a unit, a trend and one line of context; for KPIs, quotas and elapsed time."
   },
-  "author": "dsh-widget-board",
+  "author": "dsh-scholar-board",
   "version": "0.2.0",
   "sizes": ["s", "l"],
   "defaultBox": { "w": 1, "h": 16 },

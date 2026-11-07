@@ -13,9 +13,9 @@ import type {
   InstanceCredentialRequest,
   InstancePropsRequest,
   WidgetCredential,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { readJson } from './body'
-import { REQUEST_LOG_LIMIT } from '@dsh-widget-board/contracts'
+import { REQUEST_LOG_LIMIT } from '@dsh-scholar-board/contracts'
 import { permissionMatches } from './grants'
 import { isRecord } from './guards'
 import { Refusal } from './refusal'

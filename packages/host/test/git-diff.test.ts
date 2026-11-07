@@ -7,7 +7,7 @@ import { execFile } from 'node:child_process'
 import { mkdir, readFile, readdir, rmdir, unlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
-import type { DataSourceRegistration, InstanceFace, WidgetManifest } from '@dsh-widget-board/contracts'
+import type { DataSourceRegistration, InstanceFace, WidgetManifest } from '@dsh-scholar-board/contracts'
 import type { GitDiffData } from '../src/git-diff'
 import {
   GIT_DIFF_INTERVAL_MS,

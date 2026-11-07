@@ -5,8 +5,8 @@
  * 被删光后补上的那一块（D21）；画廊把每个内置组件各铺一张，按类别分行，同一行的卡片同高。清单里的
  * 组件不在内置组件库里时抛出，不静默少铺（D11）。
  */
-import type { Arrangement, Board, BoardInstance, CardLayout } from '@dsh-widget-board/contracts'
-import { POSITION_STEP_REM } from '@dsh-widget-board/model'
+import type { Arrangement, Board, BoardInstance, CardLayout } from '@dsh-scholar-board/contracts'
+import { POSITION_STEP_REM } from '@dsh-scholar-board/model'
 import type { WidgetRecord } from './library'
 import { defaultBoxOf, emptyBoard, instanceOf, withGroupAdded } from './state'
 
@@ -83,7 +83,7 @@ const GALLERY_CONTENT: Readonly<Record<string, CardContent>> = {
   kv: {
     data: {
       items: [
-        { key: '插件', value: 'dsh-widget-board', note: '组件看板' },
+        { key: '插件', value: 'dsh-scholar-board', note: '组件看板' },
         { key: '宿主', value: 'DeepSeek Harness' },
         { key: '看板', value: 2, note: '我的看板 · 组件画廊' },
         { key: '来源', value: '内置 · 用户 · 插件' },

@@ -12,13 +12,13 @@
  * 工具读的是路由上下文这一份**活的**引用：组件库与看板随热重载、写入被替换，工具跟着看新的那一份。
  */
 import type { Context } from '@deepseek-ai/cordis'
-import type { Board, BoardEvent, InstanceFace, WidgetToolRegistration, WidgetToolSpec } from '@dsh-widget-board/contracts'
+import type { Board, BoardEvent, InstanceFace, WidgetToolRegistration, WidgetToolSpec } from '@dsh-scholar-board/contracts'
 import {
   WIDGET_SKILL_NAME,
   WIDGET_TOOL_NAMES,
   skillsOf,
   toolsOf,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import type { RouteContext } from '../routes'
 import { dataError, propsError } from '../schema'
 import { WIDGET_AUTHORING_GUIDE } from './guide'
@@ -190,7 +190,7 @@ const SKILL = {
   content: WIDGET_AUTHORING_GUIDE,
   invocation: { modelInvocable: true, userInvocable: true },
   source: 'runtime',
-  provider: 'dsh-widget-board',
+  provider: 'dsh-scholar-board',
 }
 
 /**

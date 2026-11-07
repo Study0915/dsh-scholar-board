@@ -11,8 +11,8 @@ import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promise
 import { dirname, join } from 'node:path'
 import Ajv from 'ajv'
 import { validRange } from 'semver'
-import type { WidgetLibraryEntry, WidgetLibraryError, WidgetManifest, WidgetRequires, WidgetRoot } from '@dsh-widget-board/contracts'
-import { WIDGET_MANIFEST_SCHEMA, WIDGET_SOURCES, isAuthorNamespacedWidgetId, serviceVersionProblem } from '@dsh-widget-board/contracts'
+import type { WidgetLibraryEntry, WidgetLibraryError, WidgetManifest, WidgetRequires, WidgetRoot } from '@dsh-scholar-board/contracts'
+import { WIDGET_MANIFEST_SCHEMA, WIDGET_SOURCES, isAuthorNamespacedWidgetId, serviceVersionProblem } from '@dsh-scholar-board/contracts'
 import { isRecord } from './guards'
 import { Refusal } from './refusal'
 

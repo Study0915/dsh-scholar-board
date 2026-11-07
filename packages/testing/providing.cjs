@@ -7,7 +7,7 @@
  * 页、开关一个插件、加一张插件提供的卡片、读一次数据、发一次动作或调一次能力，并清掉上一轮留下的卡片。
  * 这几种写法只留在这里，场景文件只写各自的判据。
  *
- * 查找只用插件自己写在节点上的标记（`data-dsh-widget-board-*`）；插件页那一行按文字找，因为它是宿主
+ * 查找只用插件自己写在节点上的标记（`data-dsh-scholar-board-*`）；插件页那一行按文字找，因为它是宿主
  * 自己的界面，宿主换了内部结构时这一处不跟着改（D1）。
  */
 const { openLibrary } = require('./library.cjs')
@@ -16,7 +16,7 @@ const { openLibrary } = require('./library.cjs')
 const PLUGINS_PANEL = '插件'
 
 /** 看板上的一张卡：插件自己的标记。 */
-const CARD = '[data-dsh-widget-board-view] [data-instance]'
+const CARD = '[data-dsh-scholar-board-view] [data-instance]'
 
 /**
  * 工作区里的全部卡片。
@@ -68,10 +68,10 @@ async function removeCardsOf(page, widgets) {
 async function addWidget(page, widget) {
   const before = await page.evaluate((selector) => Array.from(document.querySelectorAll(selector)).map((node) => node.getAttribute('data-instance')), CARD)
   await openLibrary(page)
-  const add = `[data-dsh-widget-board-add="${widget}"]`
+  const add = `[data-dsh-scholar-board-add="${widget}"]`
   await page.waitForSelector(add, { timeout: 15000 })
   await page.locator(add).click()
-  await page.waitForFunction((count) => document.querySelectorAll('[data-dsh-widget-board-view] [data-instance]').length === count + 1, before.length, { timeout: 15000 })
+  await page.waitForFunction((count) => document.querySelectorAll('[data-dsh-scholar-board-view] [data-instance]').length === count + 1, before.length, { timeout: 15000 })
   const after = await page.evaluate((selector) => Array.from(document.querySelectorAll(selector)).map((node) => node.getAttribute('data-instance')), CARD)
   return after.find((id) => !before.includes(id)) ?? ''
 }
@@ -84,7 +84,7 @@ async function addWidget(page, widget) {
  */
 async function removeCard(page, id) {
   const card = `[data-instance="${id}"]`
-  await page.locator(`${card} [data-dsh-widget-board-handle="remove"]`).click()
+  await page.locator(`${card} [data-dsh-scholar-board-handle="remove"]`).click()
   await page.waitForFunction((selector) => document.querySelector(selector) === null, card, { timeout: 10000 })
 }
 

@@ -27,7 +27,7 @@ import type {
   WidgetRoot,
   WidgetTypeHandle,
   WidgetTypeRegistration,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import {
   WIDGET_BOARD_API_VERSION,
   WIDGET_BOARD_FEATURES,
@@ -36,7 +36,7 @@ import {
   requireFeatures,
   supportsFeature,
   versionMismatch,
-} from '@dsh-widget-board/contracts'
+} from '@dsh-scholar-board/contracts'
 import { insertRoot } from './library'
 import type { ProviderHealth } from './provider-health'
 
