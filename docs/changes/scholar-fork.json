@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 1,
+  "at": "2026-11-07",
+  "external": true,
+  "zh": "从 Nwflower/dsh-widget-board（MIT）分叉为独立插件 dsh-scholar-board：包名、子包 scope、插件行、样式类名与语义属性统一改名；安装改为 dsh plugin add github:Study0915/dsh-scholar-board。上游版权与许可声明完整保留，第三方依赖许可盘点补齐 Ajv、schemastery、semver 与 React。",
+  "en": "Forked from Nwflower/dsh-widget-board (MIT) as the independent plugin dsh-scholar-board: package name, workspace scope, profile row, CSS class names and semantic attributes renamed; install via dsh plugin add github:Study0915/dsh-scholar-board. Upstream copyright and license notices are kept intact, and the third-party inventory adds Ajv, schemastery, semver and React."
+}

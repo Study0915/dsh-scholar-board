@@ -43,6 +43,10 @@
 - 静态演示将需要真实宿主数据的热力图换成年度进度卡，保留原盒子；补齐经过校验的可见性上报与已有卡片的空请求日志读取，避免演示页构建失败和缺失路由错误。
 - 修复组件文档分段加载时提前握手造成的初始化丢失：运行时在文档解析完成后通知父页面，确保组件脚本已登记状态、数据和尺寸订阅，番茄钟重载后能够恢复保存的计时。
 
+### 其他变更
+
+- 从 Nwflower/dsh-widget-board（MIT）分叉为独立插件 dsh-scholar-board：包名、子包 scope、插件行、样式类名与语义属性统一改名；安装改为 dsh plugin add github:Study0915/dsh-scholar-board。上游版权与许可声明完整保留，第三方依赖许可盘点补齐 Ajv、schemastery、semver 与 React。
+
 <h3 id="en-unreleased">New Features</h3>
 
 - The board gains a second arrangement: aligned rows. Cards flow row by row in a saved order; cards in the same row share one height and the row/column gaps match. Only the wanted column span and height tier are stored — pixel positions derive from the current window width and root font size, so resizing never asks you to re-arrange. The board format moves to version 3: existing boards stay free-positioned, new boards start aligned. The dock menu gains an arrangement toggle; switching to aligned captures the on-screen reading order once, and switching back restores the saved free positions. In aligned mode dragging reorders cards, horizontal resize changes the card's own span, vertical resize lifts the whole row one tier; adding or removing cards keeps the order intact. Layout and arrangement share one revision-based concurrency rule: a late submission from another window gets a 409 with the current snapshot.
@@ -77,6 +81,10 @@
 - Campus cards retain the default pattern and unavailable-image message when media is missing. Ordinary item state updates no longer clear an active media error. Save status takes priority and the media message returns when saving finishes.
 - The static demo replaces the host-dependent heatmap with a year-progress card in the same box, validates visibility reports, and returns empty request logs for existing cards, avoiding build failures and missing-route errors.
 - Wait for component document parsing to finish before announcing runtime readiness, so scripts receive their initial state, data and size even when HTML arrives in separate chunks. Saved Pomodoro sessions now resume reliably after reloading.
+
+### Chores
+
+- Forked from Nwflower/dsh-widget-board (MIT) as the independent plugin dsh-scholar-board: package name, workspace scope, profile row, CSS class names and semantic attributes renamed; install via dsh plugin add github:Study0915/dsh-scholar-board. Upstream copyright and license notices are kept intact, and the third-party inventory adds Ajv, schemastery, semver and React.
 
 ## [0.1.6] - 2026-10-26
 

@@ -1,5 +1,19 @@
 # 第三方许可
 
+## 上游项目
+
+本插件基于 **dsh-widget-board**（MIT License，Copyright (c) 2026 Nwflower，https://github.com/Nwflower/dsh-widget-board）二次开发。上游的版权与许可声明完整保留在 [LICENSE](LICENSE)；内置组件、示例组件与市场原型中的 `nwflower.*` 条目均由上游作者编写，按 MIT 保留署名。
+
+## 运行时依赖
+
+配置与表单的 schema 校验使用 **@deepseek-ai/schemastery 3.18.5**（MIT，https://github.com/deepseek-ai/deepseek-harness/tree/main/vendor/schemastery）。
+
+manifest 与能力参数的 JSON Schema 校验使用 **Ajv 8.20.0**（MIT，https://github.com/ajv-validator/ajv），构建时内联进宿主半边的产物。
+
+版本号比较使用 **semver 7.8.5**（ISC，https://github.com/npm/node-semver）。
+
+浏览器半边以 **React 18.3.1**（MIT，https://github.com/facebook/react）为 peer 依赖，由宿主页面提供，不随本插件打包。
+
 本地图片处理使用 **sharp 0.35.5**（Apache-2.0，https://github.com/lovell/sharp），依赖的 libvips 及平台二进制按其随附许可分发；不向外部服务上传图片。
 
 校园事项的 IANA 时区及夏令时处理使用 **Luxon 3.7.2**（MIT，https://github.com/moment/luxon）。共享纯模型在构建时内联进标准校园组件；不请求外部时间服务。

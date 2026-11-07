@@ -1,14 +1,16 @@
-# dsh-widget-board
+# dsh-scholar-board
 
 [English](README.en.md)
+
+> 本项目基于 [Nwflower/dsh-widget-board](https://github.com/Nwflower/dsh-widget-board)（MIT，Copyright (c) 2026 Nwflower）二次开发，由 Study0915 独立维护，与上游无从属关系。分叉点为上游 master 与上游 PR #11–#14 的叠加改动（2026-11-04 快照）；原项目的版权与许可声明完整保留在 [LICENSE](LICENSE)。
 
 本地图片：在“创建卡片”中选择图片模板，上传不超过 10MiB 的静态 PNG/JPEG/WebP，填写 alt、说明与焦点。宿主会去除元数据并转换为受限 WebP；图片以实例媒体引用保存。组件声明 `widget-board:media.read` 后可用 `await widget.readMedia('background', { signal })` 取得 Blob，创建的对象 URL 由组件在暂停、替换和卸载时释放。
 
 `.dshboard` 的 format2 使用 gzip 压缩 JSON，包含引用的图片、实例和组的标识及排列元数据。需要正文和状态时仍勾选“带上数据”。导入先校验全部资源，再创建完整看板；format1 仍可读取。`.dshw` 继续只导出组件源码和类型资源。媒体整理通过人工 `POST api/widget-board/media/collect` 清除超过 24 小时、没有实例或有效上传 ticket 引用的资源。
 
-DeepSeek Harness 的组件看板：一页可以拖动、缩放的卡片，每张卡片是一个小组件。组件由你或会话里的 agent 写成三份文件，也可以由其他插件提供。
+DeepSeek Harness 的学术看板：一页可以拖动、缩放的卡片，每张卡片是一个小组件。组件由你或会话里的 agent 写成三份文件，也可以由其他插件提供。在组件看板的基础上，逐步加入面向通信方向硕博的学术工作台能力（文献追踪、组会与项目管理、仿真工作台）。
 
-**[在线演示](https://nwflower.github.io/dsh-widget-board/)** · [安装](#安装) · [写一个组件](#写一个组件) · [给插件提供方](#给插件提供方)
+**[上游演示](https://nwflower.github.io/dsh-widget-board/)** · [安装](#安装) · [写一个组件](#写一个组件) · [给插件提供方](#给插件提供方)
 
 <p align="center">
   <img src="docs/images/board-light.png" alt="浅色下的组件看板" width="49%">
@@ -46,10 +48,10 @@ DeepSeek Harness 的组件看板：一页可以拖动、缩放的卡片，每张
 ## 安装
 
 ```sh
-dsh plugin add dsh-widget-board
+dsh plugin add github:Study0915/dsh-scholar-board
 ```
 
-pnpm 拦下依赖的构建脚本时，按它提示的 `allowBuilds` 允许后重试。仓库里不带 `lib/`，从 GitHub 安装时需要包在安装时自己构建一次：`dsh plugin add github:Nwflower/dsh-widget-board`。
+pnpm 拦下依赖的构建脚本时，按它提示的 `allowBuilds` 允许后重试。仓库里不带 `lib/`，从 GitHub 安装时包会在安装时自己构建一次。
 
 从本仓库开发：
 
@@ -129,10 +131,10 @@ vendor/         可选，随组件发布的第三方库（各自的许可照原�
 提供方跨包时取类型：
 
 ```ts
-import type { WidgetBoardClientService } from 'dsh-widget-board/service'
+import type { WidgetBoardClientService } from 'dsh-scholar-board/service'
 ```
 
-`dsh-widget-board/provider` 是纯值 SDK，构造并校验注册要用的入参对象。运行时不值导入本插件、不加 `dsh.client.external`。插件停用或卸载时，它注册的组件、数据源、动作、能力、市场与授权一起撤下，已放着的卡片保留并显示不可用；装回来就恢复。
+`dsh-scholar-board/provider` 是纯值 SDK，构造并校验注册要用的入参对象。运行时不值导入本插件、不加 `dsh.client.external`。插件停用或卸载时，它注册的组件、数据源、动作、能力、市场与授权一起撤下，已放着的卡片保留并显示不可用；装回来就恢复。
 
 完整规则见 [docs/provider.md](docs/provider.md)。
 
@@ -144,8 +146,8 @@ import type { WidgetBoardClientService } from 'dsh-widget-board/service'
 
 校园卡的管理界面支持 CSV/ICS 导入导出。展开“CSV / ICS 文件交换”，选择 UTF-8 文件并确认字段映射、目标时区和重复项处理，再确认一次导入。支持逐行修正或跳过；单文件最多2MiB、10000个候选，单卡最多100项和64KiB状态。导出可筛选事项类型及完成状态，CSV标准模板仅含演示数据；完整备份使用看板包。
 
-开发中，0.1.5 已发布到 npm。右侧栏、组件库页面、组件的版本历史与分享、导入还在做。
+开发中。学术工作台的第一批功能（文献追踪卡、预置学术看板、仿真工作台）在做；右侧栏、组件库页面、组件的版本历史与分享、导入还在做。
 
-## 许可
+## 许可与致谢
 
-MIT
+MIT。上游项目与全部第三方依赖的版权、许可声明见 [LICENSE](LICENSE) 与 [THIRD_PARTY.md](THIRD_PARTY.md)；内置示例组件与市场原型中的 `nwflower.*` 组件由 Nwflower 编写，按 MIT 保留署名。

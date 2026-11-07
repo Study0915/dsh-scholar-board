@@ -1,14 +1,16 @@
-# dsh-widget-board
+# dsh-scholar-board
 
 [中文](README.md)
+
+> This project is a derivative of [Nwflower/dsh-widget-board](https://github.com/Nwflower/dsh-widget-board) (MIT, Copyright (c) 2026 Nwflower), independently maintained by Study0915 and not affiliated with upstream. The fork point is upstream master plus the stacked changes of upstream PRs #11–#14 (snapshot of 2026-11-04); the original copyright and license notice are kept intact in [LICENSE](LICENSE).
 
 Local images: choose the image template in Create card, upload a static PNG/JPEG/WebP up to 10MiB, then set alt text, caption and focal point. The host removes metadata and converts the image to bounded WebP. Images are stored as instance-owned references. A widget declaring `widget-board:media.read` can obtain a Blob with `await widget.readMedia('background', { signal })`; it must revoke object URLs when paused, replaced or unloaded.
 
 The format2 `.dshboard` is gzip-compressed JSON containing referenced images, instance/group identifiers and arrangement metadata. Select “Include data” to retain content and state. Import validates resources before creating the complete board; format1 remains readable. `.dshw` still contains only widget source and type resources. A manual `POST api/widget-board/media/collect` removes resources older than 24 hours that have no instance or valid upload-ticket reference.
 
-A widget board for DeepSeek Harness: a page of cards you drag and resize, each card a small widget. You or the agent in a session write a widget as three files, and other plugins can provide widgets too.
+A scholar board for DeepSeek Harness: a page of cards you drag and resize, each card a small widget. You or the agent in a session write a widget as three files, and other plugins can provide widgets too. On top of the widget board, it is growing an academic workbench for graduate students in communications (paper feeds, group meetings and project management, simulation runners).
 
-**[Live demo](https://nwflower.github.io/dsh-widget-board/)** · [Install](#install) · [Write a widget](#write-a-widget) · [For plugin providers](#for-plugin-providers)
+**[Upstream demo](https://nwflower.github.io/dsh-widget-board/)** · [Install](#install) · [Write a widget](#write-a-widget) · [For plugin providers](#for-plugin-providers)
 
 <p align="center">
   <img src="docs/images/board-light.png" alt="The widget board in light mode" width="49%">
@@ -46,10 +48,10 @@ Every widget runs in its own sandboxed iframe: a strict CSP, no network and no c
 ## Install
 
 ```sh
-dsh plugin add dsh-widget-board
+dsh plugin add github:Study0915/dsh-scholar-board
 ```
 
-If pnpm blocks the build script, approve the `allowBuilds` line it prints and retry. The repository carries no `lib/`, so installing from GitHub (`dsh plugin add github:Nwflower/dsh-widget-board`) has the package build itself once at install time.
+If pnpm blocks the build script, approve the `allowBuilds` line it prints and retry. The repository carries no `lib/`, so installing from GitHub has the package build itself once at install time.
 
 From a checkout:
 
@@ -129,10 +131,10 @@ A read, an action or a capability call waits at most 15 seconds (a capability ma
 Across packages, take the type:
 
 ```ts
-import type { WidgetBoardClientService } from 'dsh-widget-board/service'
+import type { WidgetBoardClientService } from 'dsh-scholar-board/service'
 ```
 
-`dsh-widget-board/provider` is a value-only SDK that builds and validates registration arguments. Runtime goes through the service: no value import of this plugin, no `dsh.client.external`. When a provider is disabled or unloaded, its widgets, data sources, actions, capabilities, market and grants are withdrawn; its cards stay and show unavailable, and come back with the provider.
+`dsh-scholar-board/provider` is a value-only SDK that builds and validates registration arguments. Runtime goes through the service: no value import of this plugin, no `dsh.client.external`. When a provider is disabled or unloaded, its widgets, data sources, actions, capabilities, market and grants are withdrawn; its cards stay and show unavailable, and come back with the provider.
 
 The full rules are in [docs/provider.md](docs/provider.md).
 
@@ -144,8 +146,8 @@ Campus cards support in-board reminders. New cards default to 24-hour advance an
 
 Campus management supports CSV/ICS import and export. Expand “CSV / ICS 文件交换”, select a UTF-8 file, confirm the column mapping, target time zone and duplicate decisions, then commit the import. Rows can be corrected or skipped. Files are limited to 2MiB and 10,000 candidates, with 100 items and 64KiB of state per card. Export filters include item type and completion status. The CSV template contains demonstration data; use board packages for complete backups.
 
-In development; 0.1.5 is on npm. The right sidebar, the widget library page, widget version history and sharing/import are still to come.
+In development. The first batch of the academic workbench (paper feed, preset scholar board, simulation runner) is in progress; the right sidebar, the widget library page, widget version history and sharing/import are still to come.
 
-## License
+## License and credits
 
-MIT
+MIT. See [LICENSE](LICENSE) and [THIRD_PARTY.md](THIRD_PARTY.md) for the upstream project and all third-party copyright and license notices. The built-in example widgets and the `nwflower.*` market prototype entries were written by Nwflower and keep their MIT attribution.
