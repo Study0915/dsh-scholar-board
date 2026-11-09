@@ -13,8 +13,21 @@ DeepSeek Harness 的学术看板：一页可以拖动、缩放的卡片，每张
 **[上游演示](https://nwflower.github.io/dsh-widget-board/)** · [安装](#安装) · [写一个组件](#写一个组件) · [给插件提供方](#给插件提供方)
 
 <p align="center">
-  <img src="docs/images/board-light.png" alt="浅色下的组件看板" width="49%">
-  <img src="docs/images/board-dark.png" alt="深色下的组件看板" width="49%">
+  <img src="docs/images/scholar-light.png" alt="浅色下的学术看板：组会汇报、投稿倒数、日历、学术入口、待办、里程碑与文献追踪" width="49%">
+  <img src="docs/images/scholar-dark.png" alt="深色下的学术看板" width="49%">
+</p>
+
+<p align="center">
+  <img src="docs/images/paper-feed.png" alt="文献追踪卡：按 arXiv 分类订阅新稿，一行一篇" width="88%">
+</p>
+
+上面两张是第一次启动铺好的「学术看板」：组会汇报的翻面组卡、投稿倒数、日历、学术入口、待办、项目里程碑、文献阅读清单，以及最下面按 arXiv 分类订阅的文献追踪。第三张是文献追踪卡的样子——一行一篇，标题、作者、提交日期与一行摘要，点一行在新标签页打开 abs 页。
+
+组件画廊是第三块看板，每个内置组件各铺一张，按数据展示、工具与动效模板分组：
+
+<p align="center">
+  <img src="docs/images/board-light.png" alt="浅色下的组件画廊" width="49%">
+  <img src="docs/images/board-dark.png" alt="深色下的组件画廊" width="49%">
 </p>
 
 <hr>

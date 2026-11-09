@@ -13,8 +13,21 @@ A scholar board for DeepSeek Harness: a page of cards you drag and resize, each 
 **[Upstream demo](https://nwflower.github.io/dsh-widget-board/)** · [Install](#install) · [Write a widget](#write-a-widget) · [For plugin providers](#for-plugin-providers)
 
 <p align="center">
-  <img src="docs/images/board-light.png" alt="The widget board in light mode" width="49%">
-  <img src="docs/images/board-dark.png" alt="The widget board in dark mode" width="49%">
+  <img src="docs/images/scholar-light.png" alt="The Scholar board in light mode: group-meeting briefs, submission countdown, calendar, academic links, to-dos, milestones and the paper feed" width="49%">
+  <img src="docs/images/scholar-dark.png" alt="The Scholar board in dark mode" width="49%">
+</p>
+
+<p align="center">
+  <img src="docs/images/paper-feed.png" alt="The paper feed card: new arXiv submissions by category, one paper per row" width="88%">
+</p>
+
+The first two shots are the Scholar board a fresh install lays out: a flip-group card for group-meeting briefs, a submission countdown, a calendar, academic navigation links, to-dos, project milestones, a reading list, and the paper feed at the bottom that follows an arXiv category. The third shows the paper feed on its own — one paper per row with title, authors, submission date and a one-line abstract; clicking a row opens its abs page in a new tab.
+
+The gallery is the third board: one card per built-in widget, grouped into data, tools and motion templates.
+
+<p align="center">
+  <img src="docs/images/board-light.png" alt="The widget gallery in light mode" width="49%">
+  <img src="docs/images/board-dark.png" alt="The widget gallery in dark mode" width="49%">
 </p>
 
 <hr>
