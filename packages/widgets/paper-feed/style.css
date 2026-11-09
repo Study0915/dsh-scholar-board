@@ -1,0 +1,130 @@
+/*
+ * 文献追踪卡的样式：一行一篇，标题在上、作者与日期在下，摘要再收一行。
+ *
+ * 行主体是按钮：点它把 abs 地址交给宿主开新标签页（D26）。清单在正文里滚动，矮盒子收紧行距，
+ * 宽盒子也不改成多列——标题与摘要需要整行宽度才读得完。
+ *
+ * 三种状态写在卡片的 `data-state` 上：读取中、空、读不到各有一句话，读不到时再给一条边框上的提示，
+ * 免得和「这个分类下没有新稿」混成同一种画面（D11）。
+ */
+.paper-feed-card__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.paper-feed-card[data-state="failed"] .paper-feed-card__empty {
+  border-color: color-mix(in srgb, var(--w-tone-danger) 38%, transparent);
+  color: var(--w-tone-danger);
+}
+
+.paper-feed-card[data-state="loading"] .t-data__meta {
+  opacity: 0.72;
+}
+
+.paper-feed-card__rows {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+.paper-feed-card__row {
+  min-width: 0;
+  padding: var(--w-space-sm, 8px) 0;
+  border-top: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 62%, transparent);
+}
+
+.paper-feed-card__row:first-child {
+  border-top: 0;
+}
+
+.paper-feed-card__open {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.paper-feed-card__title {
+  display: block;
+  overflow: hidden;
+  color: var(--w-color-fg, #0b1016);
+  font-size: var(--w-type-body, 14px);
+  font-weight: 600;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paper-feed-card__byline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.paper-feed-card__authors {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paper-feed-card__date {
+  flex: none;
+  color: var(--w-color-muted, #6b7684);
+  font-family: var(--t-mono);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 16px;
+}
+
+.paper-feed-card__summary {
+  display: block;
+  overflow: hidden;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paper-feed-card__open:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .paper-feed-card__open:hover .paper-feed-card__title {
+    color: var(--w-color-accent, #2563eb);
+  }
+}
+
+/* 矮盒子：摘要收掉、行距收紧，标题与作者日期仍然读得到。 */
+:root[data-box-height="short"] .paper-feed-card__summary {
+  display: none;
+}
+
+:root[data-box-height="short"] .paper-feed-card__row {
+  padding-block: var(--w-space-xs, 4px);
+}
+
+:root[data-box-height="tall"] .paper-feed-card__row {
+  padding-block: var(--w-space-md, 12px);
+}
+
+/* 窄盒子：日期换到作者下面一行，避免把作者挤没。 */
+:root[data-box-width="narrow"] .paper-feed-card__byline {
+  flex-direction: column;
+  gap: 0;
+}

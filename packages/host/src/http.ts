@@ -10,6 +10,7 @@
  * 失效，这里也直接拒绝重定向。凭据的值只在这一处被读出、拼进请求，既不进返回值也不进日志。
  */
 import { isIP } from 'node:net'
+import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import { HTTP_DATA_SOURCE } from '@dsh-scholar-board/contracts'
 import type {
   DataSourceRegistration,
@@ -36,8 +37,16 @@ export interface HttpCacheEntry {
   at: number
 }
 
-/** 按解析后的地址索引的响应缓存；一份宿主进程共用一张。 */
+/**
+ * 按「地址 + 响应格式」索引的响应缓存；一份宿主进程共用一张。
+ *
+ * 缓存键带上响应的格式：同一个地址按 JSON 与按 Atom 读回来是两种值，只按地址索引会让先读的那一种
+ * 喂给另一种（D6）。
+ */
 export type HttpCache = Map<string, HttpCacheEntry>
+
+/** Atom 的命名空间；根元素不在它下面就不是 Atom 文档。 */
+export const ATOM_NAMESPACE = 'http://www.w3.org/2005/Atom'
 
 /** 缓存里最多留多少条：地址由组件给出，不能任它无限长。 */
 export const HTTP_CACHE_ENTRIES = 64
@@ -166,16 +175,16 @@ export async function authHeadersOf(
 }
 
 /**
- * 请求一次并读回 JSON。
+ * 请求一次并读回正文文本。
  *
  * 响应正文边读边数：来自外部的响应可能比上限大得多，不先整份读进内存再判断。
  *
  * @param response - 已经确认是 2xx 的响应。
  * @param host - 回应这条请求的主机，出错的说明里用它。
- * @returns 解析出来的值。
- * @throws {Error} 没有正文、正文超出上限或不是 JSON。
+ * @returns 响应正文。
+ * @throws {Error} 没有正文或正文超出上限。
  */
-export async function readJsonBody(response: Response, host: string): Promise<unknown> {
+export async function readBodyText(response: Response, host: string): Promise<string> {
   const body = response.body
   if (body === null) throw new Error(`请求 ${host} 没有响应正文`)
   const reader = body.getReader()
@@ -197,11 +206,83 @@ export async function readJsonBody(response: Response, host: string): Promise<un
     reader.releaseLock()
   }
   text += decoder.decode()
+  return text
+}
+
+/**
+ * 请求一次并读回 JSON。
+ *
+ * @param response - 已经确认是 2xx 的响应。
+ * @param host - 回应这条请求的主机，出错的说明里用它。
+ * @returns 解析出来的值。
+ * @throws {Error} 没有正文、正文超出上限或不是 JSON。
+ */
+export async function readJsonBody(response: Response, host: string): Promise<unknown> {
+  const text = await readBodyText(response, host)
   try {
     return JSON.parse(text) as unknown
   } catch {
     throw new Error(`请求 ${host} 返回的不是 JSON`)
   }
+}
+
+/**
+ * 一份 Atom XML 的根元素是不是 Atom 命名空间下的 `<feed>`。
+ *
+ * 前缀写法（`<atom:feed xmlns:atom="…">`）也认：解析器把前缀留在键名里，所以比对本地名。
+ * 命名空间缺席时不放行——没有它分不出这是不是任意一份 XML，而 Atom 的根元素必须写它。
+ *
+ * @param parsed - 解析出来的对象。
+ * @returns 是 Atom feed 时为真。
+ */
+function isAtomFeed(parsed: unknown): boolean {
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return false
+  for (const [key, value] of Object.entries(parsed)) {
+    const local = key.includes(':') ? key.slice(key.indexOf(':') + 1) : key
+    if (local !== 'feed' || typeof value !== 'object' || value === null || Array.isArray(value)) continue
+    for (const [name, attribute] of Object.entries(value as Record<string, unknown>)) {
+      // 声明本身的键名随前缀变，所以按值比；默认命名空间的 `@_xmlns` 同样按值比。
+      if (/^@_xmlns(?::|$)/.test(name) && attribute === ATOM_NAMESPACE) return true
+    }
+  }
+  return false
+}
+
+/**
+ * 请求一次并读回 Atom XML，解析成结构化对象原样交给卡片（D6）。
+ *
+ * 属性保留成 `@_` 前缀的键（链接的 href、分类的 term 都在属性上）；entry、author、link、category
+ * 统一成数组，单条与多条的写法在组件脚本里不用分两种情况。怎么映射成界面由组件自己决定。
+ *
+ * 三道闸门按顺序过：是合法的 XML、根元素是 Atom 命名空间下的 `<feed>`、解析得出来。带 `<!DOCTYPE>`
+ * 的文档直接拒绝：自定义实体会让解析器展开出远超正文大小的文本，Atom 文档不需要它。嵌套深到解析器
+ * 自己的上限时由解析器抛出，这里只把原因换成一句看得懂的话。
+ *
+ * @param response - 已经确认是 2xx 的响应。
+ * @param host - 回应这条请求的主机，出错的说明里用它。
+ * @returns 解析出来的 XML 对象。
+ * @throws {Error} 没有正文、正文超出上限、不是合法 XML、带 DOCTYPE、解析不出来或不是 Atom 文档。
+ */
+export async function readAtomBody(response: Response, host: string): Promise<unknown> {
+  const text = await readBodyText(response, host)
+  if (/<!DOCTYPE/i.test(text)) throw new Error(`请求 ${host} 返回的 Atom 文档带了 DOCTYPE，拒绝解析`)
+  if (XMLValidator.validate(text) !== true) throw new Error(`请求 ${host} 返回的不是合法 XML`)
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '@_',
+    trimValues: true,
+    parseTagValue: false,
+    parseAttributeValue: false,
+    isArray: (name) => name === 'entry' || name === 'author' || name === 'link' || name === 'category',
+  })
+  let parsed: unknown
+  try {
+    parsed = parser.parse(text) as unknown
+  } catch (error) {
+    throw new Error(`请求 ${host} 的 Atom 文档解析不了：${error instanceof Error ? error.message : String(error)}`)
+  }
+  if (!isAtomFeed(parsed)) throw new Error(`请求 ${host} 返回的不是 Atom feed`)
+  return parsed
 }
 
 /** 请求时能换掉的几样东西：网络、缓存、时钟、凭据与日志。 */
@@ -238,12 +319,15 @@ export async function readHttpSource(
   const now = options.now ?? Date.now
   const cacheMs = request.cacheMs ?? 0
   const cache = options.cache
+  const format = request.format ?? 'json'
+  // 同一个地址按不同格式读回来是两种值，缓存键要分开（D6）。
+  const cacheKey = `${format}\u0000${url}`
   if (cacheMs > 0 && cache !== undefined && method === 'GET') {
-    const hit = cache.get(url)
+    const hit = cache.get(cacheKey)
     if (hit !== undefined && now() - hit.at < cacheMs) return hit.value
   }
 
-  const headers: Record<string, string> = { accept: 'application/json', ...request.headers }
+  const headers: Record<string, string> = { accept: format === 'atom' ? 'application/atom+xml, application/xml' : 'application/json', ...request.headers }
   Object.assign(headers, await authHeadersOf(manifest, request, options.credentials?.()))
   const body = request.body === undefined || method === 'GET' || method === 'DELETE'
     ? undefined
@@ -284,9 +368,9 @@ export async function readHttpSource(
     ...(response.ok ? {} : { error: `HTTP ${String(response.status)}` }),
   })
   if (!response.ok) throw new Error(`请求 ${host} 返回 ${String(response.status)}`)
-  const value = await readJsonBody(response, host)
+  const value = format === 'atom' ? await readAtomBody(response, host) : await readJsonBody(response, host)
   if (cacheMs > 0 && cache !== undefined && method === 'GET') {
-    cache.set(url, { value, at: now() })
+    cache.set(cacheKey, { value, at: now() })
     if (cache.size > HTTP_CACHE_ENTRIES) {
       const oldest = cache.keys().next().value
       if (oldest !== undefined) cache.delete(oldest)

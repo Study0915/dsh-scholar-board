@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 10,
+  "at": "2026-11-09",
+  "external": true,
+  "zh": "新增内置组件「文献追踪」：按 arXiv 分类订阅新稿，一行一篇，标题、作者、提交日期与一行摘要，点一行在新标签页打开 abs 页；分类与条数在卡片设置里填。它用宿主代发的 `http` 数据源，manifest 的 `request.format` 写 `atom`：宿主请求 Atom 接口并按 XML 解析成结构化对象交给卡片，`entry`、`author`、`link`、`category` 统一成数组。解析前拒绝带 `DOCTYPE` 的文档、核对根元素是 Atom 命名空间下的 `feed`；不写 `format` 的组件仍按 JSON 读，缓存按地址与格式分开存。等待、空分类与读不到三种状态分开画，读不到不会显示成「没有新稿」。新装时它铺在「学术看板」的第四行，占满三列。",
+  "en": "New built-in “Paper feed” widget: subscribe to new arXiv submissions by category, one paper per row with title, authors, submission date and a one-line abstract; clicking a row opens its abs page in a new tab, and the category and count go in the card settings. It uses the host-side `http` data source with `request.format: \"atom\"`: the host requests an Atom endpoint, parses the XML into a structured object and hands it to the card, with `entry`, `author`, `link` and `category` normalised to arrays. Documents carrying a `DOCTYPE` are refused and the root element must be an Atom `feed` in the Atom namespace; cards that leave `format` out still read JSON, and the cache keeps the two formats apart. Waiting, an empty category and a failed read draw three different states, so a failure never reads as “no new submissions”. A fresh install places it on the fourth row of the Scholar board, spanning all three columns."
+}

@@ -83,9 +83,9 @@ describe('第一次启动的看板', () => {
     }
   })
 
-  it('「学术看板」按清单铺卡：组会组卡与倒数在第一行，日历、导航与待办在第二行，里程碑与清单在第三行', () => {
+  it('「学术看板」按清单铺卡：组会组卡与倒数在第一行，日历、导航与待办在第二行，里程碑与清单在第三行，文献追踪独占第四行', () => {
     const [, scholar] = seedBoards(records)
-    expect(widgetsOf(scholar)).toEqual(['markdown', 'markdown', 'countdown', 'calendar', 'links', 'todo', 'timeline', 'list'])
+    expect(widgetsOf(scholar)).toEqual(['markdown', 'markdown', 'countdown', 'calendar', 'links', 'todo', 'timeline', 'list', 'paper-feed'])
     expect(scholar.instances.map((instance) => instance.layout)).toEqual([
       { x: 0, y: 0, w: 2, h: 22 },
       { x: 0, y: 0, w: 2, h: 22 },
@@ -95,6 +95,7 @@ describe('第一次启动的看板', () => {
       { x: 2, y: 24, w: 1, h: 22 },
       { x: 0, y: 48, w: 2, h: 18 },
       { x: 2, y: 48, w: 1, h: 18 },
+      { x: 0, y: 68, w: 3, h: 22 },
     ])
     const [front, back] = scholar.instances.filter((instance) => instance.group !== undefined)
     expect(front?.group).toMatchObject({ template: 'flip', side: 'front' })
@@ -160,6 +161,9 @@ describe('第一次启动的看板', () => {
     // 画廊里的天气卡不写 source，由 instanceOf 继承组件声明的默认源。
     const weather = gallery.instances.find((instance) => instance.widget === 'weather')
     expect(weather?.source).toBe(records.get('weather')?.manifest.source)
+    // 文献追踪同理：它读 arXiv 靠的就是组件自己声明的 `http` 源。
+    const feed = scholar.instances.find((instance) => instance.widget === 'paper-feed')
+    expect(feed?.source).toBe(records.get('paper-feed')?.manifest.source)
   })
 
   it('画廊把每个内置组件各铺一张，类别的次序固定', () => {
@@ -167,7 +171,7 @@ describe('第一次启动的看板', () => {
     const builtin = [...records.values()].filter((record) => record.source === 'builtin').map((record) => record.manifest.id)
     expect(widgetsOf(gallery).sort()).toEqual([...builtin].sort())
     expect(widgetsOf(gallery)).toEqual([
-      'stat', 'gauge', 'progress', 'chart', 'heatmap', 'session-usage', 'table', 'kv', 'list', 'timeline', 'image', 'markdown', 'json', 'diff', 'dsh-balance', 'github-issues',
+      'stat', 'gauge', 'progress', 'chart', 'heatmap', 'session-usage', 'table', 'kv', 'list', 'timeline', 'image', 'markdown', 'json', 'diff', 'dsh-balance', 'github-issues', 'paper-feed',
       'board-hero', 'clock', 'calendar', 'fortune', 'year-progress', 'weather', 'pomodoro', 'todo', 'links', 'countdown', 'light-switch',
       'flip-card', 'holographic-card', 'magnetic-card', 'campus', 'system-metrics',
     ])

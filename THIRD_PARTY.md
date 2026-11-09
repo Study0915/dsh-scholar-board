@@ -34,6 +34,8 @@ manifest 与能力参数的 JSON Schema 校验使用 **Ajv 8.20.0**（MIT，http
 
 CSV 读取与导出使用 **Papa Parse 5.7.0**（MIT，https://github.com/mholt/PapaParse）；ICS 解析、重复规则与标准序列化使用 **ical.js 2.2.1**（MPL-2.0，https://github.com/kewisch/ical.js）。两者构建进宿主半边，保留各自许可声明；ical.js 源文件没有修改，源代码可从对应版本的上游仓库取得。
 
+Atom XML 的校验与解析使用 **fast-xml-parser 5.12.0**（MIT，https://github.com/NaturalIntelligence/fast-xml-parser），构建时内联进宿主半边。它随包带上 **@nodable/entities 3.1.0**、**fast-xml-builder 1.3.1**、**is-unsafe 2.0.3**、**path-expression-matcher 1.6.2**、**strnum 2.5.1** 与 **xml-naming 0.3.0**，均为 MIT，各自许可见其包内 LICENSE。宿主先拒绝带 `DOCTYPE` 的文档再解析，自定义实体不在展开范围内。
+
 上述库的版权归各自的作者所有；本插件只做打包与调用。
 
 看板入口的未读通知徽标参考了 transitions.dev 的 **Notification badge**（作者 Jakub Antalík），按它的许可改写为本站的类名与令牌：

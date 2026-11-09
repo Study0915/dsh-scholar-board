@@ -181,6 +181,12 @@ export const WIDGET_REQUEST_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] 
 /** 一种请求方法。 */
 export type WidgetRequestMethod = (typeof WIDGET_REQUEST_METHODS)[number]
 
+/** 宿主解析响应正文的格式：JSON 原样交给卡片，Atom 先解析成结构化对象（D6）。 */
+export const WIDGET_REQUEST_FORMATS = ['json', 'atom'] as const
+
+/** 一种响应正文格式。 */
+export type WidgetRequestFormat = (typeof WIDGET_REQUEST_FORMATS)[number]
+
 /**
  * 把一项凭据附在请求上的方式。
  *
@@ -206,6 +212,8 @@ export interface WidgetRequest {
   url: string
   /** 请求方法；省略时是 `GET`。 */
   method?: WidgetRequestMethod
+  /** 响应正文的格式；省略时是 `json`。`atom` 用于 arXiv 这类返回 Atom XML 的接口，由宿主解析。 */
+  format?: WidgetRequestFormat
   /** 一起发出去的固定请求头；`auth` 要写的那个头由宿主拼。 */
   headers?: Record<string, string>
   /** 请求体（JSON 文本，`{名字}` 同样会被换成 props 里同名的值）；`GET` 与 `DELETE` 不带。 */
@@ -451,6 +459,7 @@ export const WIDGET_MANIFEST_SCHEMA = {
           },
         },
         cacheMs: { type: 'integer', minimum: 0, maximum: HTTP_CACHE_MAX_MS },
+        format: { enum: WIDGET_REQUEST_FORMATS },
       },
     },
     actions: {

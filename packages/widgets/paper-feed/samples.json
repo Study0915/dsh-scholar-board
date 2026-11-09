@@ -1,0 +1,99 @@
+{
+  "s": {
+    "lang": "zh-CN",
+    "motion": "reduced",
+    "props": {
+      "category": "eess.SP",
+      "limit": 3
+    },
+    "data": {
+      "feed": {
+        "title": "arXiv Query: search_query=cat:eess.SP",
+        "entry": [
+          {
+            "title": "Stochastic High-Resolution Parameter-Based Channel Modeling for Sub-Terahertz Outdoor Device-to-Device Propagation at 145 GHz",
+            "author": [{ "name": "Zihang Cheng" }, { "name": "Naveed A. Abbasi" }, { "name": "Jorge Gomez-Ponce" }],
+            "published": "2026-11-06T01:14:40Z",
+            "summary": "A complete model that can generate double-directional impulse responses for sub-THz device-to-device channels, with sparse multipath components clustered from an extensive measurement campaign.",
+            "link": [
+              { "@_href": "https://arxiv.org/abs/2611.08850v1", "@_rel": "alternate", "@_type": "text/html" },
+              { "@_href": "https://arxiv.org/pdf/2611.08850v1", "@_rel": "related", "@_type": "application/pdf" },
+              { "@_href": "https://arxiv.org/list/eess.SP/recent", "@_rel": "self", "@_type": "application/atom+xml" }
+            ]
+          },
+          {
+            "title": "GeoJeV: Unified Spatial Probability for Training-Free Efficient Evidence Acquisition in Ultra-High-Resolution Remote Sensing",
+            "author": [{ "name": "Xinyi Niu" }, { "name": "Lingfeng Chen" }, { "name": "Jiehua Zhang" }, { "name": "Panhe Hu" }],
+            "published": "2026-11-06T02:12:39Z",
+            "summary": "Evidence acquisition is formulated as spatial probability-driven decision making, reducing reliance on reinforcement learning from human feedback.",
+            "link": [{ "@_href": "https://arxiv.org/abs/2611.08879v1", "@_rel": "alternate", "@_type": "text/html" }]
+          },
+          {
+            "title": "Sparse Array Interpolation for Wideband Angular Estimation",
+            "author": [{ "name": "Mei Lin" }],
+            "published": "2026-11-05T09:30:00Z",
+            "summary": "Interpolating a sparse array with a learned prior keeps the angular resolution of a dense array at a fraction of the elements.",
+            "link": [{ "@_href": "https://arxiv.org/abs/2611.08701v1", "@_rel": "alternate", "@_type": "text/html" }]
+          }
+        ]
+      }
+    }
+  },
+  "l": {
+    "lang": "zh-CN",
+    "motion": "full",
+    "props": {
+      "category": "physics.optics",
+      "limit": 6
+    },
+    "data": {
+      "feed": {
+        "title": "arXiv Query: search_query=cat:physics.optics",
+        "entry": [
+          {
+            "title": "Photonic Integrated Continuous-Variable Quantum Key Distribution with a Silicon Nitride Comb",
+            "author": [{ "name": "Hao Sun" }, { "name": "Qian Wang" }, { "name": "Tao Zhang" }, { "name": "Yun Liu" }],
+            "published": "2026-11-07T14:02:11Z",
+            "summary": "An on-chip comb source distributes secret keys over a 25 kilometre fibre link without any active stabilization.",
+            "link": [{ "@_href": "https://arxiv.org/abs/2611.09102v1", "@_rel": "alternate", "@_type": "text/html" }]
+          },
+          {
+            "title": "Full-Vector Modal Analysis of Bent Silicon Waveguides",
+            "author": [{ "name": "Sara Okafor" }, { "name": "Peter Meier" }],
+            "published": "2026-11-07T10:45:52Z",
+            "summary": "A full-vector mode solver quantifies the polarization conversion a bend introduces in a single-mode rib waveguide.",
+            "link": [{ "@_href": "https://arxiv.org/abs/2611.09055v1", "@_rel": "alternate", "@_type": "text/html" }]
+          },
+          {
+            "title": "Machine-Learning-Assisted Lensless Imaging at the Detector Shot-Noise Limit",
+            "author": [{ "name": "Aditi Rao" }, { "name": "Kenji Mori" }, { "name": "Lars Berg" }, { "name": "Nina Petrova" }, { "name": "Owen Clarke" }],
+            "published": "2026-11-07T08:20:03Z",
+            "summary": "Reconstruction from a bare sensor reaches the shot-noise limit of a lensless setup across a 3.2 millimetre field.",
+            "link": [{ "@_href": "https://arxiv.org/abs/2611.08990v1", "@_rel": "alternate", "@_type": "text/html" }]
+          },
+          {
+            "title": "Nonlinear Pulse Shaping in an Arched Hollow-Core Fibre",
+            "author": [{ "name": "Lukas Brandt" }],
+            "published": "2026-11-06T19:11:27Z",
+            "summary": "Soliton self-compression to eighteen femtoseconds is demonstrated in a gas-filled arched fibre.",
+            "link": [{ "@_href": "https://arxiv.org/abs/2611.08912v1", "@_rel": "alternate", "@_type": "text/html" }]
+          },
+          {
+            "title": "Phase Retrieval from a Single Defocused Image with a Fixed Point Network",
+            "author": [{ "name": "Yuhang Zhou" }, { "name": "Irena Novak" }],
+            "published": "2026-11-06T11:03:49Z",
+            "summary": "A fixed-point architecture replaces iterative phase retrieval while keeping the reconstruction error bounded.",
+            "link": [{ "@_href": "https://arxiv.org/abs/2611.08821v1", "@_rel": "alternate", "@_type": "text/html" }]
+          },
+          {
+            "title": "Mid-Infrared Supercontinuum Generation in a Cascaded Chalcogenide Waveguide",
+            "author": [{ "name": "Tomas Rehn" }, { "name": "Wei An" }, { "name": "Priya Nair" }],
+            "published": "2026-11-05T22:38:15Z",
+            "summary": "Cascading two chalcogenide waveguides widens the generated supercontinuum without raising the pump power.",
+            "link": [{ "@_href": "https://arxiv.org/abs/2611.08744v1", "@_rel": "alternate", "@_type": "text/html" }]
+          }
+        ]
+      }
+    }
+  }
+}

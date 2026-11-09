@@ -4,6 +4,8 @@
 
 全局结构与跨模块不变量在 [ARCHITECTURE.md](ARCHITECTURE.md)。方向记在 [docs/adr/](docs/adr/README.md)，每页写背景、决定、后果与重审条件；改动触及哪条就先读哪条，代码注释引用的编号就是这些文件名。宿主接入面的核实记录在 [docs/host-surfaces.md](docs/host-surfaces.md)。实施次序与完成判据在 [docs/PLAN.md](docs/PLAN.md)，全部完成后删除该文件；动效组件那条支线的方案在 [docs/PLAN-motion.md](docs/PLAN-motion.md)，同为一次性文档。
 
+当前学术工作台实施计划见 [docs/PLAN-scholar.md](docs/PLAN-scholar.md)。PLAN.md 与 PLAN-motion.md 为历史基础能力和动效候选清单，勾选不代表当前指纹通过验收。独立维护与分发约束见 D34。
+
 ## 写作规则
 
 - 没有要求比较时，不用「不是 X 而是 Y」「用 X 代替 Y」这类对照句式。
@@ -66,12 +68,13 @@
 - 组件只经运行时的 `window.widget` 与外界交互；不联网，不访问父页面（D3）。
 - 组件样式只用运行时套件的令牌与原语，时长、曲线、层级从令牌读（D10）。
 - 每个尺寸族都要在 `samples.json` 里有样例；尺寸矩阵按它渲染（D13）。
+- 组件要网上的数据时写 `source: "http"` 与 `request`，主机列进 `permissions.hosts`；正文不是 JSON 时用 `request.format` 指明读法。解析、限制与缓存都在宿主那一侧，组件不自己请求（D28）。
 
 ### CSS
 
 - 令牌只有一份来源：`packages/contracts/tokens.json`。外壳样式与运行时套件读同一份（D10）。
 - 浅色与深色都要可读；视觉改动由用户在两种配色下核对。
-- 外壳元素写语义属性 `data-dsh-widget-*`，供皮肤插件定位。
+- 外壳元素写语义属性 `data-dsh-scholar-board-*`，供皮肤插件定位。
 
 ### 注释
 

@@ -81,11 +81,12 @@
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "^3.18.5",
+    "fast-xml-parser": "5.12.0",
     "ical.js": "2.2.1",
     "luxon": "3.7.2",
     "papaparse": "5.7.0",
-    "sharp": "0.35.5",
-    "semver": "^7.8.5"
+    "semver": "^7.8.5",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@codemirror/autocomplete": "6.18.6",

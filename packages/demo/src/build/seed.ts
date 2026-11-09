@@ -21,8 +21,8 @@ import { openWorkspace } from '../../../host/src/workspace'
 import { DATA_DIR, HOST_DATA_FILE, documentFile } from '../data'
 import type { DemoWidget, HostData, UnsupportedWidget } from '../data'
 
-/** 演示页两块看板的标题，按第一次启动的次序：不分语言，中英文界面下都读得通。 */
-const BOARD_TITLES = ['Widget Board', 'Gallery'] as const
+/** 演示页三块看板的标题，按第一次启动的次序：不分语言，中英文界面下都读得通。 */
+const BOARD_TITLES = ['Widget Board', 'Scholar Board', 'Gallery'] as const
 
 /**
  * 精选看板上演示宿主兑现不了的卡，换成哪个组件：放在同一个盒子里，第一屏的版面不缺一块。
@@ -125,8 +125,8 @@ export async function writeDemoData({ lib, home, out }: SeedOptions): Promise<Ho
   await rm(home, { recursive: true, force: true })
   // 第一次启动按完整的内置组件库铺：清单里的组件少一个就抛出（D17），演示宿主兑现不了的卡在铺完之后换掉。
   const workspace = await openWorkspace(home, library.records, () => {})
-  const [mine, gallery] = workspace.list()
-  if (mine === undefined || gallery === undefined) throw new Error('第一次启动没有铺出两块看板（D17）')
+  const [mine, scholar, gallery] = workspace.list()
+  if (mine === undefined || scholar === undefined || gallery === undefined) throw new Error('第一次启动没有铺出三块看板（D17）')
   await workspace.save(mine.id, (board) => ({
     ...board,
     instances: board.instances.map((instance) => {
@@ -136,11 +136,14 @@ export async function writeDemoData({ lib, home, out }: SeedOptions): Promise<Ho
       return instanceOf(stand, board.instances, { layout: instance.layout })
     }),
   }), { layoutChanged: true, event: () => ({ type: 'board' }) })
-  await workspace.save(gallery.id, (board) => {
-    const kept = board.instances.filter((instance) => !skipped.has(instance.widget))
-    const layouts = tidyLayout(kept, GALLERY_METRICS)
-    return { ...board, instances: kept.map((instance) => ({ ...instance, layout: layouts[instance.id] ?? instance.layout })) }
-  }, { layoutChanged: true, event: () => ({ type: 'board' }) })
+  // 学术看板与画廊都只留演示宿主兑现得了的卡：前者去掉文献追踪（它要网络），后者去掉全部需要宿主的。
+  for (const board of [scholar, gallery]) {
+    await workspace.save(board.id, (current) => {
+      const kept = current.instances.filter((instance) => !skipped.has(instance.widget))
+      const layouts = tidyLayout(kept, GALLERY_METRICS)
+      return { ...current, instances: kept.map((instance) => ({ ...instance, layout: layouts[instance.id] ?? instance.layout })) }
+    }, { layoutChanged: true, event: () => ({ type: 'board' }) })
+  }
   for (const [index, board] of workspace.list().entries()) {
     const title = BOARD_TITLES[index]
     if (title !== undefined) await workspace.rename(board.id, title)

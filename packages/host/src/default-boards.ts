@@ -58,15 +58,16 @@ const MY_BOARD: readonly MyBoardEntry[] = [
 ]
 
 /**
- * 「学术看板」：三列三行，行高 22、22、18rem，行间留 2rem。
+ * 「学术看板」：三列四行，行高 22、22、22、18、22rem 里依次排开，行间留 2rem。
  *
  * 第一行组会汇报组卡（正面要点、翻面笔记）加投稿倒数；第二行日历、学术入口与待办；第三行项目里程碑
- * 与阅读清单。倒数不写日期、里程碑与清单留空条目：种子只搭骨架，真实的截止日期与进展由用户自己填，
- * 不虚构事实。导航里的地址都是公开站点，不含任何个人信息。
+ * 与阅读清单；第四行文献追踪占满三列——它一行一篇，宽一些才写得下标题、作者与日期。倒数不写日期、
+ * 里程碑与清单留空条目：种子只搭骨架，真实的截止日期与进展由用户自己填，不虚构事实。导航里的地址
+ * 都是公开站点，不含任何个人信息。
  *
  * 五个写了内容的实例（组卡两面、学术入口、里程碑、阅读清单）都把数据源显式解绑：它们画的是清单里
- * 这份内容，交给 `repo.links`、`git.log`、`sessions.list` 或一份仓库文档去填会换成别的东西。其余卡片
- * 不写 `source`，照旧接上组件声明的默认源。
+ * 这份内容，交给 `repo.links`、`git.log`、`sessions.list` 或一份仓库文档去填会换成别的东西。文献追踪
+ * 不写 `source`，接上组件自己的 `http` 源按默认分类读 arXiv；其余卡片同样照旧接默认源。
  */
 const SCHOLAR_BOARD: readonly MyBoardEntry[] = [
   {
@@ -103,6 +104,7 @@ const SCHOLAR_BOARD: readonly MyBoardEntry[] = [
   { widget: 'todo', layout: { x: 2, y: 24, w: 1, h: 22 } },
   { widget: 'timeline', layout: { x: 0, y: 48, w: 2, h: 18 }, source: '', props: { title: '项目里程碑', kicker: '科研 · 横向' }, data: { items: [] } },
   { widget: 'list', layout: { x: 2, y: 48, w: 1, h: 18 }, source: '', props: { title: '文献阅读清单', kicker: '本周' }, data: { items: [] } },
+  { widget: 'paper-feed', layout: { x: 0, y: 68, w: 3, h: 22 } },
 ]
 
 /** 画廊按三列排：1440 宽的窗口加侧栏只有三列，更宽时右边留空，也比三列窗口里卡片被推乱好。 */
@@ -110,7 +112,7 @@ const GALLERY_COLUMNS = 3
 
 /** 画廊的类别，按显示的先后；每个类别里的组件也按这里的先后，相邻的几个正好排满一行。 */
 const GALLERY_CATEGORIES: readonly { title: string, widgets: readonly string[] }[] = [
-  { title: '数据展示', widgets: ['stat', 'gauge', 'progress', 'chart', 'heatmap', 'session-usage', 'table', 'kv', 'list', 'timeline', 'image', 'markdown', 'json', 'diff', 'dsh-balance', 'github-issues'] },
+  { title: '数据展示', widgets: ['stat', 'gauge', 'progress', 'chart', 'heatmap', 'session-usage', 'table', 'kv', 'list', 'timeline', 'image', 'markdown', 'json', 'diff', 'dsh-balance', 'github-issues', 'paper-feed'] },
   { title: '工具', widgets: ['board-hero', 'clock', 'calendar', 'fortune', 'year-progress', 'weather', 'pomodoro', 'todo', 'links', 'countdown', 'light-switch'] },
   { title: '动效模板', widgets: ['flip-card', 'holographic-card', 'magnetic-card'] },
 ]

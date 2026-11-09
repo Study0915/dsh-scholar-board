@@ -4,8 +4,8 @@
  * scholar.cjs — 「学术看板」第一次铺出来的内容（D17）。
  *
  * 种子卡画的是清单里写的那份内容：组会汇报组卡两面各是一份 Markdown、学术入口是五条公开导航、项目
- * 里程碑与文献阅读清单是空的骨架。这五张卡的数据源显式解绑，所以它们既不读也不订阅默认源；其余卡片
- * 照旧接上组件声明的默认源。
+ * 里程碑与文献阅读清单是空的骨架。这五张卡的数据源显式解绑，所以它们既不读也不订阅默认源；文献追踪
+ * 与其余卡片一样接上组件声明的默认源，按 arXiv 的分类读一次。
  *
  * 判据分两层：宿主快照里每个实例的 source，与组件文档里真正画出来的东西。后者才是这条场景要防的——
  * 绑定漏写的时候，卡片照样画得出来，只是画的是别处来的数据。
@@ -149,6 +149,19 @@ async function scholarPass(page, check) {
   check('学术入口的地址都是公开站点', JSON.stringify(links.rows) === JSON.stringify(SCHOLAR_LINKS), links.rows.join(' · '))
   check('学术入口没有退回空态或仓库链接', links.empty === false && links.rows.every((url) => !url.includes('127.0.0.1') && !url.includes('github.com/Nwflower')), links.rows.join(' · '))
 
+  // 文献追踪接的是组件自己的默认源：种子没写 source，快照里就是那个 `http`，卡片按默认分类画 arXiv。
+  // 宿主这一侧不联网时它会停在「读取中」或「读不到」，两种都不算种子写错了；这里只核对绑定与分类。
+  const feed = scholar.instances.find((instance) => instance.widget === 'paper-feed')
+  check('文献追踪接上组件声明的默认源', feed !== undefined && feed.source === declared['paper-feed'], `${String(feed?.source)} / 声明 ${String(declared['paper-feed'])}`)
+  const feedFrame = await frameOf(page, '.dsh-scholar-board__flow[data-active="true"] iframe[title="文献追踪"]')
+  const feedCard = await feedFrame.evaluate(() => ({
+    state: document.querySelector('.paper-feed-card')?.dataset.state ?? '',
+    meta: document.querySelector('[data-field="meta"]')?.textContent ?? '',
+    title: document.querySelector('[data-field="title"]')?.textContent ?? '',
+  }))
+  check('文献追踪按默认分类画 arXiv', feedCard.title === '文献追踪' && feedCard.meta.startsWith('eess.SP'), `${feedCard.title} / ${feedCard.meta} / ${feedCard.state}`)
+  check('文献追踪的三种状态之一', ['loading', 'empty', 'ready', 'failed'].includes(feedCard.state), feedCard.state)
+
   // 第四层：里程碑与阅读清单是空骨架，画的不是提交历史与会话列表。
   for (const [title, label] of [['时间线', '项目里程碑'], ['列表', '文献阅读清单']]) {
     const frame = await frameOf(page, `.dsh-scholar-board__flow[data-active="true"] iframe[title="${title}"]`)
@@ -184,9 +197,9 @@ async function scholarPass(page, check) {
   check('宿主刷新工作区之后五个导航原样不动', refreshed.status() === 200 && JSON.stringify(after) === JSON.stringify(before) && after.length === 5, `${refreshed.status()} ${before.length} → ${after.length}`)
 
   // 同一块看板上还画着别的卡片：刷新没有把它们弄丢，说明这次刷新真的走完了。组卡的两面共用一个盒子，
-  // 所以七张卡盒子对应八个实例。
+  // 所以八张卡盒子对应九个实例。
   const alive = await page.evaluate(() => document.querySelectorAll('.dsh-scholar-board__flow[data-active="true"] [data-instance]').length)
-  check('刷新之后学术看板的卡片都还在', alive === 7 && scholar.instances.length === 8, `${alive} 个盒子 / ${scholar.instances.length} 个实例`)
+  check('刷新之后学术看板的卡片都还在', alive === 8 && scholar.instances.length === 9, `${alive} 个盒子 / ${scholar.instances.length} 个实例`)
 }
 
 module.exports = { scholarPass, SCHOLAR_LINKS }

@@ -105,6 +105,95 @@ describe('请求与响应', () => {
   })
 })
 
+describe('Atom 正文', () => {
+  /** 一份按 Atom 读的订阅组件 manifest。 */
+  function atomManifest(request: Partial<NonNullable<WidgetManifest['request']>> = {}): WidgetManifest {
+    return manifest({
+      request: { url: 'https://export.arxiv.org/api/query?search_query=cat:{q}', format: 'atom', ...request },
+      props: { type: 'object', properties: { q: { type: 'string', default: 'eess.SP' } } },
+      permissions: { hosts: ['export.arxiv.org'] },
+    })
+  }
+
+  /** 一份最小的合法 Atom feed；`body` 放进根元素里。 */
+  function atom(body: string, xmlns = 'http://www.w3.org/2005/Atom'): string {
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<feed xmlns="${xmlns}">${body}</feed>`
+  }
+
+  /** 一个 entry；`title` 决定是哪一篇。 */
+  function entry(title: string): string {
+    return `<entry><title>${title}</title><author><name>A</name></author><link href="https://arxiv.org/abs/1" rel="alternate"/></entry>`
+  }
+
+  it('请求带 Atom 的 accept，entry 与 link 归一成数组，属性带 @_ 前缀', async () => {
+    const seen: RequestInit[] = []
+    const fetchImpl: FetchLike = async (_url, init) => {
+      seen.push(init)
+      return new Response(atom(entry('One')), { status: 200 })
+    }
+    const value = await readHttpSource(atomManifest(), { q: 'eess.SP' }, { fetch: fetchImpl }) as { feed: { entry: unknown[] } }
+    expect((seen[0]?.headers as Record<string, string>).accept).toMatch(/application\/atom\+xml/)
+    expect(value.feed.entry).toHaveLength(1)
+    const first = value.feed.entry[0] as { link: Array<Record<string, string>> }
+    expect(first.link[0]?.['@_href']).toBe('https://arxiv.org/abs/1')
+    expect(first.link[0]?.['@_rel']).toBe('alternate')
+  })
+
+  it('只有一条与有好几条 entry 时都读成数组', async () => {
+    const one = await readHttpSource(atomManifest(), {}, { fetch: answering(atom(entry('One'))) }) as { feed: { entry: unknown[] } }
+    expect(Array.isArray(one.feed.entry)).toBe(true)
+    const many = await readHttpSource(atomManifest(), {}, { fetch: answering(atom(entry('One') + entry('Two'))) }) as { feed: { entry: unknown[] } }
+    expect(many.feed.entry).toHaveLength(2)
+  })
+
+  it('空 feed 解析得出来，entry 缺席', async () => {
+    const value = await readHttpSource(atomManifest(), {}, { fetch: answering(atom('<title>x</title>')) }) as { feed: { title: string, entry?: unknown } }
+    expect(value.feed.title).toBe('x')
+    expect(value.feed.entry).toBeUndefined()
+  })
+
+  it('带前缀的命名空间也认', async () => {
+    const text = '<?xml version="1.0"?><atom:feed xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>x</atom:title></atom:feed>'
+    await expect(readHttpSource(atomManifest(), {}, { fetch: answering(text) })).resolves.toBeTypeOf('object')
+  })
+
+  it('不是合法 XML、不是 feed、没有 Atom 命名空间、带 DOCTYPE 时各自说清楚', async () => {
+    await expect(readHttpSource(atomManifest(), {}, { fetch: answering('<feed><title>A & B</title></feed>') })).rejects.toThrow(/不是合法 XML/)
+    await expect(readHttpSource(atomManifest(), {}, { fetch: answering('<html><body><p>hi</p></body></html>') })).rejects.toThrow(/不是 Atom feed/)
+    await expect(readHttpSource(atomManifest(), {}, { fetch: answering('<feed><title>x</title></feed>') })).rejects.toThrow(/不是 Atom feed/)
+    await expect(readHttpSource(atomManifest(), {}, { fetch: answering(atom('<title>x</title>', 'urn:other')) })).rejects.toThrow(/不是 Atom feed/)
+    await expect(readHttpSource(atomManifest(), {}, { fetch: answering(atom('<!DOCTYPE feed [<!ENTITY a "b">]><title>x</title>')) })).rejects.toThrow(/带了 DOCTYPE/)
+  })
+
+  it('正文超过上限时同样拒绝', async () => {
+    const huge = atom(`<title>${'x'.repeat(HTTP_BODY_LIMIT)}</title>`)
+    await expect(readHttpSource(atomManifest(), {}, { fetch: answering(huge) })).rejects.toThrow(/超过/)
+  })
+
+  it('不写 format 时仍按 JSON 读', async () => {
+    const seen: RequestInit[] = []
+    const fetchImpl: FetchLike = async (_url, init) => {
+      seen.push(init)
+      return new Response(JSON.stringify({ n: 1 }), { status: 200 })
+    }
+    await expect(readHttpSource(manifest(), {}, { fetch: fetchImpl })).resolves.toEqual({ n: 1 })
+    expect((seen[0]?.headers as Record<string, string>).accept).toBe('application/json')
+  })
+
+  it('同一个地址的 JSON 与 Atom 各存一条缓存', async () => {
+    const bodies: string[] = []
+    const fetchImpl: FetchLike = async () => new Response(bodies.shift() ?? '', { status: 200 })
+    const cache: HttpCache = new Map()
+    const json = manifest({ request: { url: 'https://api.open-meteo.com/v1/forecast', cacheMs: 5_000 } })
+    const xml = manifest({ request: { url: 'https://api.open-meteo.com/v1/forecast', format: 'atom', cacheMs: 5_000 } })
+    // 按 JSON 读回来后换成一份 Atom 正文：换成同一个地址的另一种格式，缓存不该把它交给 Atom 那一次。
+    bodies.push(JSON.stringify({ n: 1 }), atom(entry('One')))
+    await expect(readHttpSource(json, {}, { fetch: fetchImpl, cache })).resolves.toEqual({ n: 1 })
+    await expect(readHttpSource(xml, {}, { fetch: fetchImpl, cache })).resolves.toBeTypeOf('object')
+    expect(bodies).toHaveLength(0)
+  })
+})
+
 describe('缓存', () => {
   it('cacheMs 内同一个地址只请求一次，过期后重新请求', async () => {
     let clock = 1_000

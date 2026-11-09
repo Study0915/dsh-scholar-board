@@ -2,6 +2,8 @@
 
 一次性文档：全部步骤完成后删除本文件（D14）。它覆盖 [docs/PLAN.md](PLAN.md) 步骤 7 之后的一条支线，前置条件是步骤 7 的尺寸矩阵已经可以运行。方向依据不新写 ADR——D7、D10、D13、D16、D20 已经定完，本文件只排次序与完成判据。
 
+本文为动效候选清单，当前优先级见 [PLAN-scholar.md](PLAN-scholar.md)。表中“无”和未勾选项是编写时快照，实施前核查现有代码；新增令牌涉及受保护文件，须按工作区约束处理。
+
 ## 交接须知
 
 接手前按顺序读：[AGENTS.md](../AGENTS.md)、[ARCHITECTURE.md](../ARCHITECTURE.md)、[D7](adr/D7-widget-format.md)、[D10](adr/D10-tokens-and-motion.md)、[D13](adr/D13-testing.md)、[D16](adr/D16-card-grid.md)、[D20](adr/D20-component-box-contract.md)。
@@ -131,7 +133,7 @@
 
 ### 4. 回归
 
-- `npm run verify` 全绿；`npm run matrix` 全绿。
+- `npm run verify` 全绿，包含尺寸矩阵；仅在矩阵失败或后续改动需要时单独重跑。
 - 减弱动效下渲染一次，确认八个组件都静置。
 - 浅色与深色下由用户核对一次。
 

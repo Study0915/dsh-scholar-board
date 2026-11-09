@@ -1,0 +1,100 @@
+{
+  "id": "paper-feed",
+  "title": {
+    "zh": "文献追踪",
+    "en": "Paper feed"
+  },
+  "description": {
+    "zh": "按 arXiv 分类订阅新稿：一行一篇，标题、作者、提交日期与摘要一行，点一行开对应的 abs 页；分类与条数在卡片设置里填。",
+    "en": "Subscribe to new arXiv submissions by category: one paper per row with title, authors, submission date and a one-line abstract; click a row to open its abs page. Category and count go in the card settings."
+  },
+  "author": "Study0915",
+  "version": "0.1.0",
+  "sizes": ["s", "l"],
+  "defaultBox": { "w": 1, "h": 22 },
+  "minBox": { "w": 1, "h": 12 },
+  "source": "http",
+  "request": {
+    "url": "https://export.arxiv.org/api/query?search_query=cat:{category}&sortBy=submittedDate&sortOrder=descending&start=0&max_results={limit}",
+    "format": "atom",
+    "cacheMs": 300000
+  },
+  "permissions": {
+    "hosts": ["export.arxiv.org"]
+  },
+  "refresh": {
+    "mode": "interval",
+    "everyMs": 300000
+  },
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "category": { "type": "string", "maxLength": 40, "pattern": "^[A-Za-z][A-Za-z-]*(?:\\.[A-Za-z-]+)*$", "default": "eess.SP" },
+      "limit": { "type": "integer", "minimum": 3, "maximum": 20, "default": 8 },
+      "title": { "type": "string", "maxLength": 80 },
+      "kicker": { "type": "string", "maxLength": 40 }
+    }
+  },
+  "data": {
+    "type": "object",
+    "properties": {
+      "feed": {
+        "type": "object",
+        "properties": {
+          "entry": {
+            "type": "array",
+            "maxItems": 40,
+            "items": { "type": "object" }
+          }
+        }
+      }
+    }
+  },
+  "text": {
+    "title": {
+      "zh": "文献追踪",
+      "en": "Paper feed"
+    },
+    "kicker": {
+      "zh": "arXiv 新稿",
+      "en": "New on arXiv"
+    },
+    "loading": {
+      "zh": "读取 arXiv…",
+      "en": "Reading arXiv…"
+    },
+    "empty": {
+      "zh": "这个分类下暂时没有新稿",
+      "en": "No new submissions in this category"
+    },
+    "failed": {
+      "zh": "读不到 arXiv",
+      "en": "arXiv unavailable"
+    },
+    "props.category.label": {
+      "zh": "arXiv 分类",
+      "en": "arXiv category"
+    },
+    "props.category.hint": {
+      "zh": "例如 eess.SP、physics.optics；按提交时间从新到旧",
+      "en": "For example eess.SP or physics.optics; newest submissions first"
+    },
+    "props.limit.label": {
+      "zh": "最多显示几篇",
+      "en": "How many to show"
+    },
+    "props.limit.hint": {
+      "zh": "3 到 20 之间，默认 8 篇",
+      "en": "Between 3 and 20; 8 by default"
+    },
+    "props.title.label": {
+      "zh": "标题",
+      "en": "Title"
+    },
+    "props.kicker.label": {
+      "zh": "标签",
+      "en": "Kicker"
+    }
+  }
+}
