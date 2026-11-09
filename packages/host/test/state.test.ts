@@ -8,7 +8,7 @@ import { readFile, rmdir, unlink } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { Board, BoardInstance, WidgetMinBox } from '@dsh-scholar-board/contracts'
 import type { WidgetRecord } from '../src/library'
-import { readBoard, withArrangementUnits, withBoardArrangement, withBoardLayouts, withDefaultSources, withGroupAdded, withGroupRemoved, withInstanceAdded, withInstanceData, withInstanceRemoved, withInstanceState, withLayouts, writeBoard } from '../src/state'
+import { readBoard, withArrangementUnits, withBoardArrangement, withBoardLayouts, withDefaultSources, withGroupAdded, withGroupRemoved, withInstanceAdded, withInstanceData, withInstancePatched, withInstanceRemoved, withInstanceState, withLayouts, writeBoard } from '../src/state'
 
 /** 看板文件写在 `.debug/` 下，跑完删掉：这一条要经过真的文件读写，不碰系统临时目录。 */
 const ROOT = join(process.cwd(), '.debug', 'tests', `state-${String(process.pid)}-${String(Date.now())}`)
@@ -137,6 +137,20 @@ describe('卡片布局', () => {
 })
 
 describe('默认数据源', () => {
+  it('已绑定卡片解绑后保存重开仍保留数据和空源，再次绑定仍生效', async () => {
+    const weather = record('weather')
+    weather.manifest.source = 'http'
+    const records = new Map([['pomodoro', record('pomodoro')], ['weather', weather]])
+    const current = withDefaultSources(board(), records).board
+    const data = { temperature: 20 }
+    const unbound = withInstancePatched(current, 'second', { source: '', data })
+    const file = join(ROOT, 'board.json')
+    await writeBoard(file, unbound)
+    const reopened = await readBoard(file, records)
+    expect(reopened.instances.find((instance) => instance.id === 'second')).toMatchObject({ source: '', data })
+    expect(withInstancePatched(reopened, 'second', { source: 'http' }).instances[1]?.source).toBe('http')
+  })
+
   it('旧卡片没有数据源时补上组件声明的那个', () => {
     const weather = record('weather')
     weather.manifest.source = 'http'

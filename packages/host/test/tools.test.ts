@@ -336,6 +336,18 @@ describe('widget_board', () => {
 })
 
 describe('widget_place', () => {
+  it('解绑保留数据，不读取数据源，也不返回读取失败提示', async () => {
+    let reads = 0
+    const harnessed = harnessWithSource(() => { reads++; return { n: 7 } })
+    const tool = toolOf(harnessed, WIDGET_TOOL_NAMES.place)
+    const placed = await tool.execute({ widget: 'stat' }) as { id: string }
+    expect(reads).toBe(1)
+    const result = await tool.execute({ widget: 'stat', id: placed.id, source: '' })
+    expect(result).toEqual({ id: placed.id, widget: 'stat', layout: harnessed.context.board.instances[0]?.layout })
+    expect(harnessed.context.board.instances[0]).toMatchObject({ source: '', data: { n: 7 } })
+    expect(reads).toBe(1)
+  })
+
   /** 一个数据源可换的替身：读数据是放卡路径上要判的一环。 */
   function harnessWithSource(read: () => unknown, records = [record('stat', { source: 'demo:count' })]) {
     const harnessed = harness({ records })

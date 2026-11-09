@@ -218,6 +218,12 @@ async function openPage(url, options = {}) {
     })
     const page = await context.newPage()
     const problems = []
+    page.on('requestfailed', (request) => {
+      const reason = request.failure()?.errorText ?? 'unknown'
+      if (reason === 'net::ERR_ABORTED') return
+      // 只记录路径：启动地址的查询参数带认证令牌（D3）。
+      console.error(`requestfailed: ${new URL(request.url()).pathname} ${reason}`)
+    })
     page.on('console', (message) => {
       if (message.type() === 'error' || message.type() === 'warning') problems.push(`${message.type()}: ${message.text()}`)
     })

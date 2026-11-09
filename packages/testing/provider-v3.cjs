@@ -370,6 +370,7 @@ async function burstReads(pages, instance, source) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ source: wanted.source }),
       })
+      await response.arrayBuffer()
       return response.status
     }
     return await Promise.all(Array.from({ length: wanted.count }, ask))
@@ -579,7 +580,11 @@ async function providerV3Pass(page, check, options) {
   let answer
   try {
     // 这一页先把启动令牌换成会话，之后它的读取才不会被 401 拒掉。
-    await burst.page.waitForFunction(async () => (await fetch('api/widget-board/boards')).ok, undefined, { timeout: 60000 })
+    await burst.page.waitForFunction(async () => {
+      const response = await fetch('api/widget-board/boards')
+      await response.arrayBuffer()
+      return response.ok
+    }, undefined, { timeout: 60000 })
     const pending = burstReads([page, burst.page], alpha, SLOW)
     // 槽被占着的这十几秒里，另一个提供方照常读得到——并发与超时是按提供方算的（D31）。
     await sleep(1500)

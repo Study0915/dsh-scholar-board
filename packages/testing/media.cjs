@@ -53,7 +53,7 @@ async function mediaPass(page, check) {
       const revoke = URL.revokeObjectURL.bind(URL)
       URL.revokeObjectURL = value => { window.__mediaRevoked.push(value); revoke(value) }
     })
-    await page.evaluate(async original => { await fetch(`api/widget-board/boards/${original}/activate`, { method: 'POST' }) }, original)
+    await page.evaluate(async original => { await (await fetch(`api/widget-board/boards/${original}/activate`, { method: 'POST' })).arrayBuffer() }, original)
     const released = await waitFor(async () => {
       if (imageFrame.isDetached()) return true
       try { return await imageFrame.evaluate(() => window.widget.paused && window.__mediaRevoked.length > 0) } catch (error) {
@@ -62,7 +62,7 @@ async function mediaPass(page, check) {
       }
     }, 10000)
     check('切离看板暂停或卸载并释放图片URL', released)
-    await page.evaluate(async board => { await fetch(`api/widget-board/boards/${board}/activate`, { method: 'POST' }) }, board)
+    await page.evaluate(async board => { await (await fetch(`api/widget-board/boards/${board}/activate`, { method: 'POST' })).arrayBuffer() }, board)
     check('恢复看板重新读取图片', (await imageReady(instance.id)).width === 640)
     await captureAppearance(page, evidence, 'image')
     await page.setViewportSize({ width: 1440, height: 900 })
@@ -120,8 +120,8 @@ async function mediaPass(page, check) {
     check('刷新后图片恢复', (await imageReady(backup.cards[0], 320)).width === 320)
   } finally {
     await page.evaluate(async ({ board, imported, original }) => {
-      for (const id of [board, imported].filter(Boolean)) await fetch(`api/widget-board/boards/${id}/remove`, { method: 'POST' })
-      await fetch(`api/widget-board/boards/${original}/activate`, { method: 'POST' })
+      for (const id of [board, imported].filter(Boolean)) await (await fetch(`api/widget-board/boards/${id}/remove`, { method: 'POST' })).arrayBuffer()
+      await (await fetch(`api/widget-board/boards/${original}/activate`, { method: 'POST' })).arrayBuffer()
     }, { board, imported, original })
   }
 }

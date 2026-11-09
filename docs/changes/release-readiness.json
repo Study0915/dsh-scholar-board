@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 20,
+  "at": "2026-11-09",
+  "external": true,
+  "zh": "widget_place 工具支持用空字符串解绑数据源，保留已有卡片数据，保存并重启后仍保持解绑。CI 同时检查 main 与 master 分支的推送。",
+  "en": "Allow widget_place to unbind a data source with an empty string, preserving existing card data and keeping the card unbound across restarts. Run CI on pushes to both main and master."
+}

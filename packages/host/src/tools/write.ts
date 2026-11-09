@@ -87,7 +87,7 @@ export function placeTool(context: ToolContext): WidgetToolSpec {
           },
         },
         props: { type: 'object', description: 'Replaces the card props when given.' },
-        source: { type: 'string', description: 'Data source id; the card reads it once after the change.' },
+        source: { type: 'string', description: 'Data source id; the card reads it once after the change. Pass an empty string to unbind without changing existing data.' },
         board: { type: 'string', description: 'Board id from widget_board; omit to use the selected board. An existing card stays on its own board.' },
       },
     },
@@ -98,10 +98,10 @@ export function placeTool(context: ToolContext): WidgetToolSpec {
       if (record === undefined) throw new ToolRefusal(`组件库里没有可用的组件 ${wanted.widget}，先用 widget_catalog 看有哪些`)
       const layout = layoutOf(wanted.layout)
       if (wanted.props !== undefined && !isRecord(wanted.props)) throw new ToolRefusal('props 要是一个对象')
-      if (wanted.source !== undefined && (typeof wanted.source !== 'string' || wanted.source === '')) throw new ToolRefusal('source 要是一个数据源 id')
+      if (wanted.source !== undefined && typeof wanted.source !== 'string') throw new ToolRefusal('source 要是一个数据源 id，空串表示解绑')
       if (wanted.board !== undefined && (typeof wanted.board !== 'string' || wanted.board === '')) throw new ToolRefusal('board 要是一个看板 id')
       // 点名的数据源先查在不在，再动看板：路由加卡也是先拒后写，两边不留「卡已落盘才报错」的路径。
-      if (typeof wanted.source === 'string' && !context.route.sources.hasDataSource(wanted.source)) {
+      if (typeof wanted.source === 'string' && wanted.source !== '' && !context.route.sources.hasDataSource(wanted.source)) {
         throw new ToolRefusal(`没有数据源 ${wanted.source}，提供它的插件可能没有安装`)
       }
 
@@ -178,7 +178,7 @@ export function placeTool(context: ToolContext): WidgetToolSpec {
  */
 async function readInto(context: ToolContext, boardId: string, instance: BoardInstance, notes: string[], strict = false): Promise<void> {
   const source = instance.source
-  if (source === undefined) return
+  if (source === undefined || source === '') return
   let data: unknown
   try {
     // 读走路由那一条：数据源在不在、授权有没有，与界面手动读同一道闸门（D6 的「读数据只有一条路径」）。

@@ -499,8 +499,8 @@ export function withInstancePatched(
     ...(patch.data === undefined ? {} : { data: patch.data }),
   }
   if (patch.source !== undefined) {
-    if (patch.source === '') delete next.source
-    else next.source = patch.source
+    // 空串保留显式解绑；删除字段会在重启时继承 manifest 的默认源（D17）。
+    next.source = patch.source
   }
   const instances = board.instances.map((instance) => {
     if (layout === undefined) return instance.id === id ? next : instance
