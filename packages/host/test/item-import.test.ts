@@ -111,7 +111,8 @@ describe('校园文件交换', () => {
     expect(rows[2]?.item?.status).toBe('cancelled')
     expect(ics(text, { rangeStart: '2026-10-28', rangeEnd: '2026-10-29' }).rows).toHaveLength(2)
     expect(() => ics(calendar(event('SUMMARY:过多\r\nDTSTART:19000101T000000Z\r\nRRULE:FREQ=DAILY')))).toThrow('10000')
-  })
+    // 无终止条件的日频规则要展开到一万次上限才报错：隔离跑约 1.3 秒，全量并发下会被拖过默认 5 秒。
+  }, 15000)
   it('ICS稳定UID、全天次日截止、扩展字段及精确时刻往返', () => {
     const item = { ...csv(csvTemplate()).rows[0]!.item!, kind: 'milestone' as const, status: 'done' as const }
     const file = exportItems([item], 'ics')

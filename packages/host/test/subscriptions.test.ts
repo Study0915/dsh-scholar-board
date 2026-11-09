@@ -409,4 +409,19 @@ describe('订阅与定时链的互斥', () => {
     // 两张卡都声明了定时刷新：带 subscribe 的那一张只按订阅走，不进定时表。
     expect(intervalCardsOf(test.context)).toEqual([{ id: 'polled', everyMs: 5000 }])
   })
+
+  it('解绑数据源（空串）的卡片既不订阅，也不进定时表', () => {
+    const test = harness(
+      [cardOf('unbound', ''), cardOf('bound', 'plain')],
+      memoryGrants(),
+      { ...MANIFEST, refresh: { mode: 'interval', everyMs: 5000 } },
+    )
+    // 另一张卡绑一个真的注册过、没声明 subscribe 的源：它照旧进定时表。
+    test.sources.registerDataSource({ apiVersion: 3, provider: 'acme', id: 'plain', read: () => ({ n: 0 }) })
+    test.live.setViewers(1)
+    test.subscriptions.sync()
+    // 空串不是 undefined，但解析不到任何源：这张卡只有自己存着的那份数据。
+    expect(test.subscriptions.cards.has('unbound')).toBe(false)
+    expect(intervalCardsOf(test.context)).toEqual([{ id: 'bound', everyMs: 5000 }])
+  })
 })

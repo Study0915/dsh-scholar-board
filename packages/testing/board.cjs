@@ -47,6 +47,7 @@ async function ensureFree(page) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ expectedLayoutRevision: layoutRevision, arrangement: { mode: 'free' } }),
     })
+    await response.arrayBuffer()
     return response.status
   }, { boardId: board.id, layoutRevision: board.layoutRevision })
   if (status !== 200) throw new Error(`切回自由布局失败：${status}`)
@@ -70,6 +71,8 @@ async function writeLayouts(page, build) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ layoutRevision, layouts }),
     })
+    // 每个尺寸都提交布局；读完响应体，避免未消费的响应在矩阵循环中积累。
+    await response.arrayBuffer()
     return response.status
   }, { boardId: board.id, layoutRevision: board.layoutRevision, layouts })
   // 修订号过期（409）或盒子不合法（400）都不能继续：后面的几何与点击点全按这份布局算。
@@ -79,8 +82,8 @@ async function writeLayouts(page, build) {
 /**
  * 只留「组件画廊」这一块看板。
  *
- * 第一次启动铺两块看板（D17）：精选的「我的看板」与每个内置组件各一张的画廊。检查按组件标题找
- * 卡片、并把每个内置组件都当作在场，所以让它们面对只有画廊的工作区，找得到唯一的一张。
+ * 第一次启动铺三块看板（D17）：精选的「我的看板」、「学术看板」与每个内置组件各一张的画廊。检查按组件
+ * 标题找卡片、并把每个内置组件都当作在场，所以让它们面对只有画廊的工作区，找得到唯一的一张。
  *
  * @param page - 宿主页面，看板页还没有打开。
  */

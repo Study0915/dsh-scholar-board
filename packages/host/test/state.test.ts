@@ -154,6 +154,23 @@ describe('默认数据源', () => {
     expect(result.board).toBe(current)
     expect(result.board.instances[1]?.source).toBe('demo:count')
   })
+
+  it('显式解绑（空串）的卡片读盘时不被补回默认源', () => {
+    const weather = record('weather')
+    weather.manifest.source = 'http'
+    const current = board()
+    // 空串是种子卡「只有自己这份内容」的表达：字段还在，指向不到任何源。同一块看板上再放一张同组件的
+    // 普通卡片，用来看补齐只发生在真正没绑过的那张上。
+    current.instances = [
+      { ...current.instances[1] as BoardInstance, id: 'unbound', source: '' },
+      { ...current.instances[1] as BoardInstance, id: 'fresh' },
+    ]
+    const result = withDefaultSources(current, new Map([['weather', weather]]))
+    expect(result.changed).toBe(true)
+    const byId = new Map(result.board.instances.map((instance) => [instance.id, instance]))
+    expect(byId.get('unbound')?.source).toBe('')
+    expect(byId.get('fresh')?.source).toBe('http')
+  })
 })
 
 describe('卡片的数据', () => {

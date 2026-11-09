@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 1,
+  "at": "2026-11-08",
+  "external": true,
+  "zh": "第一次启动新增「学术看板」（我的看板之后、组件画廊之前）：组会汇报 Markdown 翻面组卡、投稿倒数、日历、学术入口导航（arXiv、eess.SP、physics.optics、Optica、IEEE Xplore）、待办、项目里程碑与文献阅读清单。倒数不写日期、里程碑与清单留空，种子不虚构事实；看板被删光后补上的仍是「我的看板」（D21 不变）。",
+  "en": "First launch now seeds a third board, the Scholar board (after My board, before the gallery): a flip-group markdown card for group-meeting briefs, a submission countdown, calendar, academic navigation links (arXiv, eess.SP, physics.optics, Optica, IEEE Xplore), to-dos, project milestones and a reading list. The countdown ships without a date and the milestone/reading lists ship empty so the seed fabricates nothing; the all-boards-deleted fallback remains My board (D21 unchanged)."
+}

@@ -35,6 +35,7 @@ const { providerV3Pass } = require('./provider-v3.cjs')
 const { githubPass } = require('./github.cjs')
 const { metricsPass } = require('./metrics.cjs')
 const { sharePass } = require('./share.cjs')
+const { scholarPass } = require('./scholar.cjs')
 const { dataCardsPass, prepareCardsProbe } = require('./data-cards.cjs')
 
 /** 插件自己画的东西，只用这些标记找节点。 */
@@ -140,12 +141,21 @@ async function mainPass(page, problems) {
   check('卡片文档按哈希取到', weather.url().includes('/widget/'), weather.url().replace(/^.*\/api/, '/api').slice(0, 52))
   check('天气卡画出来了', await weather.evaluate(() => document.querySelector('.wx') !== null))
   check('五个预报日', (await weather.evaluate(() => document.querySelectorAll('.t-tab').length)) === 5)
+  // 天气数据走真实网络，到达有早有晚：先等第一份数据画上卡再取切换前的读数，否则取到的是空态
+  // 的「--」，点击与数据到达的先后就把下面的逐位动画判据变成了时序抽奖。
+  await weather.waitForFunction(() => /^-?\d+$/.test(document.querySelector('#wx-temp')?.textContent ?? ''), undefined, { timeout: 20000 })
   // 实际天气每天不同，这里只看结构：地点来自 props，切换到第三个预报日后文字与图标换成那一天的值。
   const day = await weather.evaluate(() => document.querySelector('#wx-day')?.textContent ?? '')
   check('天气卡的地点由 props 填上', (await weather.evaluate(() => document.querySelector('#wx-place')?.textContent)) === '北京')
   // 切换前的读数：温度没变时卡片不会重建逐位数字，这与变了之后每一位都是 span 是两条规则。
   const beforeTemp = await weather.evaluate(() => document.querySelector('#wx-temp')?.textContent ?? '')
-  await weather.locator('#wx-tab-3').click()
+  // 点击与取样写在同一段页面脚本里：click 的监听同步调用 paintDay，逐位数字当场建好。分成两次跨进页面取样，
+  // 中间可能插进一次宿主重推数据（首读与定时链各一份），那份按首帧规则重画会把 span 换成纯文本。
+  const animated = await weather.evaluate(() => {
+    document.querySelector('#wx-tab-3').click()
+    const node = document.querySelector('#wx-temp')
+    return { temp: node.textContent, digits: node.querySelectorAll('.t-digit').length }
+  })
   await weather.waitForFunction((previous) => {
     const selected = document.querySelector('.t-tab[aria-selected="true"]')
     const dayText = document.querySelector('#wx-day')?.textContent ?? ''
@@ -156,7 +166,6 @@ async function mainPass(page, problems) {
     sky: document.querySelector('.wx')?.getAttribute('data-scene'),
     day: document.querySelector('#wx-day')?.textContent,
     temp: document.querySelector('#wx-temp')?.textContent ?? '',
-    digits: document.querySelectorAll('#wx-temp .t-digit').length,
     icon: document.querySelector('.wx-big .t-icon[data-active]')?.getAttribute('data-key'),
     // 窗外那一幅景画在 canvas 上：宽度不为零就说明画布按盒子建起来了。
     canvas: (() => {
@@ -170,8 +179,8 @@ async function mainPass(page, problems) {
   check('温度是数字', /^-?\d+$/.test(after.temp), after.temp)
   check(
     '数字走逐位动画',
-    after.temp === beforeTemp ? after.digits === 0 : after.digits === after.temp.length,
-    `${beforeTemp} → ${after.temp}，${after.digits} 个逐位数字`,
+    animated.temp === beforeTemp ? animated.digits === 0 : animated.digits === animated.temp.length,
+    `${beforeTemp} → ${animated.temp}，${animated.digits} 个逐位数字`,
   )
   check('图标是天气图标之一', ['sun', 'moon', 'cloud', 'rain', 'snow', 'bolt'].includes(String(after.icon)), String(after.icon))
 
@@ -657,6 +666,8 @@ start({ home, extras: [join(__dirname, 'fixtures', 'provider'), join(__dirname, 
   try {
     opened = await openPage(host.url)
     await parserHandshakePass(opened.page, check)
+    // 学术看板的种子内容要在第一块原始工作区上核对：后面的场景会删看板、改布局、往卡片里写数据。
+    await scholarPass(opened.page, check)
     await mainPass(opened.page, opened.problems)
     // 数据卡场景故意让按需读失败一次，排在主路径的控制台检查之后：那一页的错误由这一条自己核对。
     await dataCardsPass(opened.page, check)

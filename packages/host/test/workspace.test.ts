@@ -50,7 +50,7 @@ function board(id: string, title: string, height = 22): Board {
   }
 }
 
-/** 真实的内置组件库：第一次启动的两块看板按它铺。 */
+/** 真实的内置组件库：第一次启动的三块看板按它铺。 */
 let library: WidgetRecord[]
 
 beforeAll(async () => {
@@ -103,14 +103,15 @@ async function openStarted(home: string): ReturnType<typeof open> {
 }
 
 describe('第一次打开', () => {
-  it('没有任何文件时铺两块看板：「我的看板」选中并排第一，「组件画廊」排第二', async () => {
+  it('没有任何文件时铺三块看板：「我的看板」选中并排第一，「学术看板」居中，「组件画廊」排最后', async () => {
     const home = await tempHome()
     const { workspace } = await open(home, library)
     const boards = workspace.list()
-    expect(boards.map((entry) => entry.title)).toEqual(['我的看板', '组件画廊'])
+    expect(boards.map((entry) => entry.title)).toEqual(['我的看板', '学术看板', '组件画廊'])
     expect(workspace.activeId()).toBe(boards[0]?.id)
     expect(boards[0]?.instances.length).toBeGreaterThan(0)
-    expect(boards[1]?.instances.length).toBeGreaterThan(boards[0]?.instances.length ?? 0)
+    expect(boards[1]?.instances.length).toBeGreaterThan(0)
+    expect(boards[2]?.instances.length).toBeGreaterThan(boards[0]?.instances.length ?? 0)
     expect(existsSync(join(home, 'boards.json'))).toBe(true)
     for (const entry of boards) expect(existsSync(join(home, 'boards', `${entry.id}.json`))).toBe(true)
     const index = JSON.parse(await readFile(join(home, 'boards.json'), 'utf8')) as { active: string, boards: string[] }
@@ -121,9 +122,45 @@ describe('第一次打开', () => {
     const home = await tempHome()
     await open(home, library)
     const reopened = (await open(home, library)).workspace
-    expect(reopened.list().map((entry) => entry.title)).toEqual(['我的看板', '组件画廊'])
+    expect(reopened.list().map((entry) => entry.title)).toEqual(['我的看板', '学术看板', '组件画廊'])
     const kept = await openStarted(await tempHome())
     expect(kept.workspace.list().map((entry) => entry.title)).toEqual(['看板'])
+  })
+
+  it('学术看板的五个种子实例显式解绑，落盘再打开仍是空的源名', async () => {
+    const home = await tempHome()
+    const { workspace } = await open(home, library)
+    const scholar = workspace.list().find((entry) => entry.title === '学术看板')
+    const seed = (board: Board): Array<[string, string | undefined]> => board.instances
+      .filter((instance) => instance.widget === 'markdown' || ['links', 'timeline', 'list'].includes(instance.widget))
+      .map((instance) => [instance.widget, instance.source])
+    // 第一次启动就解绑：组卡两面、导航、里程碑、阅读清单，一共五张。
+    expect(seed(workspace.board(scholar?.id as string))).toEqual([
+      ['markdown', ''],
+      ['markdown', ''],
+      ['links', ''],
+      ['timeline', ''],
+      ['list', ''],
+    ])
+    // 磁盘上留着空串：读盘时 `withDefaultSources` 只补 undefined 的那一些，不会把它当成没绑过。
+    const onDisk = JSON.parse(await readFile(join(home, 'boards', `${scholar?.id as string}.json`), 'utf8')) as Board
+    expect(seed(onDisk)).toEqual(seed(workspace.board(scholar?.id as string)))
+    const reopened = (await open(home, library)).workspace
+    expect(seed(reopened.board(scholar?.id as string))).toEqual(seed(onDisk))
+  })
+
+  it('普通卡片第一次启动照样接上组件声明的默认源，重新打开也不变', async () => {
+    const home = await tempHome()
+    const { workspace } = await open(home, library)
+    const scholar = workspace.list().find((entry) => entry.title === '学术看板')
+    const declared = (widget: string): string | undefined => library.find((entry) => entry.manifest.id === widget)?.manifest.source
+    const weather = workspace.board(workspace.list()[0]?.id as string).instances.find((instance) => instance.widget === 'weather')
+    expect(weather?.source).toBe(declared('weather'))
+    const reopened = (await open(home, library)).workspace
+    expect(reopened.board(workspace.list()[0]?.id as string).instances.find((instance) => instance.widget === 'weather')?.source).toBe(declared('weather'))
+    // 同一块看板上没写 source 的卡片也没有被解绑成空串。
+    const countdown = workspace.board(scholar?.id as string).instances.find((instance) => instance.widget === 'countdown')
+    expect(countdown?.source === undefined || countdown.source !== '').toBe(true)
   })
 
   it('索引版本不认识时报错并保留原文件', async () => {

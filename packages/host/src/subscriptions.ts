@@ -274,8 +274,9 @@ export function createSubscriptions(context: RouteContext): Subscriptions {
 /**
  * 现在哪些卡该按定时链读（D6、D32）。
  *
- * 声明了定时刷新、且绑了源的卡才在里面；声明了 `subscribe` 的源按订阅走，不进这张表——同一张卡不会
- * 同时开着两条链。只算声明，不算观众与可见性：那两件事由调度器按观众算。
+ * 声明了定时刷新、且绑着一个真的注册过的源才在里面；声明了 `subscribe` 的源按订阅走，不进这张表——同一
+ * 张卡不会同时开着两条链。没有源、或者源名解析不到（显式解绑的空串、提供方已撤下的名字）都不排期：
+ * 排进去每一拍都会撞一次读不到源。只算声明，不算观众与可见性：那两件事由调度器按观众算。
  *
  * @param context - 看板、组件库与注册表。
  * @returns 定时链要管的卡片。
@@ -285,7 +286,9 @@ export function intervalCardsOf(context: Pick<RouteContext, 'workspace' | 'recor
   for (const board of context.workspace.list()) {
     for (const card of board.instances) {
       if (card.source === undefined) continue
-      if (context.sources.resolveDataSource(card.source)?.registration.subscribe !== undefined) continue
+      const resolved = context.sources.resolveDataSource(card.source)
+      if (resolved === undefined) continue
+      if (resolved.registration.subscribe !== undefined) continue
       const everyMs = intervalOf(context.records.get(card.widget)?.manifest.refresh)
       if (everyMs === undefined) continue
       cards.push({ id: card.id, everyMs })
