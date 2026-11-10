@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 21,
+  "at": "2026-11-09",
+  "external": true,
+  "zh": "客户端保存状态、推送数据、执行动作和授予或撤销权限时读完成功响应体，释放请求资源；补齐真实宿主回归。固定字段文案测试的文档语言，使英文环境的 CI 正确执行中文断言；变更通知冒烟按完整首条消息判断，兼容网络合帧与分帧。",
+  "en": "Consume successful responses after client state writes, data pushes, actions, grants and revocations to release request resources, with a real-host regression. Pin the form-label test document language so Chinese assertions also work on English CI runners. Read a complete first notification in the SSE smoke check, supporting coalesced and split network chunks."
+}

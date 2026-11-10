@@ -45,6 +45,7 @@
 - 静态演示将需要真实宿主数据的热力图换成年度进度卡，保留原盒子；补齐经过校验的可见性上报与已有卡片的空请求日志读取，避免演示页构建失败和缺失路由错误。
 - 修复组件文档分段加载时提前握手造成的初始化丢失：运行时在文档解析完成后通知父页面，确保组件脚本已登记状态、数据和尺寸订阅，番茄钟重载后能够恢复保存的计时。
 - widget_place 工具支持用空字符串解绑数据源，保留已有卡片数据，保存并重启后仍保持解绑。CI 同时检查 main 与 master 分支的推送。
+- 客户端保存状态、推送数据、执行动作和授予或撤销权限时读完成功响应体，释放请求资源；补齐真实宿主回归。固定字段文案测试的文档语言，使英文环境的 CI 正确执行中文断言；变更通知冒烟按完整首条消息判断，兼容网络合帧与分帧。
 
 ### 其他变更
 
@@ -87,6 +88,7 @@
 - The static demo replaces the host-dependent heatmap with a year-progress card in the same box, validates visibility reports, and returns empty request logs for existing cards, avoiding build failures and missing-route errors.
 - Wait for component document parsing to finish before announcing runtime readiness, so scripts receive their initial state, data and size even when HTML arrives in separate chunks. Saved Pomodoro sessions now resume reliably after reloading.
 - Allow widget_place to unbind a data source with an empty string, preserving existing card data and keeping the card unbound across restarts. Run CI on pushes to both main and master.
+- Consume successful responses after client state writes, data pushes, actions, grants and revocations to release request resources, with a real-host regression. Pin the form-label test document language so Chinese assertions also work on English CI runners. Read a complete first notification in the SSE smoke check, supporting coalesced and split network chunks.
 
 ### Chores
 

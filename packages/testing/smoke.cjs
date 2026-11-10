@@ -15,6 +15,8 @@
 const { readFile, writeFile } = require('node:fs/promises')
 const { join } = require('node:path')
 const { openPage, scratchHome, start } = require('./dsh-web.cjs')
+const { responsePass } = require('./responses.cjs')
+const { firstEventOf } = require('./first-event.cjs')
 const { cardBox, centerCard, frameOf } = require('./frames.cjs')
 const { columnStep, layoutOf, settled, waitLayout } = require('./geometry.cjs')
 const { alignedGesturesPass, createHandshakeFixture, createMarketFixture, handshakePass, parserHandshakePass, keepOnlyGallery, resetCards, resetLayout, setCardHeight, ensureFree } = require('./board.cjs')
@@ -143,7 +145,21 @@ async function mainPass(page, problems) {
   check('五个预报日', (await weather.evaluate(() => document.querySelectorAll('.t-tab').length)) === 5)
   // 天气数据走真实网络，到达有早有晚：先等第一份数据画上卡再取切换前的读数，否则取到的是空态
   // 的「--」，点击与数据到达的先后就把下面的逐位动画判据变成了时序抽奖。
-  await weather.waitForFunction(() => /^-?\d+$/.test(document.querySelector('#wx-temp')?.textContent ?? ''), undefined, { timeout: 20000 })
+  try {
+    await weather.waitForFunction(() => /^-?\d+$/.test(document.querySelector('#wx-temp')?.textContent ?? ''), undefined, { timeout: 20000 })
+  } catch (error) {
+    // 外部请求失败时保留宿主的原因与耗时，仍按原超时判定失败。
+    const diagnostic = await page.evaluate(async () => {
+      const snapshot = await (await fetch('api/widget-board/boards')).json()
+      const board = snapshot.boards.find((entry) => entry.id === snapshot.active)
+      const card = board?.instances.find((entry) => entry.widget === 'weather')
+      if (!card) return { missing: true }
+      const log = await (await fetch('api/widget-board/instance/' + encodeURIComponent(card.id) + '/log')).json()
+      return { source: card.source, hasData: card.data != null, log }
+    })
+    console.error('weather-timeout: ' + JSON.stringify(diagnostic))
+    throw error
+  }
   // 实际天气每天不同，这里只看结构：地点来自 props，切换到第三个预报日后文字与图标换成那一天的值。
   const day = await weather.evaluate(() => document.querySelector('#wx-day')?.textContent ?? '')
   check('天气卡的地点由 props 填上', (await weather.evaluate(() => document.querySelector('#wx-place')?.textContent)) === '北京')
@@ -352,13 +368,11 @@ async function mainPass(page, problems) {
   ).then(() => true, () => false)
   check('删掉这一条', removed, String(await todoAgain.evaluate(() => document.querySelectorAll('.todo-row').length)))
 
-  const live = await page.evaluate(async () => {
+  const live = await page.evaluate(async (readFirst) => {
+    const firstEventOf = new Function(`return (${readFirst})`)()
     const response = await fetch('api/widget-board/events', { headers: { accept: 'text/event-stream' } })
-    const reader = response.body.getReader()
-    const { value } = await reader.read()
-    await reader.cancel()
-    return { status: response.status, first: new TextDecoder().decode(value ?? new Uint8Array()).trim() }
-  })
+    return { status: response.status, first: await firstEventOf(response) }
+  }, firstEventOf.toString())
   check('变更通知接得上，先补一条重取快照', live.status === 200 && /^data: \{"revision":\d+,"event":\{"type":"board"\}\}$/.test(live.first), live.first)
 
   const errors = problems.filter((problem) => problem.startsWith('error:') || problem.startsWith('pageerror:'))
@@ -666,6 +680,7 @@ start({ home, extras: [join(__dirname, 'fixtures', 'provider'), join(__dirname, 
   try {
     opened = await openPage(host.url)
     await parserHandshakePass(opened.page, check)
+    await responsePass(opened.page, check)
     // 学术看板的种子内容要在第一块原始工作区上核对：后面的场景会删看板、改布局、往卡片里写数据。
     await scholarPass(opened.page, check)
     await mainPass(opened.page, opened.problems)

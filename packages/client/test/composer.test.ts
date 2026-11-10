@@ -3,7 +3,7 @@
  *
  * 这里不画 React：字段表、错误路径与递归边界都是纯函数，渲染那一层只按这份判定画控件。
  */
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { SCHEMA_DEPTH, fieldsOfTree, labelOf } from '../src/composer/schema'
 import { formPathOf, formResult } from '../src/composer/fields'
 import { imageFormSchema } from '../src/composer/media-field'
@@ -11,6 +11,16 @@ import { TEMPLATES, seedOf, templateOf } from '../src/composer/templates'
 import { buildSync } from 'esbuild'
 import { runInNewContext } from 'node:vm'
 import { resolve } from 'node:path'
+
+// 与字段表测试一样固定文档语言，避免 Node 的 navigator.language 随 CI 机器改变。
+const globals = globalThis as Record<string, unknown>
+const hadDocument = 'document' in globals
+beforeAll(() => {
+  if (!hadDocument) globals.document = { documentElement: { lang: 'zh-CN' } }
+})
+afterAll(() => {
+  if (!hadDocument) delete globals.document
+})
 
 const countdownScript = buildSync({ entryPoints: [resolve('packages/widgets/countdown/main.js')], bundle: true, write: false, platform: 'browser', format: 'iife' }).outputFiles[0]!.text
 function countdownFor(props: Record<string, unknown>) {

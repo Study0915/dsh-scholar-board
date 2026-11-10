@@ -276,6 +276,8 @@ export async function saveInstanceState(id: string, patch: unknown): Promise<voi
     keepalive: true,
   })
   if (!response.ok) throw new Error(await errorOf(response, '存不下这张卡的状态'))
+  // 高频写入的成功响应也必须读完，释放浏览器保留的请求资源。
+  await response.arrayBuffer()
 }
 
 /**
@@ -292,6 +294,7 @@ export async function pushInstanceData(id: string, data: unknown): Promise<void>
     body: JSON.stringify({ data }),
   })
   if (!response.ok) throw new Error(await errorOf(response, '推不下这张卡的数据'))
+  await response.arrayBuffer()
 }
 
 /**
@@ -309,6 +312,7 @@ export async function sendInstanceAction(id: string, action: string, payload?: u
     body: JSON.stringify({ id: action, payload }),
   })
   if (!response.ok) throw await failureOf(response, '动作没有执行')
+  await response.arrayBuffer()
 }
 
 /**
@@ -384,6 +388,7 @@ export async function grantInstance(id: string, kind: GrantKind, name: string): 
     body: JSON.stringify({ kind, id: name }),
   })
   if (!response.ok) throw await failureOf(response, '授权没有记下')
+  await response.arrayBuffer()
 }
 
 /**
@@ -401,6 +406,7 @@ export async function revokeInstance(id: string, kind: GrantKind, name: string):
     body: JSON.stringify({ kind, id: name }),
   })
   if (!response.ok) throw await failureOf(response, '撤不掉这份授权')
+  await response.arrayBuffer()
 }
 
 /**
