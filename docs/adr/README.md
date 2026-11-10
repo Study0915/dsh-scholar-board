@@ -36,6 +36,7 @@
 | [D32](D32-capability-metadata-and-data-push.md) | 能力元数据、按需读与数据推送 | — |
 | [D33](D33-board-arrangement.md) | 看板的两种排列偏好：自由位置与整齐行列 | — |
 | [D35](D35-scholar-direction-and-upstream.md) | 独立学术工作台与通用能力回贡 | D34 |
+| [D36](D36-shared-records.md) | 领域记录的共享存储 | — |
 
 ## 作废的编号
 
