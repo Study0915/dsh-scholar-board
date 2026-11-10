@@ -2,9 +2,17 @@
 
 `dsh-scholar-board` 是 DeepSeek Harness 的组件看板插件：侧栏一个入口、中栏一页可拖拽缩放的卡片看板，卡片是小组件。组件由用户或会话里的 agent 编写，也可以由其他插件提供；同一个组件能放在看板上、内联在会话里、固定到右侧栏。插件只画在宿主交给它的表面上，不覆盖宿主的 DOM（D1）。
 
-全局结构与跨模块不变量在 [ARCHITECTURE.md](ARCHITECTURE.md)。方向记在 [docs/adr/](docs/adr/README.md)，每页写背景、决定、后果与重审条件；改动触及哪条就先读哪条，代码注释引用的编号就是这些文件名。宿主接入面的核实记录在 [docs/host-surfaces.md](docs/host-surfaces.md)。实施次序与完成判据在 [docs/PLAN.md](docs/PLAN.md)，全部完成后删除该文件；动效组件那条支线的方案在 [docs/PLAN-motion.md](docs/PLAN-motion.md)，同为一次性文档。
+全局结构与跨模块不变量在 [ARCHITECTURE.md](ARCHITECTURE.md)。方向记在 [docs/adr/](docs/adr/README.md)，每页写背景、决定、后果与重审条件；改动触及哪条就先读哪条，代码注释引用的编号就是这些文件名。宿主接入面的核实记录在 [docs/host-surfaces.md](docs/host-surfaces.md)。历史基础能力计划见 [docs/PLAN.md](docs/PLAN.md)，历史动效候选见 [docs/PLAN-motion.md](docs/PLAN-motion.md)；当前任务以学术工作台计划为准。
 
-当前学术工作台实施计划见 [docs/PLAN-scholar.md](docs/PLAN-scholar.md)。PLAN.md 与 PLAN-motion.md 为历史基础能力和动效候选清单，勾选不代表当前指纹通过验收。独立维护与分发约束见 D34。
+当前实施顺序见 [docs/PLAN-scholar.md](docs/PLAN-scholar.md)；设计领域功能前读 [产品规划](docs/scholar-product.md) 与 [领域术语](docs/scholar-domain.md)，修改交互或排版前读 [体验验收要求](docs/scholar-experience.md)。PLAN.md 与 PLAN-motion.md 为历史基础能力和动效候选清单，勾选不代表当前指纹通过验收。独立维护、个人使用与上游协作边界见 D35。
+
+## 产品开发规则
+
+- 面向通信方向硕博的个人科研工作台；当前优先组会记录、行动项与小论文进度。每次只实施当前计划中一个有明确验收条件的任务。
+- 记录摘要、进度与行动项，关联外部正文和材料，支持常用短记录直接编辑。涉及多人协作、云同步、长文编辑器或程序执行时先确认产品范围。
+- 共享记录通过宿主公开契约访问；新增多张卡片展示同一记录时先确定记录身份、写入、引用和删除语义。新增组件保持内置与用户组件能力一致。
+- 延续现有卡片审美与令牌，按内容调整信息密度；交付同时覆盖编辑、保存反馈、空态、长内容、键盘操作、浅深色、尺寸适配和减弱动效。性能结论附相同环境下的前后测量。
+- 学术领域功能与通用体验改进分开提交。上游候选需能从上游最新基线独立验证，具体流程见产品规划；创建上游 Issue/PR、合并与发布仍须用户明确授权。
 
 ## 写作规则
 

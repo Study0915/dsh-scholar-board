@@ -35,8 +35,8 @@
 | [D31](D31-provider-contract-v3.md) | 提供方契约：两侧把手、作者域与执行上限 | D12 |
 | [D32](D32-capability-metadata-and-data-push.md) | 能力元数据、按需读与数据推送 | — |
 | [D33](D33-board-arrangement.md) | 看板的两种排列偏好：自由位置与整齐行列 | — |
-| [D34](D34-fork-identity.md) | 分叉身份：独立发布与署名义务 | — |
+| [D35](D35-scholar-direction-and-upstream.md) | 独立学术工作台与通用能力回贡 | D34 |
 
 ## 作废的编号
 
-D4（由 D16 取代）、D12（由 D31 取代）、D15（由 D16 取代）、D22（由 D27 取代）。
+D4（由 D16 取代）、D12（由 D31 取代）、D15（由 D16 取代）、D22（由 D27 取代）、D34（由 D35 取代）。

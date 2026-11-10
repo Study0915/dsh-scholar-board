@@ -8,7 +8,9 @@ Local images: choose the image template in Create card, upload a static PNG/JPEG
 
 The format2 `.dshboard` is gzip-compressed JSON containing referenced images, instance/group identifiers and arrangement metadata. Select “Include data” to retain content and state. Import validates resources before creating the complete board; format1 remains readable. `.dshw` still contains only widget source and type resources. A manual `POST api/widget-board/media/collect` removes resources older than 24 hours that have no instance or valid upload-ticket reference.
 
-A scholar board for DeepSeek Harness: a page of cards you drag and resize, each card a small widget. You or the agent in a session write a widget as three files, and other plugins can provide widgets too. On top of the widget board, it is growing an academic workbench for graduate students in communications (paper feeds, group meetings and project management, simulation runners).
+A scholar board for DeepSeek Harness: a page of cards you drag and resize, each card a small widget. You or the agent in a session write a widget as three files, and other plugins can provide widgets too. The project focuses on personal research and study records for graduate students in communications, preserving the existing card and motion style.
+
+The current version provides a composed Scholar board and paper feeds. Planned priorities are group-meeting records, shared action items and manuscript progress, followed by research records, theses, industry-sponsored projects, courses and other tasks. Short notes live in the workbench and link to externally maintained documents and materials. These planned features are not yet implemented; see the [product plan (Chinese)](docs/scholar-product.md) and [implementation plan (Chinese)](docs/PLAN-scholar.md). General layout, editing and performance improvements will be prepared separately as upstream contribution candidates.
 
 **[Upstream demo](https://nwflower.github.io/dsh-widget-board/)** · [Install](#install) · [Write a widget](#write-a-widget) · [For plugin providers](#for-plugin-providers)
 
