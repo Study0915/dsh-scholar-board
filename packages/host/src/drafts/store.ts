@@ -66,9 +66,10 @@ function isDraft(value: unknown): value is WidgetDraft {
   if (typeof value.updatedAt !== 'string') return false
   if (!isRecord(value.target)) return false
   const target = value.target
-  if (target.kind !== 'instance' && target.kind !== 'widget') return false
-  if (typeof target.instanceId !== 'string' && typeof target.widgetId !== 'string') return false
-  return true
+  if (target.kind === 'instance') return typeof target.instanceId === 'string'
+  if (target.kind === 'widget') return typeof target.widgetId === 'string'
+  if (target.kind === 'record') return target.recordId === undefined || typeof target.recordId === 'string'
+  return false
 }
 
 /**

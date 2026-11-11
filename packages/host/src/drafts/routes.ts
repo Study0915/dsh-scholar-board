@@ -27,14 +27,17 @@ function draftOf(value: unknown): Omit<WidgetDraft, 'draftId' | 'updatedAt'> & {
   if (!isRecord(value)) throw new Refusal(400, '草稿要是一个 JSON 对象')
   if (!isRecord(value.target)) throw new Refusal(400, '草稿要写明 target')
   const target = value.target
-  if (target.kind !== 'instance' && target.kind !== 'widget') {
-    throw new Refusal(400, '草稿的 target.kind 只能是 instance 或 widget')
+  if (target.kind !== 'instance' && target.kind !== 'widget' && target.kind !== 'record') {
+    throw new Refusal(400, '草稿的 target.kind 只能是 instance、widget 或 record')
   }
   if (target.kind === 'instance' && typeof target.instanceId !== 'string') {
     throw new Refusal(400, '草稿的 target 要写明 instanceId')
   }
   if (target.kind === 'widget' && typeof target.widgetId !== 'string') {
     throw new Refusal(400, '草稿的 target 要写明 widgetId')
+  }
+  if (target.kind === 'record' && target.recordId !== undefined && typeof target.recordId !== 'string') {
+    throw new Refusal(400, '草稿的 target.recordId 要是文字')
   }
   if (value.files !== undefined && !isRecord(value.files)) throw new Refusal(400, '草稿的 files 要是一个对象')
   if (value.form !== undefined && !isRecord(value.form)) throw new Refusal(400, '草稿的 form 要是一个对象')
@@ -43,7 +46,9 @@ function draftOf(value: unknown): Omit<WidgetDraft, 'draftId' | 'updatedAt'> & {
     ...(typeof value.draftId === 'string' ? { draftId: value.draftId } : {}),
     target: target.kind === 'instance'
       ? { kind: 'instance', instanceId: target.instanceId as string }
-      : { kind: 'widget', widgetId: target.widgetId as string },
+      : target.kind === 'widget'
+        ? { kind: 'widget', widgetId: target.widgetId as string }
+        : { kind: 'record', ...(typeof target.recordId === 'string' ? { recordId: target.recordId } : {}) },
     base: value.base === undefined ? {} : value.base as WidgetDraft['base'],
     ...(value.files === undefined ? {} : { files: value.files as Record<string, string> }),
     ...(value.binaryFiles === undefined ? {} : { binaryFiles: value.binaryFiles as Record<string, string> }),

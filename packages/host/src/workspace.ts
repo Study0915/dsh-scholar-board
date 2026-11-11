@@ -6,11 +6,12 @@
  * 新建、移除与切换选中时写。旧版本的单份 `board.json` 在第一次启动时搬成第一块看板，搬完才删掉
  * 原文件（D5 的重审条件）。
  */
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { mkdir, readFile, rm } from 'node:fs/promises'
+import { join } from 'node:path'
 import type { Board, BoardEvent, BoardInstance, WidgetMinBox } from '@dsh-scholar-board/contracts'
 import type { WidgetRecord } from './library'
 import { seedBoards } from './default-boards'
+import { createWriteQueue, writeJsonFile } from './disk'
 import { StaleRevisionError, emptyBoard, readBoard, withLayouts, writeBoard } from './state'
 
 /** 索引的格式版本。 */
@@ -138,19 +139,6 @@ async function readIndex(file: string): Promise<BoardIndex | null> {
 }
 
 /**
- * 写一份 JSON：先写临时文件再改名，读到一半的内容不会留在磁盘上。
- *
- * @param file - 目标路径。
- * @param value - 要写的内容。
- */
-async function writeJson(file: string, value: unknown): Promise<void> {
-  await mkdir(dirname(file), { recursive: true })
-  const temporary = `${file}.tmp`
-  await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, 'utf8')
-  await rename(temporary, file)
-}
-
-/**
  * 打开工作区：读索引与每块看板；没有索引时建出第一块。
  *
  * @param home - `$DSH_HOME/widget-board`。
@@ -185,7 +173,7 @@ export async function openWorkspace(
       boards.set(entry.id, entry)
     }
     index = { version: INDEX_FORMAT, active: (first[0] as Board).id, boards: first.map((entry) => entry.id) }
-    await writeJson(indexFile, index)
+    await writeJsonFile(indexFile, index)
     await rm(legacy, { force: true })
   } else {
     for (const id of index.boards) boards.set(id, await readBoard(boardFileOf(home, id), records))
@@ -194,20 +182,8 @@ export async function openWorkspace(
 
   let current: BoardIndex = index
   /** 写入队列：后一次看得到前一次的结果。 */
-  let writing: Promise<void> = Promise.resolve()
-  const writeIndex = (): Promise<void> => writeJson(indexFile, current)
-
-  /**
-   * 排一次写入。
-   *
-   * @param run - 轮到它时执行的那件事。
-   * @returns 那件事的结果。
-   */
-  const queue = <T>(run: () => Promise<T>): Promise<T> => {
-    const next = writing.then(run)
-    writing = next.then(() => undefined, () => undefined)
-    return next
-  }
+  const queue = createWriteQueue()
+  const writeIndex = (): Promise<void> => writeJsonFile(indexFile, current)
 
   /** 一个还没被用过的「未命名看板」标题。 */
   const nextTitle = (): string => {
@@ -289,7 +265,7 @@ export async function openWorkspace(
         const next = initialize === undefined ? empty : initialize(empty)
         await writeBoard(boardFileOf(home, next.id), next)
         const index = { version: INDEX_FORMAT, active: next.id, boards: [...current.boards, next.id] }
-        try { await writeJson(indexFile, index) } catch (error) {
+        try { await writeJsonFile(indexFile, index) } catch (error) {
           await rm(boardFileOf(home, next.id), { force: true })
           throw error
         }

@@ -90,15 +90,15 @@ export interface WidgetDefined {
 export interface WidgetDraft {
   /** 草稿的 id。 */
   draftId: string
-  /** 草稿针对的目标：一张已有的卡片或一个组件类型。 */
-  target: { kind: 'instance', instanceId: string } | { kind: 'widget', widgetId: string }
+  /** 草稿针对的目标：一张已有的卡片、一个组件类型或一条领域记录（D36）。 */
+  target: { kind: 'instance', instanceId: string } | { kind: 'widget', widgetId: string } | { kind: 'record', recordId?: string }
   /** 基础版本：组件的哈希或看板的修订号；恢复时按它核对。 */
   base: { hash?: string, revision?: number }
   /** 源码模式的文件内容。 */
   files?: Record<string, string>
   binaryFiles?: Record<string, string>
-  /** 表单模式的 props、data 与 state。 */
-  form?: { props?: unknown, data?: unknown, state?: unknown }
+  /** 表单模式的 props、data、state，或一条记录的字段。 */
+  form?: { props?: unknown, data?: unknown, state?: unknown, record?: unknown }
   /** 什么时候写的。 */
   updatedAt: string
 }

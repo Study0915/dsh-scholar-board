@@ -32,6 +32,8 @@ import { loadLibrary } from './library'
 import type { LibraryLoad } from './library'
 import { createLive } from './live'
 import { openDrafts, draftsDirOf } from './drafts/store'
+import { openRecords } from './records/store'
+import { registerRecords } from './records/access'
 import { createPreviews } from './preview/store'
 import type { RouteContext } from './routes'
 import { createHandler } from './routes'
@@ -178,6 +180,8 @@ export async function apply(ctx: Context, config: Config = {}): Promise<void> {
   const grants: GrantStore = await openGrants(grantFile)
   // 草稿：人在编辑器里还没保存的那一份（技术契约 4）。只住在插件自己的目录里。
   const drafts = openDrafts(draftsDirOf(home))
+  // 领域记录的共享存储（D36）：会议、行动项与小论文独立于卡片存在，随宿主启动读盘。
+  const recordsStore = await openRecords(join(home, 'records.json'))
   // 预览会话：还没写进组件库的那一份代码（技术契约 5）。与正式的 records、versions、grants 分开。
   const previews = createPreviews()
   const media = createMediaStore(join(home, 'media'), workspace)
@@ -291,6 +295,8 @@ export async function apply(ctx: Context, config: Config = {}): Promise<void> {
   // 按需读能力（D32）：组件给一个源名，宿主先过 manifest 的 source/sources 白名单，再走与读取同一条
   // 路径——授权、执行器与 data schema 都在 loadData 里，这里不另开一条读。
   const disposeDataRead = registerDataRead(sources, context)
+  // 领域记录的读写与订阅（D36）：两项能力、一个数据源与记录编辑草稿，都不声明权限。
+  const disposeRecords = registerRecords(sources, recordsStore, drafts)
 
   // 重读全部来源：组件库或运行时变了，或某个插件注册、撤下了一个目录（D17）。串行执行，监视与
   // 刷新按钮同时到来时后一次看得到前一次的结果。
@@ -449,6 +455,7 @@ export async function apply(ctx: Context, config: Config = {}): Promise<void> {
     disposeBoardJson()
     disposeHttpSource()
     disposeDataRead()
+    disposeRecords()
     subscriptions.stop()
     stopWatchingViewers()
     stopWatchingVisibility()
