@@ -25,7 +25,7 @@ The current version provides a composed Scholar board, paper feeds and group-mee
 
 The first two shots are the Scholar board a fresh install lays out: a flip-group card for group-meeting briefs, a submission countdown, a calendar, academic navigation links, to-dos, project milestones, a reading list, and the paper feed at the bottom that follows an arXiv category. The third shows the paper feed on its own — one paper per row with title, authors, submission date and a one-line abstract; clicking a row opens its abs page in a new tab.
 
-Add the meeting card from the gallery; it is not laid out on the default board. It keeps a title, date, brief, discussion feedback, open questions and material links. Materials accept http/https only and store the address and note with the record; files are not copied.
+Add the meeting card from the gallery; it is not laid out on the default board. It keeps a title, date, brief, discussion feedback, open questions and material links. Materials accept http/https only and store the address and note with the record; files are not copied. Record backup in the settings page exports a `.dshrecords` file and previews the count before importing; every imported record gets a new id, references inside the package are kept, and existing records are left untouched.
 
 The gallery is the third board: one card per built-in widget, grouped into data, tools and motion templates.
 

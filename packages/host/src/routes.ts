@@ -49,6 +49,8 @@ import type { DraftStore } from './drafts/store'
 import { draftRoutes } from './drafts/routes'
 import type { PreviewStore } from './preview/store'
 import { previewRoutes } from './preview/routes'
+import { recordsRoutes } from './records/routes'
+import type { RecordsStore } from './records/store'
 import { sourceRoutes } from './widget-write/routes'
 import type { GrantStore } from './grants'
 import { isRecord } from './guards'
@@ -112,6 +114,8 @@ export interface RouteContext {
   versions: VersionStore
   /** 全部看板与唯一的写入者（D21）。 */
   workspace: Workspace
+  /** 领域记录的共享存储（D36）：导出与导入路由按它读写。 */
+  recordStore: RecordsStore
   /**
    * 当前选中的看板。
    *
@@ -636,7 +640,7 @@ export function createHandler(context: RouteContext): (req: HostRequest, res: Ho
     }
     const url = new URL(request.url ?? '/', 'http://board.invalid')
     const path = url.pathname.startsWith(PLUGIN_ROUTE) ? url.pathname.slice(PLUGIN_ROUTE.length) : ''
-    const matched = [...ROUTES, ...arrangementRoutes(), ...shareRoutes(context), ...settingsRoutes(), ...groupRoutes(), ...capabilityRoutes(), ...contentRoutes(context), ...itemImportRoutes(context), ...mediaRoutes(), ...selfCheckRoutes(), ...sourceRoutes(context), ...draftRoutes(context.drafts), ...previewRoutes(context.previews), ...visibilityRoutes()].flatMap((route) => {
+    const matched = [...ROUTES, ...arrangementRoutes(), ...shareRoutes(context), ...settingsRoutes(), ...groupRoutes(), ...capabilityRoutes(), ...contentRoutes(context), ...itemImportRoutes(context), ...mediaRoutes(), ...selfCheckRoutes(), ...sourceRoutes(context), ...draftRoutes(context.drafts), ...previewRoutes(context.previews), ...recordsRoutes(context.recordStore), ...visibilityRoutes()].flatMap((route) => {
       const match = route.pattern.exec(path)
       return match === null ? [] : [{ route, match }]
     })

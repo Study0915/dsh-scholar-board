@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { ActionRecord, DomainRecord, ManuscriptRecord, MeetingRecord } from '@dsh-scholar-board/contracts'
 import { openDrafts } from '../src/drafts/store'
+import { exportRecords, importRecords, previewRecords, readRecordsPackage } from '../src/records/exchange'
 import { registerRecords } from '../src/records/access'
 import { Refusal } from '../src/refusal'
 import { openRecords } from '../src/records/store'
@@ -291,5 +292,90 @@ describe('记录存储', () => {
     } finally {
       dispose()
     }
+  })
+
+  it('导出默认只含活跃记录，勾选后带上归档与回收站，预览给出分布', async () => {
+    const { store } = await open()
+    const active = await store.create(meeting('活跃'), ACTOR)
+    const archived = await store.create(meeting('归档'), ACTOR)
+    await store.archive(archived.record.id, 1, ACTOR)
+    const trashed = await store.create(meeting('回收'), ACTOR)
+    await store.trash(trashed.record.id, 1, ACTOR)
+
+    const now = Date.now()
+    const activeOnly = readRecordsPackage(exportRecords(store, { includeArchived: false, includeTrashed: false }, now))
+    expect(activeOnly.records.map((record) => record.title)).toEqual(['活跃'])
+    expect(activeOnly.format).toBe(1)
+
+    const everything = readRecordsPackage(exportRecords(store, { includeArchived: true, includeTrashed: true }, now))
+    expect(everything.records).toHaveLength(3)
+
+    const preview = previewRecords(exportRecords(store, { includeArchived: true, includeTrashed: true }, now))
+    expect(preview).toMatchObject({ total: 3, active: 1, archived: 1, trashed: 1 })
+    expect(preview.byKind.meeting).toBe(3)
+  })
+
+  it('导出再导入重映射 id、保留关联，不覆盖已有记录', async () => {
+    const source = await open()
+    const meetingCreated = await source.store.create(meeting(), ACTOR)
+    const actionCreated = await source.store.create({
+      kind: 'action',
+      title: '补一个基线对比',
+      status: 'todo',
+      source: { kind: 'meeting', id: meetingCreated.record.id },
+      related: [{ kind: 'meeting', id: meetingCreated.record.id }],
+    }, ACTOR)
+    const bytes = exportRecords(source.store, { includeArchived: false, includeTrashed: false }, Date.now())
+
+    const target = await open()
+    const existing = await target.store.create(meeting('目标里已有的记录'), ACTOR)
+    const imported = await importRecords(target.store, bytes, Date.now())
+    expect(imported).toBe(2)
+    const view = target.store.view({ includeArchived: true, includeTrashed: true })
+    expect(view.records).toHaveLength(3)
+    expect(target.store.get(existing.record.id)?.title).toBe('目标里已有的记录')
+
+    const importedMeeting = view.records.find((record): record is MeetingRecord => record.kind === 'meeting' && record.id !== existing.record.id)
+    const importedAction = view.records.find((record): record is ActionRecord => record.kind === 'action')
+    if (importedMeeting === undefined || importedAction === undefined) throw new Error('导入后找不到两条记录')
+    expect(importedMeeting.id).not.toBe(meetingCreated.record.id)
+    expect(importedMeeting.createdAt).toBe(meetingCreated.record.createdAt)
+    expect(importedMeeting.revision).toBe(1)
+    expect(importedAction.id).not.toBe(actionCreated.record.id)
+    expect(importedAction.source).toEqual({ kind: 'meeting', id: importedMeeting.id })
+    expect(importedAction.related).toEqual([{ kind: 'meeting', id: importedMeeting.id }])
+  })
+
+  it('只导出行动项时，指向包外会议的来源保持悬空原值', async () => {
+    const source = await open()
+    const meetingCreated = await source.store.create(meeting(), ACTOR)
+    await source.store.create({
+      kind: 'action',
+      title: '悬空来源',
+      status: 'todo',
+      source: { kind: 'meeting', id: meetingCreated.record.id },
+    }, ACTOR)
+    const bytes = exportRecords(source.store, { includeArchived: false, includeTrashed: false, kinds: ['action'] }, Date.now())
+    const target = await open()
+    await importRecords(target.store, bytes, Date.now())
+    const action = target.store.view().records[0] as ActionRecord
+    expect(action.source).toEqual({ kind: 'meeting', id: meetingCreated.record.id })
+  })
+
+  it('导入整批校验：坏文件、坏版本与容量不够都拒绝，不留半份', async () => {
+    const { store } = await open()
+    await store.create(meeting('一'), ACTOR)
+    await store.create(meeting('二'), ACTOR)
+    const bytes = exportRecords(store, { includeArchived: false, includeTrashed: false }, Date.now())
+
+    expect(() => readRecordsPackage(Buffer.from('不是 gzip'))).toThrow()
+    const wrongFormat = Buffer.from(JSON.stringify({ format: 2, records: [] }))
+    const gzip = (await import('node:zlib')).gzipSync(wrongFormat)
+    expect(() => readRecordsPackage(gzip)).toThrow()
+
+    const small = await open({ limits: { records: 1, bytes: 16 * 1024 * 1024 } })
+    const rejected = await importRecords(small.store, bytes, Date.now()).catch((error: unknown) => error)
+    expect(refusalOf(rejected)).toEqual({ status: 409, code: 'records-limit' })
+    expect(small.store.view().records).toHaveLength(0)
   })
 })

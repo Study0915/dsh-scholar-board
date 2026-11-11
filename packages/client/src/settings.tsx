@@ -19,6 +19,7 @@ import { subscribeLive } from './live'
 import { mergeEvent, needsSnapshot } from './merge'
 import { activateBoard, fetchWorkspace } from './snapshot'
 import { deleteBoardById, factsOf, renameBoardTo } from './board-management/actions'
+import { RecordsExchange } from './records-exchange'
 
 /** 没有提供方时共用的空表：快照还没到时也返回它。 */
 const NO_PROVIDERS: readonly WidgetProviderHealth[] = []
@@ -265,6 +266,7 @@ export function BoardSettings(_props: SettingsSectionProps): ReactNode {
           </ul>
         )}
       {snapshot === null ? null : <ProviderHealthTable providers={providerHealthOf(snapshot)} />}
+      <RecordsExchange />
     </div>
   )
 }

@@ -3,6 +3,6 @@
   "order": 2,
   "at": "2026-11-11",
   "external": true,
-  "zh": "新增「组会记录」卡：按日期列出组会，标题、汇报要点、讨论反馈、未决问题与 http/https 材料链接；列表可搜索并切换活跃、归档与回收站，详情直接编辑，输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。记录由宿主共享保存，移除卡片不删除记录，回收站里的记录三十天后自动清除。",
-  "en": "New Group meetings card: meetings by date with a title, brief, discussion feedback, open questions and http/https material links. The list searches and switches between active, archived and trash; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. Records are stored by the host, removing a card keeps them, and trashed records are cleared after thirty days."
+  "zh": "新增「组会记录」卡：按日期列出组会，标题、汇报要点、讨论反馈、未决问题与 http/https 材料链接；列表可搜索并切换活跃、归档与回收站，详情直接编辑，输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。记录由宿主共享保存，移除卡片不删除记录，回收站里的记录三十天后自动清除。设置页新增记录备份：导出 .dshrecords，导入前预览条数并给每条记录分配新 id，保留包内关联、不覆盖已有记录。",
+  "en": "New Group meetings card: meetings by date with a title, brief, discussion feedback, open questions and http/https material links. The list searches and switches between active, archived and trash; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. Records are stored by the host, removing a card keeps them, and trashed records are cleared after thirty days. The settings page gains record backup: export a .dshrecords file, preview the count before importing, and give every imported record a new id while keeping references inside the package and leaving existing records untouched."
 }

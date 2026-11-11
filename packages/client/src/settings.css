@@ -208,3 +208,33 @@
 .dsh-scholar-board__provider-health-row[data-available="true"] .dsh-scholar-board__provider-health-error {
   color: var(--dsw-alias-label-tertiary);
 }
+
+/* 记录备份（D36）：勾选、导出、导入与预览确认。 */
+.dsh-scholar-board__records-backup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dsh-scholar-board__records-backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.dsh-scholar-board__records-backup-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.dsh-scholar-board__records-backup-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

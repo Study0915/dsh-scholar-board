@@ -212,6 +212,7 @@ export async function apply(ctx: Context, config: Config = {}): Promise<void> {
     roots,
     versions,
     workspace,
+    recordStore: recordsStore,
     get board() { return workspace.active() },
     save,
     live,

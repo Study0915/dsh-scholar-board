@@ -34,6 +34,15 @@ export interface RecordsStore {
   readonly file: string
   /** 按筛选条件读一份快照；默认是全部活跃记录。 */
   view(query?: RecordQuery): RecordsView
+  /** 按同样的筛选条件读出全部记录，不分页：导出与容量核对用。 */
+  snapshot(query?: RecordQuery): DomainRecord[]
+  /**
+   * 一次导入多条已经校验过、id 已重映射的记录；任一重复、超限或到顶都整批拒绝。
+   *
+   * @param records - 要加入的记录。
+   * @returns 导入的条数。
+   */
+  importMany(records: DomainRecord[]): Promise<number>
   /**
    * 一条记录。
    *
@@ -191,6 +200,21 @@ export async function openRecords(file: string, options: { now?: () => number, l
 
   const replace = (record: DomainRecord): DomainRecord[] => records.map((entry) => entry.id === record.id ? record : entry)
 
+  /** 按筛选条件过滤，不分页；`view` 与导出共用这一份判定。 */
+  const filtered = (query: RecordQuery): DomainRecord[] => {
+    const search = query.search?.trim().toLowerCase()
+    const ids = query.ids === undefined ? undefined : new Set(query.ids)
+    return records.filter((record) => {
+      if (query.kind !== undefined && record.kind !== query.kind) return false
+      if (ids !== undefined && !ids.has(record.id)) return false
+      const trashed = record.deletedAt !== undefined
+      if (trashed && query.includeTrashed !== true) return false
+      if (!trashed && record.archived && query.includeArchived !== true) return false
+      if (search !== undefined && search !== '' && !searchTextOf(record).includes(search)) return false
+      return true
+    }).sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+  }
+
   const checkSize = (record: DomainRecord): void => {
     if (recordBytes(record) > RECORDS_LIMITS.recordBytes) {
       throw new Refusal(413, `单条记录超过 ${String(RECORDS_LIMITS.recordBytes)} 字节，先拆分内容`, { code: 'record-too-large', bytes: recordBytes(record) })
@@ -200,28 +224,36 @@ export async function openRecords(file: string, options: { now?: () => number, l
   return {
     file,
     view(query = {}) {
-      const search = query.search?.trim().toLowerCase()
-      const ids = query.ids === undefined ? undefined : new Set(query.ids)
-      const filtered = records.filter((record) => {
-        if (query.kind !== undefined && record.kind !== query.kind) return false
-        if (ids !== undefined && !ids.has(record.id)) return false
-        const trashed = record.deletedAt !== undefined
-        if (trashed && query.includeTrashed !== true) return false
-        if (!trashed && record.archived && query.includeArchived !== true) return false
-        if (search !== undefined && search !== '' && !searchTextOf(record).includes(search)) return false
-        return true
-      }).sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+      const all = filtered(query)
       const page: DomainRecord[] = []
       let used = 0
       let truncated = false
-      for (const record of filtered) {
+      for (const record of all) {
         if (page.length >= RECORDS_PAGE.max) { truncated = true; break }
         const size = recordBytes(record)
         if (page.length > 0 && used + size > RECORDS_PAGE.bytes) { truncated = true; break }
         page.push(record)
         used += size
       }
-      return { records: page, quota: quota(), total: filtered.length, truncated }
+      return { records: page, quota: quota(), total: all.length, truncated }
+    },
+    snapshot(query = {}) {
+      return filtered(query)
+    },
+    async importMany(imported) {
+      return await mutate(() => {
+        const ids = new Set<string>()
+        for (const record of imported) {
+          const problem = storedProblem(record)
+          if (problem !== null) throw new Refusal(400, `导入的记录不合法：${problem}`)
+          checkSize(record)
+          if (ids.has(record.id) || records.some((entry) => entry.id === record.id)) {
+            throw new Refusal(400, `导入的记录 id 与现有记录重复：${record.id}`)
+          }
+          ids.add(record.id)
+        }
+        return { next: [...records, ...imported], result: imported.length }
+      })
     },
     get(id) {
       return records.find((record) => record.id === id)

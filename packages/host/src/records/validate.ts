@@ -256,6 +256,29 @@ export function recordBytes(record: DomainRecord): number {
 }
 
 /**
+ * 一条从外部读进来的记录（例如导入包）的字段合不合规矩。
+ *
+ * 系统字段照旧由宿主维护；其余字段必须都在这种记录的可写表里，值按与写入相同的规则校验。
+ *
+ * @param record - 一条完整记录。
+ * @throws {Refusal} 有任何不认识或不合法的地方，400。
+ */
+export function assertRecordWritable(record: DomainRecord): void {
+  const writable = WRITABLE[record.kind]
+  const entry = record as unknown as Record<string, unknown>
+  const system = new Set(['id', 'kind', 'schemaVersion', 'revision', 'createdAt', 'updatedAt', 'archived', 'deletedAt', 'lastEditedBy', 'stageHistory'])
+  for (const key of Object.keys(entry)) {
+    if (system.has(key)) continue
+    if (!writable.includes(key)) fail(`记录不接受字段 ${key}`)
+  }
+  const input: Record<string, unknown> = {}
+  for (const key of writable) {
+    if (entry[key] !== undefined) input[key] = entry[key]
+  }
+  normalizeInput(record.kind, input, 'update')
+}
+
+/**
  * 一条记录能不能被当作存储里的一份读回来：系统字段与各类型的必填项都在。
  *
  * @param value - 从磁盘读出来的值。

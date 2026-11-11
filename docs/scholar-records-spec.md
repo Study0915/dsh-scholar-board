@@ -176,7 +176,8 @@
 ## 导出与导入
 
 - 现有 `.dshboard`（format2，`package.ts:154-188`）不变，不自动获得领域记录备份能力（产品规划）。
-- 新增独立记录导出格式 `.dshrecords`：gzip JSON，`{ format: 1, exportedAt, scope: { kinds, includeArchived, includeTrashed }, records: [...] }`。默认只导出活跃记录，归档与回收站由用户勾选。材料是内嵌 URL，随文本导出，不复制文件（决定三）。
+- 新增独立记录导出格式 `.dshrecords`：gzip JSON，`{ format: 1, exportedAt, scope: { includeArchived, includeTrashed, kinds? }, records: [...] }`。默认只导出活跃记录，归档与回收站由用户勾选。材料是内嵌 URL，随文本导出，不复制文件（决定三）。
+- 实现走设置页的「记录备份」一栏与三条宿主路由：`POST /records/export` 回 gzip 文件，`POST /records/import/preview` 回条数、类型与生命周期分布，`POST /records/import` 整包一次写入。导入包按 gzip 读入，解压后超过 64 MiB 拒绝。
 - 导入校验 format、schema 与配额；提供预览与用户选择。ID 冲突策略：包内每条记录 id 重映射为新 UUID，并把所有前向引用 id 经同一映射表重写，保留关联（沿用 `board-package.ts:114-130` 的全量重映射思路）；不覆盖无关的已有记录。指向包外且不存在 id 的引用保留为悬空，显示「来源缺失」。
 - 可选按内容哈希去重（campus 合并的 duplicateKey 先例，`item-import` merge）；更新保留旧 id 与 createdAt。导入在写入队列内原子提交，核配额与修订，过期 409。
 - 导出前明确包含范围；演示、截图、测试与分享用合成资料（产品规划私有材料一节）。
