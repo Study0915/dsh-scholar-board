@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 4,
+  "at": "2026-11-11",
+  "external": true,
+  "zh": "新增「小论文」与「科研总览」卡：小论文记录研究问题、阶段与阶段历史、下一步、阻碍、目标刊会与投稿期限，阶段可前进或回退并写说明，可关联组会、行动项与材料，不显示完成百分比；科研总览一页列出近期行动项、最近组会与活跃稿件，行动项可就地完成、来源会议就地展开，也可以快速记一条行动项。两张卡从组件画廊添加，默认看板不变。",
+  "en": "New Manuscripts and Research overview cards: manuscripts track the research question, stage and stage history, next step, blockers, target venue and submission date; stages move forward or back with an optional note; meetings, action items and materials can be linked; no completion percentage is shown. The research overview lists recent action items, the latest meetings and active manuscripts on one card: complete an action item in place, expand its source meeting, or quickly record a new action item. Both cards are added from the gallery; the default board is unchanged."
+}

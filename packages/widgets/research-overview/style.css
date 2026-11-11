@@ -1,0 +1,363 @@
+/*
+ * 科研总览卡的样式：三节竖排在一个滚动区里，行动项可以就地完成、打开来源，页首可以快速记录。
+ *
+ * 行是静态列表，只有行动项的行尾有按钮；来源会议在一个对话框里只读展开。
+ */
+.ov__head-aside {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+}
+
+.ov__primary,
+.ov__ghost {
+  flex: none;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--w-radius-sm, 8px);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  font-weight: 600;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.ov__primary {
+  background: var(--w-color-accent, #2563eb);
+  color: var(--w-color-on-accent, #fff);
+}
+
+.ov__ghost {
+  border-color: color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  background: transparent;
+  color: var(--w-color-muted, #6b7684);
+}
+
+.ov__primary:disabled,
+.ov__ghost:disabled {
+  cursor: default;
+  opacity: 0.56;
+}
+
+.ov__primary:focus-visible,
+.ov__ghost:focus-visible,
+.ov__source:focus-visible,
+.ov__quick:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+.ov__banner {
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: var(--w-radius-xs, 6px);
+  background: color-mix(in srgb, var(--w-tone-warn, #b45309) 12%, transparent);
+  color: var(--w-tone-warn, #b45309);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.ov__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-md, 12px);
+  min-height: 0;
+  flex: 1;
+}
+
+.ov__section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ov__section + .ov__section {
+  padding-top: var(--w-space-sm, 8px);
+  border-top: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 55%, transparent);
+}
+
+.ov__section-title {
+  margin: 0;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.ov__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+  padding: 3px 0;
+}
+
+.ov__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--w-tone-idle, #9aa4b2);
+}
+
+.ov__dot[data-status="doing"] { background: var(--w-color-accent, #2563eb); }
+.ov__dot[data-status="blocked"] { background: var(--w-tone-warn, #b45309); }
+
+.ov__date {
+  flex: none;
+  padding-top: 1px;
+  color: var(--w-color-muted, #6b7684);
+  font-family: var(--t-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+}
+
+.ov__stage {
+  flex: none;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--w-color-fg, #0b1016) 6%, transparent);
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.ov__stage[data-stage="experiment"],
+.ov__stage[data-stage="writing"],
+.ov__stage[data-stage="submitted"] {
+  background: color-mix(in srgb, var(--w-color-accent, #2563eb) 12%, transparent);
+  color: color-mix(in srgb, var(--w-color-accent, #2563eb) 82%, var(--w-color-fg, #0b1016));
+}
+
+.ov__stage[data-stage="internal-review"],
+.ov__stage[data-stage="revision"] {
+  background: color-mix(in srgb, var(--w-tone-warn, #b45309) 12%, transparent);
+  color: var(--w-tone-warn, #b45309);
+}
+
+.ov__row-body {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ov__row-title {
+  overflow: hidden;
+  color: var(--w-color-fg, #0b1016);
+  font-size: var(--w-type-body, 14px);
+  font-weight: 600;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov__row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.ov__due {
+  color: var(--w-color-muted, #6b7684);
+  font-family: var(--t-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 16px;
+}
+
+.ov__due[data-tone="overdue"] { color: var(--w-tone-danger, #b42318); }
+.ov__due[data-tone="today"] { color: var(--w-tone-warn, #b45309); }
+
+.ov__next {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov__tag {
+  overflow: hidden;
+  max-width: 220px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--w-color-fg, #0b1016) 6%, transparent);
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov__tag[data-tone="blocked"] {
+  background: color-mix(in srgb, var(--w-tone-warn, #b45309) 12%, transparent);
+  color: var(--w-tone-warn, #b45309);
+}
+
+.ov__tag[data-tone="question"] {
+  background: color-mix(in srgb, var(--w-tone-warn, #b45309) 12%, transparent);
+  color: var(--w-tone-warn, #b45309);
+}
+
+.ov__source,
+.ov__quick {
+  flex: none;
+  padding: 1px 7px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--w-color-muted, #6b7684);
+  font: inherit;
+  font-size: 11px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ov__source:hover,
+  .ov__quick:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--w-color-accent, #2563eb) 45%, transparent);
+    color: var(--w-color-fg, #0b1016);
+  }
+  .ov__ghost:hover:not(:disabled) {
+    color: var(--w-color-fg, #0b1016);
+  }
+}
+
+.ov__quick {
+  margin-top: 1px;
+}
+
+.ov__empty,
+.ov__more {
+  margin: 0;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.ov__note-wrap {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--w-space-sm, 8px);
+}
+
+.ov__note {
+  margin: 0;
+}
+
+.ov__dialog {
+  width: min(92%, 360px);
+  padding: var(--w-space-lg, 16px);
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  border-radius: var(--w-radius-lg, 14px);
+  background: var(--w-color-surface, #fff);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-body, 14px);
+  line-height: 1.5;
+}
+
+.ov__dialog::backdrop {
+  background: color-mix(in srgb, #0b1016 32%, transparent);
+}
+
+.ov__dialog-title {
+  margin: 0 0 var(--w-space-xs, 4px);
+  font-size: var(--w-type-body, 14px);
+  font-weight: 600;
+}
+
+.ov__source-meta,
+.ov__source-text {
+  margin: 0 0 var(--w-space-sm, 8px);
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  white-space: pre-wrap;
+}
+
+.ov__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin-bottom: var(--w-space-md, 12px);
+}
+
+.ov__label {
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.ov__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 90%, transparent);
+  border-radius: var(--w-radius-sm, 8px);
+  background: var(--w-color-bg, #f7f8fa);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-body, 14px);
+  line-height: 20px;
+}
+
+.ov__input:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+.ov__dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--w-space-sm, 8px);
+}
+
+:root[data-box-height="short"] .ov__row-meta {
+  display: none;
+}
+
+:root[data-box-width="narrow"] .ov__head-aside .ov__ghost {
+  display: none;
+}
+
+/* 缩略画面：页首按钮与提示都收掉，只留标题与三节样例。 */
+:root[data-size="preview"] .t-data {
+  gap: var(--w-space-xs, 4px);
+  padding: var(--w-space-md, 12px);
+}
+
+:root[data-size="preview"] .ov__head-aside,
+:root[data-size="preview"] .ov__note-wrap {
+  display: none;
+}

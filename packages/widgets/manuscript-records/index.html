@@ -1,0 +1,125 @@
+<div class="t-data ms" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">小论文</h2>
+    </div>
+    <div class="ms__head-aside">
+      <span class="t-data__meta ms__count" data-field="count"></span>
+      <button class="ms__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="ms__toolbar">
+    <div class="ms__tabs" role="tablist" aria-label="稿件范围">
+      <button class="ms__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="ms__tab" type="button" role="tab" data-view="finished" aria-selected="false">完成</button>
+      <button class="ms__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="ms__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <select class="ms__select ms__stage-filter" data-role="stage-filter" aria-label="按阶段筛选"></select>
+    <input class="ms__search" type="search" data-role="search" aria-label="搜索稿件" placeholder="搜索标题、问题、下一步与阻碍" />
+  </div>
+
+  <div class="ms__body">
+    <div class="t-data__scroll ms__list" data-role="list" hidden></div>
+    <div class="ms__note-wrap">
+      <p class="t-data__empty ms__note" data-role="note">正在读取小论文…</p>
+      <button class="ms__ghost ms__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="ms__detail" data-role="detail" hidden aria-label="稿件详情">
+    <div class="ms__detail-head">
+      <button class="ms__ghost ms__back" type="button" data-action="back">返回</button>
+      <span class="ms__state" data-role="detail-state"></span>
+      <span class="ms__spacer"></span>
+      <button class="ms__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="ms__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="ms__ghost ms__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll ms__detail-body">
+      <p class="ms__hint" data-role="detail-hint" hidden></p>
+      <label class="ms__field">
+        <span class="ms__label" data-role="label-title">标题</span>
+        <input class="ms__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <label class="ms__field">
+        <span class="ms__label" data-role="label-question">研究问题</span>
+        <textarea class="ms__input ms__textarea" rows="2" data-field="question"></textarea>
+      </label>
+      <label class="ms__field">
+        <span class="ms__label" data-role="label-stage">阶段</span>
+        <select class="ms__input ms__stage-select" data-field="stage"></select>
+      </label>
+      <label class="ms__field">
+        <span class="ms__label" data-role="label-stage-note">阶段说明（可选）</span>
+        <input class="ms__input" type="text" data-field="stage-note" maxlength="200" autocomplete="off" />
+      </label>
+      <label class="ms__field">
+        <span class="ms__label" data-role="label-next">下一步</span>
+        <textarea class="ms__input ms__textarea" rows="2" data-field="next"></textarea>
+      </label>
+      <label class="ms__field">
+        <span class="ms__label" data-role="label-blockers">阻碍</span>
+        <textarea class="ms__input ms__textarea" rows="2" data-field="blockers"></textarea>
+      </label>
+      <label class="ms__field">
+        <span class="ms__label" data-role="label-target">目标刊会</span>
+        <input class="ms__input" type="text" data-field="target" maxlength="120" autocomplete="off" />
+      </label>
+      <label class="ms__field">
+        <span class="ms__label" data-role="label-due">投稿期限</span>
+        <input class="ms__input" type="date" data-field="due-input" />
+      </label>
+      <fieldset class="ms__related">
+        <legend class="ms__label" data-role="label-related">关联</legend>
+        <ul class="ms__related-list" data-role="related"></ul>
+        <div class="ms__related-add">
+          <select class="ms__select" data-role="meeting-picker" aria-label="关联组会"></select>
+          <button class="ms__ghost" type="button" data-action="add-meeting">添加</button>
+        </div>
+        <div class="ms__related-add">
+          <select class="ms__select" data-role="action-picker" aria-label="关联行动项"></select>
+          <button class="ms__ghost" type="button" data-action="add-action">添加</button>
+        </div>
+      </fieldset>
+      <section class="ms__history-section" data-role="history-section" hidden>
+        <h3 class="ms__label" data-role="label-history">阶段历史</h3>
+        <ul class="ms__history" data-role="history"></ul>
+      </section>
+      <fieldset class="ms__materials">
+        <legend class="ms__label" data-role="label-materials">正文与代码材料</legend>
+        <ul class="ms__material-list" data-role="materials"></ul>
+        <div class="ms__material-add">
+          <input class="ms__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="ms__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="ms__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="ms__error" data-role="material-error" role="status"></p>
+      </fieldset>
+      <div class="ms__detail-actions">
+        <button class="ms__primary" type="button" data-action="save">保存</button>
+        <button class="ms__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="ms__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="ms__dialog-actions">
+      <button class="ms__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="ms__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="ms__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="ms__dialog-actions">
+      <button class="ms__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="ms__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

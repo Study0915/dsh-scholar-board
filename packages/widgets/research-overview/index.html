@@ -1,0 +1,65 @@
+<div class="t-data ov" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">科研总览</h2>
+    </div>
+    <div class="ov__head-aside">
+      <button class="ov__ghost" type="button" data-action="refresh">刷新</button>
+      <button class="ov__primary t-pressable" type="button" data-action="quick-add">快速记录</button>
+    </div>
+  </header>
+
+  <p class="ov__banner" data-role="banner" role="status" hidden></p>
+
+  <div class="t-data__scroll ov__body">
+    <section class="ov__section" data-section="actions">
+      <h3 class="ov__section-title" data-role="label-actions">近期行动项</h3>
+      <ul class="ov__list" data-role="actions"></ul>
+      <p class="ov__empty" data-role="actions-empty">没有待处理的行动项。</p>
+      <p class="ov__more" data-role="actions-more" hidden></p>
+    </section>
+    <section class="ov__section" data-section="meetings">
+      <h3 class="ov__section-title" data-role="label-meetings">最近组会</h3>
+      <ul class="ov__list" data-role="meetings"></ul>
+      <p class="ov__empty" data-role="meetings-empty">还没有组会记录。</p>
+    </section>
+    <section class="ov__section" data-section="manuscripts">
+      <h3 class="ov__section-title" data-role="label-manuscripts">活跃稿件</h3>
+      <ul class="ov__list" data-role="manuscripts"></ul>
+      <p class="ov__empty" data-role="manuscripts-empty">还没有在推进的稿件。</p>
+    </section>
+    <div class="ov__note-wrap">
+      <p class="t-data__empty ov__note" data-role="note">正在读取记录…</p>
+      <button class="ov__ghost ov__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <dialog class="ov__dialog" data-role="quick-dialog">
+    <p data-role="quick-hint"></p>
+    <label class="ov__field">
+      <span class="ov__label" data-role="label-action-title">行动项标题</span>
+      <input class="ov__input" type="text" data-field="quick-title" maxlength="200" autocomplete="off" />
+    </label>
+    <label class="ov__field">
+      <span class="ov__label" data-role="label-action-due">期限（可选）</span>
+      <input class="ov__input" type="date" data-field="quick-due" />
+    </label>
+    <div class="ov__dialog-actions">
+      <button class="ov__ghost" type="button" data-action="quick-cancel">取消</button>
+      <button class="ov__primary" type="button" data-action="quick-create">生成</button>
+    </div>
+  </dialog>
+
+  <dialog class="ov__dialog" data-role="source-dialog">
+    <h3 class="ov__dialog-title" data-role="source-title">来源会议</h3>
+    <p class="ov__source-meta" data-role="source-meta"></p>
+    <p class="ov__source-text" data-role="source-feedback"></p>
+    <p class="ov__source-text" data-role="source-questions"></p>
+    <div class="ov__dialog-actions">
+      <button class="ov__primary" type="button" data-action="source-close">关闭</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>
