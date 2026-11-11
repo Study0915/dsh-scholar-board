@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 1,
+  "at": "2026-11-11",
+  "external": true,
+  "zh": "卡片设置保存完成后，「已保存」现在通过状态区域播报给读屏软件；保存反馈的视觉与位置不变。",
+  "en": "After a card's settings are saved, “Saved” is now announced to screen readers through a status region; the visual feedback and its position are unchanged."
+}

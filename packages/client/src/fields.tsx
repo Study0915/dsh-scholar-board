@@ -652,7 +652,7 @@ export function ConfigPanel({
         )}
 
       <div className="dsh-scholar-board__editor-actions">
-        {saved ? <span className="dsh-scholar-board__editor-ok">{t('saved')}</span> : null}
+        <span className="dsh-scholar-board__editor-ok" role="status">{saved ? t('saved') : ''}</span>
         <span className="dsh-scholar-board__editor-spacer" />
         <button
           type="button"
