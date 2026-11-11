@@ -26,6 +26,177 @@
     var WRITE = 'widget-board:records.write'
     var DRAFT = 'widget-board:records.draft'
     var draftTimer = null
+    /** 组会之外的那几块：来源、生成的行动项、上次会议遗留与两个对话框。 */
+    var extra = {
+      derive: ctx.card.querySelector('[data-action="derive"]'),
+      generate: ctx.card.querySelector('[data-action="generate"]'),
+      outline: ctx.card.querySelector('[data-action="outline"]'),
+      derived: ctx.card.querySelector('[data-role="derived"]'),
+      generatedSection: ctx.card.querySelector('[data-role="generated-section"]'),
+      generated: ctx.card.querySelector('[data-role="generated"]'),
+      unfinishedSection: ctx.card.querySelector('[data-role="unfinished-section"]'),
+      unfinished: ctx.card.querySelector('[data-role="unfinished"]'),
+      actionDialog: ctx.card.querySelector('[data-role="action-dialog"]'),
+      actionHint: ctx.card.querySelector('[data-role="action-hint"]'),
+      actionTitle: ctx.card.querySelector('[data-field="action-title"]'),
+      actionCreate: ctx.card.querySelector('[data-action="action-create"]'),
+      actionCancel: ctx.card.querySelector('[data-action="action-cancel"]'),
+      outlineDialog: ctx.card.querySelector('[data-role="outline-dialog"]'),
+      outlineHint: ctx.card.querySelector('[data-role="outline-hint"]'),
+      outlineText: ctx.card.querySelector('[data-field="outline"]'),
+      outlineSelect: ctx.card.querySelector('[data-action="outline-select"]'),
+      outlineClose: ctx.card.querySelector('[data-action="outline-close"]')
+    }
+
+    var STATUS_KEYS = { todo: 'actionTodo', doing: 'actionDoing', blocked: 'actionBlocked', done: 'actionDone', cancelled: 'actionCancelled' }
+
+    /** 一条行动项的引用行：状态与标题，只读。 */
+    function relatedRow(record) {
+      var row = document.createElement('li')
+      row.className = 'mt__related-row'
+      var state = document.createElement('span')
+      state.className = 'mt__related-state'
+      state.dataset.status = record.status
+      state.textContent = t(STATUS_KEYS[record.status] ?? 'actionTodo')
+      var title = document.createElement('span')
+      title.className = 'mt__related-title'
+      title.textContent = record.title
+      row.append(state, title)
+      return row
+    }
+
+    /** 读一组行动项，按给的回调画出来；读失败时把那一节收起。 */
+    function loadActions(sourceId, element, section, keep) {
+      if (element === null || section === null) return
+      if (!live) return
+      widget.call(READ, { kind: 'action', source: { kind: 'meeting', id: sourceId } }).then(function (result) {
+        var records = result !== null && typeof result === 'object' && Array.isArray(result.records) ? result.records : []
+        if (keep !== undefined) records = records.filter(keep)
+        var rows = []
+        for (var at = 0; at < records.length; at += 1) rows.push(relatedRow(records[at]))
+        element.replaceChildren.apply(element, rows)
+        section.hidden = rows.length === 0
+      }, function () {
+        section.hidden = true
+      })
+    }
+
+    /** 生成行动项的那一条：从反馈或未决问题起个标题。 */
+    function suggestTitle() {
+      var source = nodes.feedback.value.trim() !== '' ? nodes.feedback.value : nodes.questions.value !== '' ? nodes.questions.value : nodes.topics.value
+      var line = source.split('\n')[0].trim()
+      return line.length > 200 ? line.slice(0, 200) : line
+    }
+
+    function openActionDialog() {
+      if (!live || !app.editing || app.baseline === null) return
+      if (typeof extra.actionDialog.showModal !== 'function') return
+      extra.actionHint.textContent = t('generateHint')
+      extra.actionTitle.value = suggestTitle()
+      extra.actionDialog.showModal()
+      extra.actionTitle.focus()
+    }
+
+    function closeActionDialog() {
+      if (extra.actionDialog.open) extra.actionDialog.close()
+    }
+
+    function createAction() {
+      if (!live || app.baseline === null) return
+      var title = extra.actionTitle.value.trim()
+      if (title === '') {
+        extra.actionHint.textContent = t('titleRequired')
+        extra.actionTitle.focus()
+        return
+      }
+      extra.actionCreate.disabled = true
+      var meetingId = app.baseline.id
+      widget.call(WRITE, { op: 'create', record: { kind: 'action', title: title, status: 'todo', source: { kind: 'meeting', id: meetingId } } }).then(function () {
+        extra.actionCreate.disabled = false
+        closeActionDialog()
+        ctx.setStatus(t('generatedDone'), 'ok')
+        loadActions(meetingId, extra.generated, extra.generatedSection)
+      }, function (error) {
+        extra.actionCreate.disabled = false
+        extra.actionHint.textContent = t('generateFailed') + '：' + messageOf(error)
+      })
+    }
+
+    /** 从上次会议准备新提纲：沿用未决问题，未完成事项只列出来。 */
+    function deriveFromLast() {
+      if (!live || app.baseline !== null) return
+      widget.call(READ, { kind: 'meeting' }).then(function (result) {
+        var records = result !== null && typeof result === 'object' && Array.isArray(result.records) ? result.records : []
+        var latest = records[0]
+        if (latest === undefined) {
+          ctx.setStatus(t('derivedNone'), 'error')
+          return
+        }
+        app.derivedFrom = latest.id
+        app.derivedTitle = latest.title
+        if (nodes.topics.value.trim() === '' && typeof latest.openQuestions === 'string' && latest.openQuestions.trim() !== '') {
+          nodes.topics.value = latest.openQuestions
+        }
+        renderDerived()
+        loadActions(latest.id, extra.unfinished, extra.unfinishedSection, function (record) {
+          return record.status !== 'done' && record.status !== 'cancelled'
+        })
+        onInput()
+        ctx.setStatus(t('derivedHint'), 'neutral')
+      }, function (error) {
+        ctx.setStatus(t('generateFailed') + '：' + messageOf(error), 'error')
+      })
+    }
+
+    function renderDerived() {
+      if (extra.derived === null) return
+      if (app.derivedFrom === null || app.derivedFrom === undefined) {
+        extra.derived.hidden = true
+        return
+      }
+      extra.derived.hidden = false
+      extra.derived.textContent = t('derivedFrom') + '：' + (app.derivedTitle !== null ? app.derivedTitle : '…')
+    }
+
+    /** 复制提纲：把当前表单与生成的行动项拼成 Markdown，放进可全选的文本框。 */
+    function openOutline() {
+      if (!live) return
+      var form = formOf()
+      form.materials = app.materials
+      var headings = {
+        untitled: t('title'),
+        date: t('date'),
+        topics: t('topics'),
+        feedback: t('feedback'),
+        questions: t('openQuestions'),
+        materials: t('material'),
+        actions: t('mdActions')
+      }
+      var show = function (actions) {
+        extra.outlineText.value = pure.outlineOf(form, actions, headings)
+        extra.outlineHint.textContent = t('copyHint')
+        if (typeof extra.outlineDialog.showModal === 'function') extra.outlineDialog.showModal()
+      }
+      if (app.baseline === null) {
+        if (app.derivedFrom === null) {
+          show([])
+          return
+        }
+        // 新组会沿用上次会议：把未完成事项作为引用列进提纲，不复制成新任务。
+        widget.call(READ, { kind: 'action', source: { kind: 'meeting', id: app.derivedFrom } }).then(function (result) {
+          var records = result !== null && typeof result === 'object' && Array.isArray(result.records) ? result.records : []
+          show(records.filter(function (record) { return record.status !== 'done' && record.status !== 'cancelled' }))
+        }, function () {
+          show([])
+        })
+        return
+      }
+      widget.call(READ, { kind: 'action', source: { kind: 'meeting', id: app.baseline.id } }).then(function (result) {
+        show(result !== null && typeof result === 'object' && Array.isArray(result.records) ? result.records : [])
+      }, function () {
+        show([])
+      })
+    }
 
     function fillForm(form) {
       nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
@@ -59,6 +230,12 @@
       if (add !== null) add.disabled = trashed
       nodes.saveButton.disabled = trashed
       nodes.saveButton.textContent = t('save')
+      extra.derive.hidden = record !== null
+      extra.generate.hidden = record === null
+      extra.outline.hidden = false
+      extra.derive.disabled = trashed
+      extra.generate.disabled = trashed
+      extra.outline.disabled = trashed
       if (trashed) {
         nodes.detailHint.textContent = t('trashRestoreHint')
         if (nodes.detailHint !== null) nodes.detailHint.hidden = false
@@ -74,6 +251,8 @@
       app.draftId = null
       app.dirty = false
       app.saving = false
+      app.derivedFrom = typeof record.derivedFrom === 'string' ? record.derivedFrom : null
+      app.derivedTitle = null
       app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
       fillForm({
         title: record.title,
@@ -83,6 +262,21 @@
         questions: record.openQuestions
       })
       showDetail(record, true)
+      renderDerived()
+      loadActions(record.id, extra.generated, extra.generatedSection)
+      if (app.derivedFrom !== null) {
+        widget.call(READ, { ids: [app.derivedFrom], includeArchived: true, includeTrashed: true }).then(function (result) {
+          var source = result !== null && typeof result === 'object' && Array.isArray(result.records) ? result.records[0] : null
+          if (app.baseline !== record || source === null || typeof source !== 'object') return
+          app.derivedTitle = source.title
+          renderDerived()
+        }, function () {})
+        loadActions(app.derivedFrom, extra.unfinished, extra.unfinishedSection, function (action) {
+          return action.status !== 'done' && action.status !== 'cancelled'
+        })
+      } else if (extra.unfinishedSection !== null) {
+        extra.unfinishedSection.hidden = true
+      }
       restoreDraft(record.id).then(function (restored) {
         if (restored) ctx.setStatus(t('draftRestored'), 'neutral')
       })
@@ -94,9 +288,14 @@
       app.draftId = null
       app.dirty = false
       app.saving = false
+      app.derivedFrom = null
+      app.derivedTitle = null
       app.materials = []
       fillForm({ title: '', date: '', topics: '', feedback: '', questions: '' })
       showDetail(null, true)
+      renderDerived()
+      if (extra.generatedSection !== null) extra.generatedSection.hidden = true
+      if (extra.unfinishedSection !== null) extra.unfinishedSection.hidden = true
       restoreDraft('new').then(function (restored) {
         if (restored) ctx.setStatus(t('draftRestored'), 'neutral')
       })
@@ -230,8 +429,8 @@
       nodes.saveButton.textContent = t('saving')
       ctx.setStatus(t('saving'), 'neutral')
       var request = creating
-        ? widget.call(WRITE, { op: 'create', record: { kind: pure.KIND, title: fields.title, date: fields.date, topics: fields.topics, feedback: fields.feedback, openQuestions: fields.openQuestions, materials: fields.materials } })
-        : widget.call(WRITE, { op: 'update', id: app.baseline.id, expectedRevision: expected, patch: fields })
+        ? widget.call(WRITE, { op: 'create', record: { kind: pure.KIND, title: fields.title, date: fields.date, topics: fields.topics, feedback: fields.feedback, openQuestions: fields.openQuestions, materials: fields.materials, derivedFrom: app.derivedFrom } })
+        : widget.call(WRITE, { op: 'update', id: app.baseline.id, expectedRevision: expected, patch: { ...fields, derivedFrom: app.derivedFrom } })
       request.then(function (result) {
         app.saving = false
         app.dirty = false
@@ -245,11 +444,14 @@
         }
         removeDraft(creating ? 'new' : record.id, app.draftId)
         app.baseline = record
+        app.derivedFrom = typeof record.derivedFrom === 'string' ? record.derivedFrom : null
+        renderDerived()
         ui.openId = record.id
         ctx.persist({ openId: record.id, draftIds: ui.draftIds })
         app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
         renderMaterials()
         showDetail(record, false)
+        loadActions(record.id, extra.generated, extra.generatedSection)
         ctx.setStatus(t('saved'), 'ok')
         nodes.saveButton.disabled = false
         nodes.saveButton.textContent = t('save')
@@ -360,6 +562,16 @@
       return error !== null && error !== undefined && typeof error.message === 'string' && error.message !== '' ? error.message : String(error)
     }
 
+    function selectOutline() {
+      if (extra.outlineText === null) return
+      extra.outlineText.focus()
+      extra.outlineText.select()
+    }
+
+    function closeOutline() {
+      if (extra.outlineDialog.open) extra.outlineDialog.close()
+    }
+
     return {
       openRecord: openRecord,
       openNew: openNew,
@@ -370,7 +582,14 @@
       renderMaterials: renderMaterials,
       addMaterial: addMaterial,
       removeMaterial: removeMaterial,
-      reloadLatest: reloadLatest
+      reloadLatest: reloadLatest,
+      openActionDialog: openActionDialog,
+      closeActionDialog: closeActionDialog,
+      createAction: createAction,
+      deriveFromLast: deriveFromLast,
+      openOutline: openOutline,
+      selectOutline: selectOutline,
+      closeOutline: closeOutline
     }
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)

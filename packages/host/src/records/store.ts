@@ -207,6 +207,11 @@ export async function openRecords(file: string, options: { now?: () => number, l
     return records.filter((record) => {
       if (query.kind !== undefined && record.kind !== query.kind) return false
       if (ids !== undefined && !ids.has(record.id)) return false
+      if (query.source !== undefined) {
+        if (record.kind !== 'action') return false
+        const source = record.source
+        if (source === undefined || source.kind !== query.source.kind || source.id !== query.source.id) return false
+      }
       const trashed = record.deletedAt !== undefined
       if (trashed && query.includeTrashed !== true) return false
       if (!trashed && record.archived && query.includeArchived !== true) return false

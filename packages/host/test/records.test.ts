@@ -254,6 +254,18 @@ describe('记录存储', () => {
     expect(await drafts.remove(saved.draftId)).toBe(true)
   })
 
+  it('按来源读行动项：反向引用由查询现算，不双写', async () => {
+    const { store } = await open()
+    const created = await store.create(meeting(), ACTOR)
+    const other = await store.create(meeting('另一场组会'), ACTOR)
+    const first = await store.create({ kind: 'action', title: '甲', status: 'todo', source: { kind: 'meeting', id: created.record.id } }, ACTOR)
+    await store.create({ kind: 'action', title: '乙', status: 'todo', source: { kind: 'meeting', id: other.record.id } }, ACTOR)
+    await store.create({ kind: 'action', title: '丙', status: 'todo' }, ACTOR)
+    const view = store.view({ source: { kind: 'meeting', id: created.record.id } })
+    expect(view.records.map((record) => record.id)).toEqual([first.record.id])
+    expect(store.view().records.filter((record) => record.kind === 'action')).toHaveLength(3)
+  })
+
   it('注册后的能力与数据源按卡片身份读写，订阅随写入推送', async () => {
     const file = await tempFile()
     const store = await openRecords(file)

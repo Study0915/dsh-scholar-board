@@ -152,13 +152,13 @@
 
 | 能力 id | 用途 | 输入要点 | 返回 |
 |---|---|---|---|
-| `widget-board:records.read` | 读记录 | `{ kind?, ids?, includeArchived?, includeTrashed?, search? }` | `{ records, quota, total, truncated }` |
+| `widget-board:records.read` | 读记录 | `{ kind?, ids?, includeArchived?, includeTrashed?, search?, source? }` | `{ records, quota, total, truncated }` |
 | `widget-board:records.write` | 写记录 | `{ op, ... }`，op ∈ create、update、archive、restore、trash | `{ record, revision }` |
 | `widget-board:records.draft` | 记录编辑草稿 | `{ op, draftId?, recordId?, form? }`，op ∈ save、load、remove | 保存的 `{ draftId, updatedAt }`、读到的 `{ draft }` 或 `{ removed }` |
 
 - 两项都不声明 permission，因此免授权（决定二，D6 无声明即不问人）。调用仍走 `POST /instance/<id>/call` 的既有校验链：组件在库→manifest.capabilities 声明→注册表解析→input 校验→执行→output 校验（`capabilities.ts:61-113`），body ≤64KB，超时与并发沿用提供方上限。
 - `records.write` 的 update 必带 expectedRevision；create 不带。op=trash 移入回收站，可恢复；永久删除不在 op 集合里。每次写入宿主填 lastEditedBy。
-- 一次读取最多给出 200 条、序列化后约 192 KB（消息上限 320 KB 的一部分），`total` 是筛选后的全部条数，`truncated` 表示只给了一部分；`quota` 带条数、字节与九成提醒。默认只给活跃记录。
+- 一次读取最多给出 200 条、序列化后约 192 KB（消息上限 320 KB 的一部分），`total` 是筛选后的全部条数，`truncated` 表示只给了一部分；`quota` 带条数、字节与九成提醒。默认只给活跃记录。`source` 用来读「某场会议生成的行动项」这类反向引用，由宿主在查询时现算，不双写。
 - 记录编辑草稿复用 `drafts` 存储的 record 目标；`draftId` 由组件保存在卡片实例状态里，跨刷新与重启保留，保存成功、放弃或移入回收站时删除。
 - 元数据经 `capability-metadata.ts:78-100` 投影到 init，组件不必先发一次注定失败的调用（D32）。
 

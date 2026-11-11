@@ -10,22 +10,42 @@
   },
   "author": "dsh-scholar-board",
   "version": "0.1.0",
-  "sizes": ["m", "l"],
+  "sizes": [
+    "m",
+    "l"
+  ],
   "source": "widget-board:records",
   "capabilities": [
     "widget-board:records.read",
     "widget-board:records.write",
     "widget-board:records.draft"
   ],
-  "defaultBox": { "w": 2, "h": 26 },
-  "minBox": { "w": 1, "h": 16 },
-  "scripts": ["records-model.js", "copy.js", "view.js", "editor.js"],
+  "defaultBox": {
+    "w": 2,
+    "h": 26
+  },
+  "minBox": {
+    "w": 1,
+    "h": 16
+  },
+  "scripts": [
+    "records-model.js",
+    "copy.js",
+    "view.js",
+    "editor.js"
+  ],
   "props": {
     "type": "object",
     "additionalProperties": false,
     "properties": {
-      "title": { "type": "string", "maxLength": 80 },
-      "kicker": { "type": "string", "maxLength": 40 }
+      "title": {
+        "type": "string",
+        "maxLength": 80
+      },
+      "kicker": {
+        "type": "string",
+        "maxLength": 40
+      }
     }
   },
   "data": {
@@ -35,62 +55,313 @@
       "records": {
         "type": "array",
         "maxItems": 200,
-        "items": { "type": "object" }
+        "items": {
+          "type": "object"
+        }
       },
-      "quota": { "type": "object" },
-      "total": { "type": "number" },
-      "truncated": { "type": "boolean" }
+      "quota": {
+        "type": "object"
+      },
+      "total": {
+        "type": "number"
+      },
+      "truncated": {
+        "type": "boolean"
+      }
     }
   },
   "text": {
-    "title": { "zh": "组会记录", "en": "Group meetings" },
-    "kicker": { "zh": "近期的讨论与反馈", "en": "Recent discussions" },
-    "new": { "zh": "新建", "en": "New" },
-    "search": { "zh": "搜索标题、反馈与问题", "en": "Search titles, feedback and questions" },
-    "active": { "zh": "活跃", "en": "Active" },
-    "archived": { "zh": "归档", "en": "Archived" },
-    "trash": { "zh": "回收站", "en": "Trash" },
-    "loading": { "zh": "正在读取记录…", "en": "Reading records…" },
-    "failed": { "zh": "读取失败", "en": "Records unavailable" },
-    "retry": { "zh": "重试", "en": "Retry" },
-    "emptyActive": { "zh": "还没有组会记录；点「新建」写下第一次讨论。", "en": "No meetings yet; use New to write down the first discussion." },
-    "emptyArchived": { "zh": "没有归档的组会。", "en": "No archived meetings." },
-    "emptyTrash": { "zh": "回收站是空的。移入回收站的记录三十天后自动清除。", "en": "The trash is empty. Trashed records are cleared after thirty days." },
-    "emptySearch": { "zh": "没有匹配的记录。", "en": "No matching records." },
-    "truncated": { "zh": "只列出最近 {n} 条，共 {total} 条；用搜索找更早的记录。", "en": "Showing the latest {n} of {total}; search for older records." },
-    "quotaWarning": { "zh": "记录已用到 {percent}%，先整理归档或回收站。", "en": "Records use {percent}% of the limit; tidy the archive or trash." },
-    "dateUnknown": { "zh": "日期未定", "en": "No date" },
-    "openQuestion": { "zh": "有未决问题", "en": "Open questions" },
-    "materials": { "zh": "{n} 份材料", "en": "{n} materials" },
-    "material": { "zh": "材料", "en": "Materials" },
-    "materialUrl": { "zh": "https://…", "en": "https://…" },
-    "materialTitle": { "zh": "链接说明", "en": "Link title" },
-    "addMaterial": { "zh": "添加", "en": "Add" },
-    "removeMaterial": { "zh": "移除", "en": "Remove" },
-    "materialInvalid": { "zh": "材料地址只收 http/https 的完整地址。", "en": "Material links must be complete http/https addresses." },
-    "fieldTitle": { "zh": "标题", "en": "Title" },
-    "date": { "zh": "日期", "en": "Date" },
-    "topics": { "zh": "汇报要点", "en": "Brief" },
-    "feedback": { "zh": "讨论反馈", "en": "Feedback" },
-    "openQuestions": { "zh": "未决问题", "en": "Open questions" },
-    "back": { "zh": "返回", "en": "Back" },
-    "close": { "zh": "关闭", "en": "Close" },
-    "save": { "zh": "保存", "en": "Save" },
-    "saving": { "zh": "保存中…", "en": "Saving…" },
-    "saved": { "zh": "已保存", "en": "Saved" },
-    "saveFailed": { "zh": "保存失败", "en": "Save failed" },
-    "draftSaved": { "zh": "草稿已存", "en": "Draft kept" },
-    "draftRestored": { "zh": "已恢复上次未保存的内容。", "en": "Restored the unsaved draft." },
-    "archive": { "zh": "归档", "en": "Archive" },
-    "restore": { "zh": "恢复", "en": "Restore" },
-    "trashAction": { "zh": "移入回收站", "en": "Move to trash" },
-    "deletedIn": { "zh": "{n} 天后自动清除", "en": "Cleared in {n} days" },
-    "unsavedClose": { "zh": "还有没保存的修改；关闭后草稿会保留。", "en": "There are unsaved changes; closing keeps the draft." },
-    "keepEditing": { "zh": "继续编辑", "en": "Keep editing" },
-    "closeKeepDraft": { "zh": "关闭并保留草稿", "en": "Close and keep draft" },
-    "conflict": { "zh": "这条记录在别处更新过，保存被拒绝。可以载入最新的内容，或继续用你的编辑。", "en": "This record changed elsewhere and the save was rejected. Load the latest content, or continue with your edits." },
-    "loadLatest": { "zh": "载入最新（放弃本地修改）", "en": "Load latest (discard local edits)" },
-    "recordMissing": { "zh": "这条记录已经不在了。", "en": "This record no longer exists." },
-    "trashRestoreHint": { "zh": "回收站里的记录三十天后自动清除；先恢复再编辑。", "en": "Trashed records are cleared after thirty days; restore before editing." }
+    "title": {
+      "zh": "组会记录",
+      "en": "Group meetings"
+    },
+    "kicker": {
+      "zh": "近期的讨论与反馈",
+      "en": "Recent discussions"
+    },
+    "new": {
+      "zh": "新建",
+      "en": "New"
+    },
+    "search": {
+      "zh": "搜索标题、反馈与问题",
+      "en": "Search titles, feedback and questions"
+    },
+    "active": {
+      "zh": "活跃",
+      "en": "Active"
+    },
+    "archived": {
+      "zh": "归档",
+      "en": "Archived"
+    },
+    "trash": {
+      "zh": "回收站",
+      "en": "Trash"
+    },
+    "loading": {
+      "zh": "正在读取记录…",
+      "en": "Reading records…"
+    },
+    "failed": {
+      "zh": "读取失败",
+      "en": "Records unavailable"
+    },
+    "retry": {
+      "zh": "重试",
+      "en": "Retry"
+    },
+    "emptyActive": {
+      "zh": "还没有组会记录；点「新建」写下第一次讨论。",
+      "en": "No meetings yet; use New to write down the first discussion."
+    },
+    "emptyArchived": {
+      "zh": "没有归档的组会。",
+      "en": "No archived meetings."
+    },
+    "emptyTrash": {
+      "zh": "回收站是空的。移入回收站的记录三十天后自动清除。",
+      "en": "The trash is empty. Trashed records are cleared after thirty days."
+    },
+    "emptySearch": {
+      "zh": "没有匹配的记录。",
+      "en": "No matching records."
+    },
+    "truncated": {
+      "zh": "只列出最近 {n} 条，共 {total} 条；用搜索找更早的记录。",
+      "en": "Showing the latest {n} of {total}; search for older records."
+    },
+    "quotaWarning": {
+      "zh": "记录已用到 {percent}%，先整理归档或回收站。",
+      "en": "Records use {percent}% of the limit; tidy the archive or trash."
+    },
+    "dateUnknown": {
+      "zh": "日期未定",
+      "en": "No date"
+    },
+    "openQuestion": {
+      "zh": "有未决问题",
+      "en": "Open questions"
+    },
+    "materials": {
+      "zh": "{n} 份材料",
+      "en": "{n} materials"
+    },
+    "material": {
+      "zh": "材料",
+      "en": "Materials"
+    },
+    "materialUrl": {
+      "zh": "https://…",
+      "en": "https://…"
+    },
+    "materialTitle": {
+      "zh": "链接说明",
+      "en": "Link title"
+    },
+    "addMaterial": {
+      "zh": "添加",
+      "en": "Add"
+    },
+    "removeMaterial": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "materialInvalid": {
+      "zh": "材料地址只收 http/https 的完整地址。",
+      "en": "Material links must be complete http/https addresses."
+    },
+    "fieldTitle": {
+      "zh": "标题",
+      "en": "Title"
+    },
+    "date": {
+      "zh": "日期",
+      "en": "Date"
+    },
+    "topics": {
+      "zh": "汇报要点",
+      "en": "Brief"
+    },
+    "feedback": {
+      "zh": "讨论反馈",
+      "en": "Feedback"
+    },
+    "openQuestions": {
+      "zh": "未决问题",
+      "en": "Open questions"
+    },
+    "back": {
+      "zh": "返回",
+      "en": "Back"
+    },
+    "close": {
+      "zh": "关闭",
+      "en": "Close"
+    },
+    "save": {
+      "zh": "保存",
+      "en": "Save"
+    },
+    "saving": {
+      "zh": "保存中…",
+      "en": "Saving…"
+    },
+    "saved": {
+      "zh": "已保存",
+      "en": "Saved"
+    },
+    "saveFailed": {
+      "zh": "保存失败",
+      "en": "Save failed"
+    },
+    "draftSaved": {
+      "zh": "草稿已存",
+      "en": "Draft kept"
+    },
+    "draftRestored": {
+      "zh": "已恢复上次未保存的内容。",
+      "en": "Restored the unsaved draft."
+    },
+    "archive": {
+      "zh": "归档",
+      "en": "Archive"
+    },
+    "restore": {
+      "zh": "恢复",
+      "en": "Restore"
+    },
+    "trashAction": {
+      "zh": "移入回收站",
+      "en": "Move to trash"
+    },
+    "deletedIn": {
+      "zh": "{n} 天后自动清除",
+      "en": "Cleared in {n} days"
+    },
+    "unsavedClose": {
+      "zh": "还有没保存的修改；关闭后草稿会保留。",
+      "en": "There are unsaved changes; closing keeps the draft."
+    },
+    "keepEditing": {
+      "zh": "继续编辑",
+      "en": "Keep editing"
+    },
+    "closeKeepDraft": {
+      "zh": "关闭并保留草稿",
+      "en": "Close and keep draft"
+    },
+    "conflict": {
+      "zh": "这条记录在别处更新过，保存被拒绝。可以载入最新的内容，或继续用你的编辑。",
+      "en": "This record changed elsewhere and the save was rejected. Load the latest content, or continue with your edits."
+    },
+    "loadLatest": {
+      "zh": "载入最新（放弃本地修改）",
+      "en": "Load latest (discard local edits)"
+    },
+    "recordMissing": {
+      "zh": "这条记录已经不在了。",
+      "en": "This record no longer exists."
+    },
+    "trashRestoreHint": {
+      "zh": "回收站里的记录三十天后自动清除；先恢复再编辑。",
+      "en": "Trashed records are cleared after thirty days; restore before editing."
+    },
+    "titleRequired": {
+      "zh": "标题不能是空的。",
+      "en": "The title is required."
+    },
+    "generateAction": {
+      "zh": "生成行动项",
+      "en": "Create action item"
+    },
+    "generateHint": {
+      "zh": "从讨论反馈生成一条行动项；之后在行动项卡里处理状态与完成说明。",
+      "en": "Create an action item from the feedback; manage its status and done note in the action items card."
+    },
+    "actionTitle": {
+      "zh": "行动项标题",
+      "en": "Action title"
+    },
+    "generate": {
+      "zh": "生成",
+      "en": "Create"
+    },
+    "generated": {
+      "zh": "生成的行动项",
+      "en": "Action items created"
+    },
+    "generatedDone": {
+      "zh": "已生成行动项",
+      "en": "Action item created"
+    },
+    "generateFailed": {
+      "zh": "生成失败",
+      "en": "Could not create the action item"
+    },
+    "unfinished": {
+      "zh": "上次会议未完成的行动项",
+      "en": "Unfinished action items from that meeting"
+    },
+    "unfinishedEmpty": {
+      "zh": "上次会议没有未完成的行动项。",
+      "en": "No unfinished action items from that meeting."
+    },
+    "derive": {
+      "zh": "从上次会议准备",
+      "en": "Prepare from last meeting"
+    },
+    "derivedFrom": {
+      "zh": "来自上次会议",
+      "en": "From the last meeting"
+    },
+    "derivedNone": {
+      "zh": "还没有可沿用的上一次会议。",
+      "en": "There is no previous meeting to reuse."
+    },
+    "derivedHint": {
+      "zh": "已沿用上次会议的未决问题；未完成事项列在下面，不会复制成新任务。",
+      "en": "Reused the last meeting's open questions; unfinished items are listed below and not copied into new tasks."
+    },
+    "copyOutline": {
+      "zh": "复制提纲",
+      "en": "Copy outline"
+    },
+    "copyHint": {
+      "zh": "选中下面的 Markdown 复制；组件里不能直接读剪贴板。",
+      "en": "Select the Markdown below to copy; widgets cannot read the clipboard directly."
+    },
+    "selectAll": {
+      "zh": "全选",
+      "en": "Select all"
+    },
+    "mdActions": {
+      "zh": "行动项",
+      "en": "Action items"
+    },
+    "actionTodo": {
+      "zh": "待办",
+      "en": "To do"
+    },
+    "actionDoing": {
+      "zh": "进行中",
+      "en": "Doing"
+    },
+    "actionBlocked": {
+      "zh": "受阻",
+      "en": "Blocked"
+    },
+    "actionDone": {
+      "zh": "完成",
+      "en": "Done"
+    },
+    "actionCancelled": {
+      "zh": "取消",
+      "en": "Cancelled"
+    },
+    "cancel": {
+      "zh": "取消",
+      "en": "Cancel"
+    }
   }
 }

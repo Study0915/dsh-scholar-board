@@ -15,6 +15,7 @@ interface RecordModel {
   materialValid(url: unknown, title: unknown): boolean
   dateValue(text: unknown, timeZone?: string): unknown
   fill(text: string, values: Record<string, unknown>): string
+  outlineOf(form: unknown, actions: unknown, headings: unknown): string
 }
 
 const model = (globalThis as unknown as { MeetingRecords: RecordModel }).MeetingRecords
@@ -99,5 +100,40 @@ describe('材料地址与日期输入', () => {
 
   it('文案占位符全部替换', () => {
     expect(model.fill('最近 {n} 条 · 共 {total} 条', { n: 3, total: 8 })).toBe('最近 3 条 · 共 8 条')
+  })
+})
+
+describe('Markdown 提纲', () => {
+  const headings = { untitled: '未命名', date: '日期', topics: '汇报要点', feedback: '讨论反馈', questions: '未决问题', materials: '材料', actions: '行动项' }
+
+  it('只写有内容的段落，材料与行动项按状态勾选', () => {
+    const md = model.outlineOf({
+      title: '第 7 次组会',
+      date: '2026-11-11',
+      topics: '汇报本周进展',
+      feedback: '',
+      questions: '静态信道假设是否放宽',
+      materials: [{ id: 'm1', url: 'https://example.com/slides', title: '组会幻灯片' }],
+    }, [
+      { title: '补一个基线对比', status: 'todo' },
+      { title: '统一坐标轴量纲', status: 'done' },
+      { title: '取消的旧事项', status: 'cancelled' },
+    ], headings)
+    expect(md).toContain('# 第 7 次组会')
+    expect(md).toContain('- 日期：2026-11-11')
+    expect(md).toContain('## 汇报要点\n\n汇报本周进展')
+    expect(md).not.toContain('## 讨论反馈')
+    expect(md).toContain('## 未决问题\n\n静态信道假设是否放宽')
+    expect(md).toContain('- [组会幻灯片](https://example.com/slides)')
+    expect(md).toContain('## 行动项')
+    expect(md).toContain('- [ ] 补一个基线对比')
+    expect(md).toContain('- [x] 统一坐标轴量纲')
+    expect(md).toContain('- [-] 取消的旧事项')
+    expect(md.endsWith('\n')).toBe(true)
+  })
+
+  it('没有标题时用未命名，没有行动项时不写行动项段', () => {
+    const md = model.outlineOf({ title: '  ', date: '', topics: '', feedback: '', questions: '', materials: [] }, [], headings)
+    expect(md).toBe('# 未命名\n')
   })
 })

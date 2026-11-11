@@ -32,6 +32,9 @@
       <button class="mt__ghost mt__back" type="button" data-action="back">返回</button>
       <span class="mt__state" data-role="detail-state"></span>
       <span class="mt__spacer"></span>
+      <button class="mt__ghost" type="button" data-action="derive" hidden>从上次会议准备</button>
+      <button class="mt__ghost" type="button" data-action="generate" hidden>生成行动项</button>
+      <button class="mt__ghost" type="button" data-action="outline" hidden>复制提纲</button>
       <button class="mt__ghost" type="button" data-action="archive" hidden>归档</button>
       <button class="mt__ghost" type="button" data-action="restore" hidden>恢复</button>
       <button class="mt__ghost mt__danger" type="button" data-action="trash" hidden>移入回收站</button>
@@ -68,6 +71,15 @@
         </div>
         <p class="mt__error" data-role="material-error" role="status"></p>
       </fieldset>
+      <p class="mt__source" data-role="derived" hidden></p>
+      <section class="mt__related" data-role="generated-section" hidden>
+        <h3 class="mt__label" data-role="label-generated">生成的行动项</h3>
+        <ul class="mt__related-list" data-role="generated"></ul>
+      </section>
+      <section class="mt__related" data-role="unfinished-section" hidden>
+        <h3 class="mt__label" data-role="label-unfinished">上次会议未完成的行动项</h3>
+        <ul class="mt__related-list" data-role="unfinished"></ul>
+      </section>
       <div class="mt__detail-actions">
         <button class="mt__primary" type="button" data-action="save">保存</button>
         <button class="mt__ghost" type="button" data-action="close">关闭</button>
@@ -88,6 +100,27 @@
     <div class="mt__dialog-actions">
       <button class="mt__ghost" type="button" data-action="conflict-keep">继续编辑</button>
       <button class="mt__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <dialog class="mt__dialog" data-role="action-dialog">
+    <p data-role="action-hint"></p>
+    <label class="mt__field">
+      <span class="mt__label" data-role="label-action-title">行动项标题</span>
+      <input class="mt__input" type="text" data-field="action-title" maxlength="200" autocomplete="off" />
+    </label>
+    <div class="mt__dialog-actions">
+      <button class="mt__ghost" type="button" data-action="action-cancel">取消</button>
+      <button class="mt__primary" type="button" data-action="action-create">生成</button>
+    </div>
+  </dialog>
+
+  <dialog class="mt__dialog" data-role="outline-dialog">
+    <p data-role="outline-hint"></p>
+    <textarea class="mt__input mt__outline" data-field="outline" rows="10" readonly spellcheck="false"></textarea>
+    <div class="mt__dialog-actions">
+      <button class="mt__ghost" type="button" data-action="outline-select">全选</button>
+      <button class="mt__primary" type="button" data-action="outline-close">关闭</button>
     </div>
   </dialog>
 

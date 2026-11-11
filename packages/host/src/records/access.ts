@@ -37,6 +37,15 @@ const READ_INPUT = {
     includeArchived: { type: 'boolean' },
     includeTrashed: { type: 'boolean' },
     search: { type: 'string', maxLength: RECORDS_LIMITS.searchLength },
+    source: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['kind', 'id'],
+      properties: {
+        kind: { enum: ['meeting', 'manuscript'] },
+        id: { type: 'string', minLength: 1, maxLength: 64 },
+      },
+    },
   },
 } as const
 
@@ -65,10 +74,18 @@ const DRAFT_INPUT = {
   },
 } as const
 
-/** 数据源能认的记录类型。 */
-function kindOf(props: Record<string, unknown>): RecordKind | undefined {
-  const kind = props.kind
-  return kind === 'meeting' || kind === 'action' || kind === 'manuscript' ? kind : undefined
+/** 内置记录组件按 id 取类型：卡片没写 props.kind 时也读得到自己的那一类。 */
+const WIDGET_KINDS: Record<string, RecordKind> = {
+  'meeting-records': 'meeting',
+  'action-items': 'action',
+  'manuscript-records': 'manuscript',
+}
+
+/** 数据源能认的记录类型：props.kind 优先，内置记录组件按 id 取类型。 */
+function kindOf(instance: InstanceFace): RecordKind | undefined {
+  const kind = instance.props.kind
+  if (kind === 'meeting' || kind === 'action' || kind === 'manuscript') return kind
+  return WIDGET_KINDS[instance.widget]
 }
 
 /**
@@ -80,12 +97,16 @@ function kindOf(props: Record<string, unknown>): RecordKind | undefined {
  */
 function readOf(store: RecordsStore, args: unknown): RecordsView {
   const body = isRecord(args) ? args : {}
+  const source = isRecord(body.source) && typeof body.source.id === 'string' && (body.source.kind === 'meeting' || body.source.kind === 'manuscript')
+    ? { kind: body.source.kind, id: body.source.id } as const
+    : undefined
   const query: RecordQuery = {
     ...(typeof body.kind === 'string' ? { kind: body.kind as RecordKind } : {}),
     ...(Array.isArray(body.ids) ? { ids: body.ids.filter((id): id is string => typeof id === 'string') } : {}),
     ...(body.includeArchived === true ? { includeArchived: true } : {}),
     ...(body.includeTrashed === true ? { includeTrashed: true } : {}),
     ...(typeof body.search === 'string' ? { search: body.search } : {}),
+    ...(source === undefined ? {} : { source }),
   }
   return store.view(query)
 }
@@ -247,10 +268,10 @@ export function recordsSource(store: RecordsStore): DataSourceRegistration {
     provider: RECORDS_PROVIDER,
     id: RECORDS_SOURCE,
     read(instance) {
-      return store.view({ kind: kindOf(instance.props) })
+      return store.view({ kind: kindOf(instance) })
     },
     subscribe(instance, emit) {
-      const kind = kindOf(instance.props)
+      const kind = kindOf(instance)
       const push = (): void => { emit(store.view({ kind })) }
       push()
       return store.onChange(push)

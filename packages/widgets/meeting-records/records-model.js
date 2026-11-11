@@ -97,6 +97,48 @@
     return out
   }
 
+  /**
+   * 一份可复制的 Markdown 提纲：只写有内容的段落，行动项按状态勾选。
+   *
+   * @param {object} form - 题、日期、要点、反馈、未决问题与材料。
+   * @param {object[]} actions - 从这场组会生成的行动项。
+   * @param {object} headings - 各段标题。
+   * @returns {string} Markdown。
+   */
+  function outlineOf(form, actions, headings) {
+    var lines = ['# ' + (typeof form.title === 'string' && form.title.trim() !== '' ? form.title.trim() : headings.untitled)]
+    if (typeof form.date === 'string' && form.date !== '') lines.push('', '- ' + headings.date + '：' + form.date)
+    var sections = [
+      { title: headings.topics, text: form.topics },
+      { title: headings.feedback, text: form.feedback },
+      { title: headings.questions, text: form.questions },
+    ]
+    for (var at = 0; at < sections.length; at += 1) {
+      if (typeof sections[at].text !== 'string' || sections[at].text.trim() === '') continue
+      lines.push('', '## ' + sections[at].title, '', sections[at].text.trim())
+    }
+    var materials = Array.isArray(form.materials) ? form.materials : []
+    if (materials.length > 0) {
+      lines.push('', '## ' + headings.materials)
+      for (var index = 0; index < materials.length; index += 1) {
+        var material = materials[index]
+        if (material === null || typeof material !== 'object') continue
+        lines.push('- [' + String(material.title || material.url) + '](' + String(material.url) + ')')
+      }
+    }
+    var list = Array.isArray(actions) ? actions : []
+    if (list.length > 0) {
+      lines.push('', '## ' + headings.actions)
+      for (var actionAt = 0; actionAt < list.length; actionAt += 1) {
+        var action = list[actionAt]
+        if (action === null || typeof action !== 'object') continue
+        var mark = action.status === 'done' ? '[x]' : action.status === 'cancelled' ? '[-]' : '[ ]'
+        lines.push('- ' + mark + ' ' + String(action.title))
+      }
+    }
+    return lines.join('\n') + '\n'
+  }
+
   root.MeetingRecords = {
     KIND: KIND,
     DAY: DAY,
@@ -109,6 +151,7 @@
     materialValid: materialValid,
     dateValue: dateValue,
     zone: zone,
-    fill: fill
+    fill: fill,
+    outlineOf: outlineOf
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)

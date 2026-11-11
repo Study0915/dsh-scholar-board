@@ -114,6 +114,8 @@
     pendingLatest: null,
     draftId: null,
     materials: [],
+    derivedFrom: null,
+    derivedTitle: null,
     dirty: false,
     saving: false,
     editing: false,
@@ -157,6 +159,16 @@
     put(labels.materials, t('material'))
     put(card.querySelector('[data-action="close"]'), t('close'))
     put(card.querySelector('[data-action="add-material"]'), t('addMaterial'))
+    put(card.querySelector('[data-action="derive"]'), t('derive'))
+    put(card.querySelector('[data-action="generate"]'), t('generateAction'))
+    put(card.querySelector('[data-action="outline"]'), t('copyOutline'))
+    put(card.querySelector('[data-role="label-generated"]'), t('generated'))
+    put(card.querySelector('[data-role="label-unfinished"]'), t('unfinished'))
+    put(card.querySelector('[data-role="label-action-title"]'), t('actionTitle'))
+    put(card.querySelector('[data-action="action-cancel"]'), t('cancel'))
+    put(card.querySelector('[data-action="action-create"]'), t('generate'))
+    put(card.querySelector('[data-action="outline-select"]'), t('selectAll'))
+    put(card.querySelector('[data-action="outline-close"]'), t('close'))
     put(nodes.saveButton, t('save'))
     put(nodes.archiveAction, t('archive'))
     put(nodes.restoreAction, t('restore'))
@@ -341,6 +353,13 @@
   }
   card.querySelector('[data-action="back"]').addEventListener('click', function () { editor.closeDetail(false) })
   card.querySelector('[data-action="close"]').addEventListener('click', function () { editor.closeDetail(false) })
+  card.querySelector('[data-action="derive"]').addEventListener('click', function () { editor.deriveFromLast() })
+  card.querySelector('[data-action="generate"]').addEventListener('click', function () { editor.openActionDialog() })
+  card.querySelector('[data-action="outline"]').addEventListener('click', function () { editor.openOutline() })
+  card.querySelector('[data-action="action-cancel"]').addEventListener('click', function () { editor.closeActionDialog() })
+  card.querySelector('[data-action="action-create"]').addEventListener('click', function () { editor.createAction() })
+  card.querySelector('[data-action="outline-select"]').addEventListener('click', function () { editor.selectOutline() })
+  card.querySelector('[data-action="outline-close"]').addEventListener('click', function () { editor.closeOutline() })
   nodes.saveButton.addEventListener('click', function () { editor.save() })
   nodes.archiveAction.addEventListener('click', function () { editor.lifeOp('archive') })
   nodes.restoreAction.addEventListener('click', function () { editor.lifeOp('restore') })

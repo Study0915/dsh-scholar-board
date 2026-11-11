@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 3,
+  "at": "2026-11-11",
+  "external": true,
+  "zh": "新增「行动项」卡：组会反馈可以生成行动项并保留来源；清单按活跃、完成、归档与回收站切换，活跃里可按逾期、无期限与受阻筛选；详情支持状态、期限、阻碍与完成说明、结果材料、草稿与修订冲突，行尾可以快捷完成或重开。组会卡可以从上次会议准备新提纲，沿用未决问题、列出未完成事项而不复制成新任务，并把提纲复制为 Markdown。",
+  "en": "New Action items card: meeting feedback can create an action item that keeps its source; the list switches between active, done, archived and trash, with overdue, no-due and blocked filters inside active; the detail covers status, due date, blocked and done notes, result materials, drafts and revision conflicts, and each row can be completed or reopened in one click. The meeting card can prepare a new outline from the last meeting, reusing open questions and listing unfinished items without copying them into new tasks, and copy the outline as Markdown."
+}

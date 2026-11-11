@@ -1,0 +1,111 @@
+<div class="t-data at" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">行动项</h2>
+    </div>
+    <div class="at__head-aside">
+      <span class="t-data__meta at__count" data-field="count"></span>
+      <button class="at__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="at__toolbar">
+    <div class="at__tabs" role="tablist" aria-label="行动项范围">
+      <button class="at__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="at__tab" type="button" role="tab" data-view="done" aria-selected="false">完成</button>
+      <button class="at__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="at__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <div class="at__filters" data-role="filters">
+      <button class="at__chip" type="button" data-filter="all" data-active="true">全部</button>
+      <button class="at__chip" type="button" data-filter="overdue" data-active="false">逾期</button>
+      <button class="at__chip" type="button" data-filter="nodue" data-active="false">无期限</button>
+      <button class="at__chip" type="button" data-filter="blocked" data-active="false">受阻</button>
+    </div>
+    <input class="at__search" type="search" data-role="search" aria-label="搜索行动项" placeholder="搜索标题、阻碍与完成说明" />
+  </div>
+
+  <p class="at__banner" data-role="banner" role="status" hidden></p>
+
+  <div class="at__body">
+    <div class="t-data__scroll at__list" data-role="list" hidden></div>
+    <div class="at__note-wrap">
+      <p class="t-data__empty at__note" data-role="note">正在读取行动项…</p>
+      <button class="at__ghost at__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="at__detail" data-role="detail" hidden aria-label="行动项详情">
+    <div class="at__detail-head">
+      <button class="at__ghost at__back" type="button" data-action="back">返回</button>
+      <span class="at__state" data-role="detail-state"></span>
+      <span class="at__spacer"></span>
+      <button class="at__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="at__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="at__ghost at__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll at__detail-body">
+      <p class="at__hint" data-role="detail-hint" hidden></p>
+      <label class="at__field">
+        <span class="at__label" data-role="label-title">标题</span>
+        <input class="at__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <div class="at__field">
+        <span class="at__label" data-role="label-status">状态</span>
+        <div class="at__statuses" role="group" aria-label="状态">
+          <button class="at__status" type="button" data-status="todo" aria-pressed="false">待办</button>
+          <button class="at__status" type="button" data-status="doing" aria-pressed="false">进行中</button>
+          <button class="at__status" type="button" data-status="blocked" aria-pressed="false">受阻</button>
+          <button class="at__status" type="button" data-status="done" aria-pressed="false">完成</button>
+          <button class="at__status" type="button" data-status="cancelled" aria-pressed="false">取消</button>
+        </div>
+      </div>
+      <label class="at__field">
+        <span class="at__label" data-role="label-due">期限</span>
+        <input class="at__input" type="date" data-field="due-input" />
+      </label>
+      <p class="at__source" data-role="source"></p>
+      <label class="at__field" data-role="blocked-field" hidden>
+        <span class="at__label" data-role="label-blocked">阻碍说明</span>
+        <textarea class="at__input at__textarea" rows="2" data-field="blocked"></textarea>
+      </label>
+      <label class="at__field" data-role="done-field" hidden>
+        <span class="at__label" data-role="label-done">完成说明</span>
+        <textarea class="at__input at__textarea" rows="2" data-field="done"></textarea>
+      </label>
+      <fieldset class="at__materials">
+        <legend class="at__label" data-role="label-materials">结果材料</legend>
+        <ul class="at__material-list" data-role="materials"></ul>
+        <div class="at__material-add">
+          <input class="at__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="at__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="at__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="at__error" data-role="material-error" role="status"></p>
+      </fieldset>
+      <div class="at__detail-actions">
+        <button class="at__primary" type="button" data-action="save">保存</button>
+        <button class="at__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="at__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="at__dialog-actions">
+      <button class="at__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="at__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="at__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="at__dialog-actions">
+      <button class="at__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="at__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

@@ -254,6 +254,7 @@
 .mt__detail-head {
   display: flex;
   flex: none;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--w-space-sm, 8px);
   min-width: 0;
@@ -471,4 +472,72 @@
 :root[data-size="preview"] .mt__head-aside,
 :root[data-size="preview"] .mt__note-wrap {
   display: none;
+}
+
+/* 来源、生成的行动项与上次会议遗留：列表只读，行距与正文说明一致。 */
+.mt__source {
+  margin: 0;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.mt__related {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mt__related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mt__related-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.mt__related-state {
+  flex: none;
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.mt__related-state[data-status="doing"] { color: var(--w-color-accent, #2563eb); }
+.mt__related-state[data-status="blocked"] { color: var(--w-tone-warn, #b45309); }
+.mt__related-state[data-status="done"] { color: var(--w-tone-ok, #2563eb); }
+
+.mt__related-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-fg, #0b1016);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mt__outline {
+  min-height: 140px;
+  font-family: var(--t-mono);
+  font-size: 12px;
+  line-height: 18px;
+  resize: vertical;
+}
+
+.mt__dialog .mt__field {
+  margin-bottom: var(--w-space-md, 12px);
+}
+
+:root[data-box-width="narrow"] .mt__detail-head {
+  flex-wrap: wrap;
 }

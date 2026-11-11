@@ -141,6 +141,8 @@ export interface RecordQuery {
   includeArchived?: boolean
   includeTrashed?: boolean
   search?: string
+  /** 只看来源指向某条记录的行动项：反向引用由宿主现算，不双写。 */
+  source?: { kind: 'meeting' | 'manuscript', id: string }
 }
 
 /** 一次读取最多给出多少条，以及序列化后的字节预算：消息上限 320 KB，留出余量。 */
