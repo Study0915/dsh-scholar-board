@@ -460,3 +460,15 @@
 :root[data-box-width="narrow"] .mt__head-aside .mt__count {
   display: none;
 }
+
+/* 缩略画面：范围、搜索、新建与加载提示都收掉，只留标题与样例列表，内边距与间距收一档。 */
+:root[data-size="preview"] .t-data {
+  gap: var(--w-space-xs, 4px);
+  padding: var(--w-space-md, 12px);
+}
+
+:root[data-size="preview"] .mt__toolbar,
+:root[data-size="preview"] .mt__head-aside,
+:root[data-size="preview"] .mt__note-wrap {
+  display: none;
+}
