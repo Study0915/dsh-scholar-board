@@ -10,7 +10,7 @@ The format2 `.dshboard` is gzip-compressed JSON containing referenced images, in
 
 A scholar board for DeepSeek Harness: a page of cards you drag and resize, each card a small widget. You or the agent in a session write a widget as three files, and other plugins can provide widgets too. The project focuses on personal research and study records for graduate students in communications, preserving the existing card and motion style.
 
-The current version provides a composed Scholar board and paper feeds. Planned priorities are group-meeting records, shared action items and manuscript progress, followed by research records, theses, industry-sponsored projects, courses and other tasks. Short notes live in the workbench and link to externally maintained documents and materials. These planned features are not yet implemented; see the [product plan (Chinese)](docs/scholar-product.md) and [implementation plan (Chinese)](docs/PLAN-scholar.md). General layout, editing and performance improvements will be prepared separately as upstream contribution candidates.
+The current version provides a composed Scholar board, paper feeds and group-meeting records. The meeting card is the first slice of shared records: the list searches and switches between active, archived and trash, the detail edits in place and keeps a draft while you type, a failed save keeps your input, and a revision conflict offers the latest record. Records are stored by the host, removing a card keeps them, and trashed records are cleared after thirty days. Planned priorities are shared action items and manuscript progress, followed by research records, theses, industry-sponsored projects, courses and other tasks. Short notes live in the workbench and link to externally maintained documents and materials. These planned features are not yet implemented; see the [product plan (Chinese)](docs/scholar-product.md) and [implementation plan (Chinese)](docs/PLAN-scholar.md). General layout, editing and performance improvements will be prepared separately as upstream contribution candidates.
 
 **[Upstream demo](https://nwflower.github.io/dsh-widget-board/)** · [Install](#install) · [Write a widget](#write-a-widget) · [For plugin providers](#for-plugin-providers)
 
@@ -24,6 +24,8 @@ The current version provides a composed Scholar board and paper feeds. Planned p
 </p>
 
 The first two shots are the Scholar board a fresh install lays out: a flip-group card for group-meeting briefs, a submission countdown, a calendar, academic navigation links, to-dos, project milestones, a reading list, and the paper feed at the bottom that follows an arXiv category. The third shows the paper feed on its own — one paper per row with title, authors, submission date and a one-line abstract; clicking a row opens its abs page in a new tab.
+
+Add the meeting card from the gallery; it is not laid out on the default board. It keeps a title, date, brief, discussion feedback, open questions and material links. Materials accept http/https only and store the address and note with the record; files are not copied.
 
 The gallery is the third board: one card per built-in widget, grouped into data, tools and motion templates.
 

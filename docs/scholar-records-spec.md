@@ -152,16 +152,19 @@
 
 | 能力 id | 用途 | 输入要点 | 返回 |
 |---|---|---|---|
-| `widget-board:records.read` | 读记录 | `{ kind?, ids?, includeArchived?, includeTrashed?, filter? }` | `{ records }` |
+| `widget-board:records.read` | 读记录 | `{ kind?, ids?, includeArchived?, includeTrashed?, search? }` | `{ records, quota, total, truncated }` |
 | `widget-board:records.write` | 写记录 | `{ op, ... }`，op ∈ create、update、archive、restore、trash | `{ record, revision }` |
+| `widget-board:records.draft` | 记录编辑草稿 | `{ op, draftId?, recordId?, form? }`，op ∈ save、load、remove | 保存的 `{ draftId, updatedAt }`、读到的 `{ draft }` 或 `{ removed }` |
 
 - 两项都不声明 permission，因此免授权（决定二，D6 无声明即不问人）。调用仍走 `POST /instance/<id>/call` 的既有校验链：组件在库→manifest.capabilities 声明→注册表解析→input 校验→执行→output 校验（`capabilities.ts:61-113`），body ≤64KB，超时与并发沿用提供方上限。
 - `records.write` 的 update 必带 expectedRevision；create 不带。op=trash 移入回收站，可恢复；永久删除不在 op 集合里。每次写入宿主填 lastEditedBy。
+- 一次读取最多给出 200 条、序列化后约 192 KB（消息上限 320 KB 的一部分），`total` 是筛选后的全部条数，`truncated` 表示只给了一部分；`quota` 带条数、字节与九成提醒。默认只给活跃记录。
+- 记录编辑草稿复用 `drafts` 存储的 record 目标；`draftId` 由组件保存在卡片实例状态里，跨刷新与重启保留，保存成功、放弃或移入回收站时删除。
 - 元数据经 `capability-metadata.ts:78-100` 投影到 init，组件不必先发一次注定失败的调用（D32）。
 
 ### 数据源与订阅
 
-- 新增数据源 `widget-board:records`，声明 read 与 subscribe，不声明 permission。卡片以 `source: 'widget-board:records'` 绑定，props 选 kind 与 filter，渲染对应的记录列表。
+- 新增数据源 `widget-board:records`，声明 read 与 subscribe，不声明 permission。卡片以 `source: 'widget-board:records'` 绑定，props 选 kind 与 filter，渲染对应的记录列表。数据源默认只推活跃记录（不含归档与回收站），props.kind 缺省时内置记录组件按自己的 id 取类型；归档与回收站视图由卡片按需走 `records.read`，免得每张卡一直拿着整份回收站。
 - read 返回与订阅推送同一形状，按消费组件的 manifest.data 校验（`instance-operations.ts:81-109`）。subscribe 由宿主在任一记录变化时按订阅身份重算并推送；订阅身份含 props（`subscriptions.ts:87-95`），不同卡片各取各的视图。
 - 订阅生命周期沿用现状：viewers>0、卡可见、组件在库才订阅，离开即退订（`subscriptions.ts:209-257`）。宿主不代读初值，由 subscribe 自推。
 

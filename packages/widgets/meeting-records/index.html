@@ -1,0 +1,95 @@
+<div class="t-data mt" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">组会记录</h2>
+    </div>
+    <div class="mt__head-aside">
+      <span class="t-data__meta mt__count" data-field="count"></span>
+      <button class="mt__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="mt__toolbar">
+    <div class="mt__tabs" role="tablist" aria-label="记录范围">
+      <button class="mt__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="mt__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="mt__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <input class="mt__search" type="search" data-role="search" aria-label="搜索记录" placeholder="搜索标题、反馈与问题" />
+  </div>
+
+  <div class="mt__body">
+    <div class="t-data__scroll mt__list" data-role="list" hidden></div>
+    <div class="mt__note-wrap">
+      <p class="t-data__empty mt__note" data-role="note">正在读取记录…</p>
+      <button class="mt__ghost mt__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="mt__detail" data-role="detail" hidden aria-label="记录详情">
+    <div class="mt__detail-head">
+      <button class="mt__ghost mt__back" type="button" data-action="back">返回</button>
+      <span class="mt__state" data-role="detail-state"></span>
+      <span class="mt__spacer"></span>
+      <button class="mt__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="mt__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="mt__ghost mt__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll mt__detail-body">
+      <p class="mt__hint" data-role="detail-hint" hidden></p>
+      <label class="mt__field">
+        <span class="mt__label" data-role="label-title">标题</span>
+        <input class="mt__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <label class="mt__field">
+        <span class="mt__label" data-role="label-date">日期</span>
+        <input class="mt__input" type="date" data-field="date-input" />
+      </label>
+      <label class="mt__field">
+        <span class="mt__label" data-role="label-topics">汇报要点</span>
+        <textarea class="mt__input mt__textarea" rows="3" data-field="topics"></textarea>
+      </label>
+      <label class="mt__field">
+        <span class="mt__label" data-role="label-feedback">讨论反馈</span>
+        <textarea class="mt__input mt__textarea" rows="3" data-field="feedback"></textarea>
+      </label>
+      <label class="mt__field">
+        <span class="mt__label" data-role="label-questions">未决问题</span>
+        <textarea class="mt__input mt__textarea" rows="2" data-field="questions"></textarea>
+      </label>
+      <fieldset class="mt__materials">
+        <legend class="mt__label" data-role="label-materials">材料</legend>
+        <ul class="mt__material-list" data-role="materials"></ul>
+        <div class="mt__material-add">
+          <input class="mt__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="mt__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="mt__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="mt__error" data-role="material-error" role="status"></p>
+      </fieldset>
+      <div class="mt__detail-actions">
+        <button class="mt__primary" type="button" data-action="save">保存</button>
+        <button class="mt__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="mt__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="mt__dialog-actions">
+      <button class="mt__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="mt__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="mt__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="mt__dialog-actions">
+      <button class="mt__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="mt__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>
