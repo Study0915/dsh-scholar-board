@@ -18,6 +18,7 @@ const { openPage, scratchHome, start } = require('./dsh-web.cjs')
 const { responsePass } = require('./responses.cjs')
 const { firstEventOf } = require('./first-event.cjs')
 const { cardBox, centerCard, frameOf } = require('./frames.cjs')
+const { weatherPainted, weatherDiagnostic } = require('./weather.cjs')
 const { columnStep, layoutOf, settled, waitLayout } = require('./geometry.cjs')
 const { alignedGesturesPass, createHandshakeFixture, createMarketFixture, handshakePass, parserHandshakePass, keepOnlyGallery, resetCards, resetLayout, setCardHeight, ensureFree } = require('./board.cjs')
 const { dockPass } = require('./dock.cjs')
@@ -117,6 +118,22 @@ async function mainPass(page, problems) {
   await openBoard(page)
   await ensureTemplates(page)
   await resetLayout(page)
+  // 天气数据用组件自带的样例，经宿主正常的数据入口写入：本地回归不再等 Open-Meteo。
+  // 真实网络核查单独跑 weather-online.cjs，外部服务的可用性不决定这一关的成败。
+  const weatherSample = JSON.parse(await readFile(join(__dirname, '../widgets/weather/samples.json'), 'utf8')).s.data
+  const weatherSeed = await page.evaluate(async (data) => {
+    const snapshot = await (await fetch('api/widget-board/boards')).json()
+    const board = snapshot.boards.find((entry) => entry.id === snapshot.active)
+    const card = board?.instances.find((entry) => entry.widget === 'weather')
+    if (!card) return 0
+    const response = await fetch(`api/widget-board/instance/${encodeURIComponent(card.id)}/data`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ data }),
+    })
+    return response.status
+  }, weatherSample)
+  check('天气卡用夹具数据经正常数据入口写入', weatherSeed === 200, String(weatherSeed))
   check('中栏打开一页看板', await page.evaluate((selector) => document.querySelector(selector) !== null, BOARD_VIEW))
   check('题头是一张卡片', await page.evaluate((selector) => document.querySelector(selector) !== null, HERO_FRAME))
 
@@ -143,22 +160,12 @@ async function mainPass(page, problems) {
   check('卡片文档按哈希取到', weather.url().includes('/widget/'), weather.url().replace(/^.*\/api/, '/api').slice(0, 52))
   check('天气卡画出来了', await weather.evaluate(() => document.querySelector('.wx') !== null))
   check('五个预报日', (await weather.evaluate(() => document.querySelectorAll('.t-tab').length)) === 5)
-  // 天气数据走真实网络，到达有早有晚：先等第一份数据画上卡再取切换前的读数，否则取到的是空态
-  // 的「--」，点击与数据到达的先后就把下面的逐位动画判据变成了时序抽奖。
-  try {
-    await weather.waitForFunction(() => /^-?\d+$/.test(document.querySelector('#wx-temp')?.textContent ?? ''), undefined, { timeout: 20000 })
-  } catch (error) {
-    // 外部请求失败时保留宿主的原因与耗时，仍按原超时判定失败。
-    const diagnostic = await page.evaluate(async () => {
-      const snapshot = await (await fetch('api/widget-board/boards')).json()
-      const board = snapshot.boards.find((entry) => entry.id === snapshot.active)
-      const card = board?.instances.find((entry) => entry.widget === 'weather')
-      if (!card) return { missing: true }
-      const log = await (await fetch('api/widget-board/instance/' + encodeURIComponent(card.id) + '/log')).json()
-      return { source: card.source, hasData: card.data != null, log }
-    })
+  // 数据是上面经正常数据入口写入的夹具，正常应在几百毫秒内画上。
+  if (!(await weatherPainted(weather, 20000))) {
+    // 夹具没画上时保留宿主的原因与耗时，仍按失败判定。
+    const diagnostic = await weatherDiagnostic(page)
     console.error('weather-timeout: ' + JSON.stringify(diagnostic))
-    throw error
+    throw new Error('天气卡在 20 秒内没有画出温度')
   }
   // 实际天气每天不同，这里只看结构：地点来自 props，切换到第三个预报日后文字与图标换成那一天的值。
   const day = await weather.evaluate(() => document.querySelector('#wx-day')?.textContent ?? '')

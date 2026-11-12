@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Board, BoardInstance, WidgetManifest } from '@dsh-scholar-board/contracts'
 import { capabilityMetadataOf } from '../src/capability-metadata'
-import { DATA_READ_CAPABILITY, DATA_READ_PROVIDER, dataReadCapability, registerDataRead } from '../src/data-read'
+import { DATA_READ_CAPABILITY, DATA_READ_PROVIDER, DATA_REFRESH_CAPABILITY, dataReadCapability, dataRefreshCapability, registerDataRead } from '../src/data-read'
 import type { GrantStore } from '../src/grants'
 import type { WidgetRecord } from '../src/library'
 import type { ProviderHealth } from '../src/provider-health'
@@ -38,9 +38,10 @@ interface Harness {
   context: RouteContext
   sources: Registries
   health: ProviderHealth
-  /** 走到看板写入的次数：data.read 一次都不该走。 */
+  /** 走到看板写入的次数与写后的数据：data.read 一次都不该走，data.refresh 要写一次。 */
   saves: string[]
   call(args?: unknown): Promise<unknown>
+  refresh(args?: unknown): Promise<unknown>
 }
 
 /**
@@ -66,19 +67,27 @@ function harness(options: { manifest: WidgetManifest, bound?: string, grants?: G
   }
   const board: Board = { version: 2, id: 'board', title: '看板', revision: 1, layoutRevision: 1, instances: [card] }
   const saves: string[] = []
+  let current = board
   const context = {
     records: new Map([[manifest.id, record]]),
     entries: [],
     sources,
     grants: options.grants ?? memoryGrants(),
     workspace: {
-      list: () => [board],
-      activeId: () => board.id,
-      active: () => board,
-      board: () => board,
+      list: () => [current],
+      activeId: () => current.id,
+      active: () => current,
+      board: () => current,
       has: () => true,
-      findInstance: (id: string) => (id === card.id ? { board, instance: card } : undefined),
-      save: async (id: string) => { saves.push(id); return board },
+      findInstance: (id: string) => {
+        const instance = current.instances.find((entry) => entry.id === id)
+        return instance === undefined ? undefined : { board: current, instance }
+      },
+      save: async (id: string, change: (previous: Board) => Board) => {
+        saves.push(id)
+        current = change(current)
+        return current
+      },
     },
   } as unknown as RouteContext
   return {
@@ -87,6 +96,7 @@ function harness(options: { manifest: WidgetManifest, bound?: string, grants?: G
     health,
     saves,
     call: async (args) => await dataReadCapability(context).call({ id: card.id, widget: card.widget, props: {} }, args, new AbortController().signal),
+    refresh: async (args) => await dataRefreshCapability(context).call({ id: card.id, widget: card.widget, props: {} }, args, new AbortController().signal),
   }
 }
 
@@ -213,7 +223,7 @@ describe('按需读能力', () => {
     expect(test.health.snapshot().find((entry) => entry.provider === 'demo')?.failures).toBe(0)
   })
 
-  it('注册之后就是一个可解析的能力，元数据里带着参数 schema', async () => {
+  it('注册之后按需读能力可解析，元数据里带着参数 schema', async () => {
     const test = harness({ manifest: MANIFEST, bound: 'demo:count' })
     registerDataRead(test.sources, test.context)
     const resolved = test.sources.resolveCapability(`${DATA_READ_PROVIDER}:${DATA_READ_CAPABILITY}`)
@@ -224,5 +234,53 @@ describe('按需读能力', () => {
     expect(metadata[0]?.input).toMatchObject({ properties: { source: { type: 'string' } } })
     // 返回值的形状由组件自己的 data schema 定，能力不另写一份会过期的说法。
     expect(metadata[0]?.output).toBeUndefined()
+  })
+
+  it('刷新读一次源并写回卡片，数据进到那张卡上', async () => {
+    const test = harness({ manifest: MANIFEST, bound: 'demo:count' })
+    registerDemoSources(test.sources)
+    expect(await test.refresh()).toEqual({ n: 1 })
+    expect(test.saves).toEqual(['board'])
+    expect(test.context.workspace.board('board').instances[0]?.data).toEqual({ n: 1 })
+  })
+
+  it('刷新失败时旧数据不动，也不写看板', async () => {
+    const test = harness({ manifest: MANIFEST, bound: 'demo:count' })
+    test.sources.registerDataSource({ apiVersion: 3, provider: 'demo', id: 'count', read: () => { throw new Error('网络断了') } })
+    const refusal = await refusalOf(test.refresh())
+    expect(refusal.status).toBe(502)
+    expect(refusal.message).toContain('网络断了')
+    expect(test.saves).toEqual([])
+    expect(test.context.workspace.board('board').instances[0]?.data).toEqual({ kept: true })
+  })
+
+  it('刷新也守 manifest 的白名单', async () => {
+    const test = harness({ manifest: MANIFEST, bound: 'demo:count' })
+    registerDemoSources(test.sources)
+    const refusal = await refusalOf(test.refresh({ source: 'other:nowhere' }))
+    expect(refusal.status).toBe(400)
+    expect(refusal.extra.code).toBe('source-unavailable')
+    expect(test.saves).toEqual([])
+  })
+
+  it('刷新交出来的数据不合 schema 时不写卡片', async () => {
+    const test = harness({ manifest: MANIFEST, bound: 'demo:count' })
+    test.sources.registerDataSource({ apiVersion: 3, provider: 'demo', id: 'count', read: () => ({ n: '不是数字' }) })
+    const refusal = await refusalOf(test.refresh())
+    expect(refusal.status).toBe(400)
+    expect(refusal.message).toContain('data schema 不符')
+    expect(test.saves).toEqual([])
+  })
+
+  it('注册之后两个能力都可解析，刷新不声明权限与返回值 schema', async () => {
+    const test = harness({ manifest: MANIFEST, bound: 'demo:count' })
+    registerDataRead(test.sources, test.context)
+    const resolved = test.sources.resolveCapability(`${DATA_READ_PROVIDER}:${DATA_REFRESH_CAPABILITY}`)
+    expect(resolved?.registration.id).toBe(DATA_REFRESH_CAPABILITY)
+    const metadata = capabilityMetadataOf([`${DATA_READ_PROVIDER}:${DATA_REFRESH_CAPABILITY}`], (id) => test.sources.resolveCapability(id))
+    expect(metadata[0]?.available).toBe(true)
+    expect(metadata[0]?.permission).toBeUndefined()
+    expect(metadata[0]?.output).toBeUndefined()
+    expect(metadata[0]?.input).toMatchObject({ properties: { source: { type: 'string' } } })
   })
 })

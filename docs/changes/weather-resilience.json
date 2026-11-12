@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 2,
+  "at": "2026-11-12",
+  "external": true,
+  "zh": "天气卡读取失败时保留上次数据，状态条写明「更新失败：原因」或「数据可能已过期」，并可以就地重试；重试经宿主既有的读取与写入路径，成功后更新卡片与上次成功时间。首次读取失败时显示原因与重试，不再只留一句「暂时无法获取天气」。本地验收改用组件样例经正常数据入口写入，不再等 Open-Meteo；在线核查单独运行。",
+  "en": "When the weather card fails to read, it keeps the last data and the status line shows the failure reason or a stale warning, with a retry in place; the retry goes through the host's existing read-and-write path and updates the card and its last-success time. A first read failure now shows the reason and a retry instead of only “Weather unavailable”. Local acceptance uses the widget's sample through the normal data entry instead of waiting for Open-Meteo; the online check runs separately."
+}

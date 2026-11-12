@@ -25,51 +25,14 @@
   /** 画布最大像素比：1.5 已经够细，卡片小、同时开的卡多时省下近一半像素。 */
   var MAX_DPR = 1.5
 
-  /**
-   * WMO 天气代码到图标与天空的映射。
-   *
-   * Open-Meteo 只给代码。天空决定画面：晴、云、雨、雪、雷各有画法，文字照实写。
-   */
-  var WEATHER = {
-    0: ['sun', 'clear', '晴', 'Clear'],
-    1: ['sun', 'clear', '大部晴朗', 'Mostly clear'],
-    2: ['cloud', 'cloudy', '多云', 'Partly cloudy'],
-    3: ['cloud', 'overcast', '阴', 'Overcast'],
-    45: ['cloud', 'overcast', '雾', 'Fog'],
-    48: ['cloud', 'overcast', '雾凇', 'Rime fog'],
-    51: ['rain', 'rain', '毛毛雨', 'Drizzle'],
-    53: ['rain', 'rain', '毛毛雨', 'Drizzle'],
-    55: ['rain', 'rain', '浓毛毛雨', 'Dense drizzle'],
-    56: ['rain', 'rain', '冻毛毛雨', 'Freezing drizzle'],
-    57: ['rain', 'rain', '冻毛毛雨', 'Freezing drizzle'],
-    61: ['rain', 'rain', '小雨', 'Light rain'],
-    63: ['rain', 'rain', '中雨', 'Rain'],
-    65: ['rain', 'rain', '大雨', 'Heavy rain'],
-    66: ['rain', 'rain', '冻雨', 'Freezing rain'],
-    67: ['rain', 'rain', '冻雨', 'Freezing rain'],
-    71: ['snow', 'snow', '小雪', 'Light snow'],
-    73: ['snow', 'snow', '中雪', 'Snow'],
-    75: ['snow', 'snow', '大雪', 'Heavy snow'],
-    77: ['snow', 'snow', '雪粒', 'Snow grains'],
-    80: ['rain', 'rain', '阵雨', 'Rain showers'],
-    81: ['rain', 'rain', '阵雨', 'Rain showers'],
-    82: ['rain', 'rain', '强阵雨', 'Violent rain showers'],
-    85: ['snow', 'snow', '阵雪', 'Snow showers'],
-    86: ['snow', 'snow', '阵雪', 'Snow showers'],
-    95: ['bolt', 'storm', '雷暴', 'Thunderstorm'],
-    96: ['bolt', 'storm', '雷暴伴冰雹', 'Thunderstorm with hail'],
-    99: ['bolt', 'storm', '雷暴伴冰雹', 'Thunderstorm with hail']
-  }
+  /** 手动刷新用的宿主能力；manifest 声明了它，宿主解析得到时才有重试按钮。 */
+  var REFRESH_CAPABILITY = 'widget-board:data.refresh'
 
-  /** 切换栏那一格的小图标路径。 */
-  var TAB_PATHS = {
-    sun: 'M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z',
-    moon: 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z',
-    cloud: 'M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z',
-    rain: 'M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z',
-    snow: 'M12 2.5v19M2.8 7.25l18.4 10.5M21.2 7.25 2.8 17.75M12 6.4l2.6-2.1M12 6.4 9.4 4.3M12 17.6l2.6 2.1M12 17.6l-2.6 2.1',
-    bolt: 'm3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z'
-  }
+  /** 数据层：WMO 映射、归一与状态判定在 weather-data.js 里，挂在全局 WeatherData 上。 */
+  var dataLayer = window.WeatherData
+
+  /** 画面原语：图标、逐位数字、文字切换与药丸落位在 weather-view.js 里。 */
+  var viewLayer = window.WeatherView
 
   var el = {
     big: card.querySelector('.wx-big'),
@@ -84,7 +47,10 @@
     pill: card.querySelector('.t-tabs-pill'),
     phase: card.querySelector('#wx-phase'),
     tabs: Array.prototype.slice.call(card.querySelectorAll('.t-tab')),
-    icons: Array.prototype.slice.call(card.querySelectorAll('.wx-big .t-icon'))
+    icons: Array.prototype.slice.call(card.querySelectorAll('.wx-big .t-icon')),
+    status: card.querySelector('[data-role="status"]'),
+    statusText: card.querySelector('[data-role="status-text"]'),
+    retry: card.querySelector('[data-role="retry"]')
   }
 
   var days = []
@@ -93,6 +59,14 @@
   /** 宿主存下来的那一天；数据还没到时先记着。 */
   var wanted = -1
   var loadTimer = 0
+  /** 上次成功拿到数据的本机时刻；宿主存一份，重启后据此判过期。 */
+  var fetchedAt = null
+  /** 最近一次手动刷新的失败原因；成功后清掉。 */
+  var lastFailure = null
+  /** 重试在途：按钮不可再按，状态条写「正在重试」。 */
+  var refreshing = false
+  /** 从没拿到过数据、且已经等过头。 */
+  var unavailable = false
   /** 这一帧的天空、昼夜与天光阶段，来自当前选中的那天。 */
   var sky = { scene: 'cloudy', night: false, phase: window.WxDaylight.localPhase() }
   /** 世界那层画布：每换一次天重画一次。 */
@@ -140,22 +114,11 @@
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   }
 
-  function ms(name, fallback) {
-    var value = parseFloat(getComputedStyle(root).getPropertyValue(name))
-    return isFinite(value) ? value : fallback
-  }
   function t(key, fallback) { return widget ? widget.t(key) : fallback }
 
   /** 卡片所在地此刻的钟点：数据里那一刻加上卡片已经开了多久。 */
   function currentClock() {
     return (clockBase.minutes + Math.floor((Date.now() - clockBase.at) / 60000)) % 1440
-  }
-
-  /** 一条天气代码对应的图标、天空与文字；晴天的夜里换成月亮。 */
-  function describe(code, night) {
-    var entry = WEATHER[code] || WEATHER[3]
-    var icon = night && entry[0] === 'sun' ? 'moon' : entry[0]
-    return { icon: icon, sky: entry[1], zh: entry[2], en: entry[3] }
   }
 
   // ── 画布 ───────────────────────────────────────────────
@@ -340,53 +303,6 @@
 
   // ── 卡片的结构与交互 ───────────────────────────────────
 
-  /** 把切换栏里那一格的图标换成这一天自己的天气图标。 */
-  function tabIcon(tab, icon) {
-    if (tab.dataset.icon === icon) return
-    tab.dataset.icon = icon
-    var previous = tab.querySelector('svg')
-    if (previous === null) return
-    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.setAttribute('width', '16')
-    svg.setAttribute('height', '16')
-    svg.setAttribute('viewBox', '0 0 24 24')
-    svg.setAttribute('fill', 'none')
-    svg.setAttribute('stroke', 'currentColor')
-    svg.setAttribute('stroke-linecap', 'round')
-    svg.setAttribute('stroke-linejoin', 'round')
-    svg.setAttribute('stroke-width', '2.25')
-    svg.setAttribute('aria-hidden', 'true')
-    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    path.setAttribute('d', TAB_PATHS[icon] || TAB_PATHS.cloud)
-    svg.appendChild(path)
-    previous.replaceWith(svg)
-  }
-
-  /** 把 `YYYY-MM-DD` 读成本地当天中午，避免时区把日期挪一天。 */
-  function dayOf(iso) {
-    var parts = String(iso).split('-')
-    var date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 12)
-    return isNaN(date.getTime()) ? new Date() : date
-  }
-
-  /** 预报所在地今天的日期；`daily.time` 是地点当地的日期。 */
-  function todayAt(zone) {
-    try {
-      return new Intl.DateTimeFormat('en-CA', { timeZone: zone || undefined, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
-    } catch (error) {
-      return new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
-    }
-  }
-
-  /** 卡片上方那一行：预报所在地这一天的月日与星期。 */
-  function longDate(date, locale) {
-    return new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', weekday: 'long' }).format(date)
-  }
-
-  function weekday(date, locale, style) {
-    return new Intl.DateTimeFormat(locale, { weekday: style }).format(date)
-  }
-
   /** 卡片上的地点：props 给了双语名字就用它，否则用默认地点。 */
   function placeOf(props) {
     var value = props && props.place
@@ -394,102 +310,9 @@
     return DEFAULT_PLACE
   }
 
-  /** 数字：逐位换成新值，后两位错开出现，没变的位不动。 */
-  function setDigits(group, next, instant) {
-    var text = String(next)
-    var previous = group.textContent.replace(/\s+/g, '')
-    if (previous === text) return
-    if (instant || reduced()) {
-      group.textContent = text
-      return
-    }
-    var same = 0
-    while (same < previous.length && same < text.length && previous[same] === text[same]) same += 1
-    group.classList.remove('is-animating')
-    group.replaceChildren()
-    text.split('').forEach(function (character, index) {
-      var span = document.createElement('span')
-      span.className = 't-digit'
-      span.textContent = character
-      if (index < same) span.dataset.same = ''
-      if (index === text.length - 2) span.dataset.stagger = '1'
-      else if (index === text.length - 1) span.dataset.stagger = '2'
-      group.appendChild(span)
-    })
-    void group.offsetHeight
-    group.classList.add('is-animating')
-  }
-
-  /** 文字切换：旧值上移淡出，新值从下方淡入。 */
-  function swapText(node, next, instant) {
-    var target = node.dataset.next || node.textContent
-    if (target === next) return
-    node.dataset.next = next
-    clearTimeout(node._swapTimer)
-    if (instant || reduced()) {
-      node.textContent = next
-      return
-    }
-    node.classList.remove('is-enter-start')
-    node.classList.add('is-exit')
-    node._swapTimer = setTimeout(function () {
-      node.textContent = next
-      node.classList.remove('is-exit')
-      node.classList.add('is-enter-start')
-      void node.offsetHeight
-      node.classList.remove('is-enter-start')
-    }, ms('--w-motion-fast', 150))
-  }
-
-  /** 文字变形：只替换前后不同的那一段，容器宽度跟着过渡。 */
-  function morphText(node, next, instant) {
-    var previous = node.dataset.text != null ? node.dataset.text : node.textContent
-    if (previous === next) return
-    node.dataset.text = next
-    clearTimeout(node._morphTimer)
-    if (instant || reduced()) {
-      node.textContent = next
-      return
-    }
-    var head = 0
-    while (head < previous.length && head < next.length && previous[head] === next[head]) head += 1
-    var tail = 0
-    while (
-      tail < previous.length - head && tail < next.length - head &&
-      previous[previous.length - 1 - tail] === next[next.length - 1 - tail]
-    ) tail += 1
-    var swap = document.createElement('span')
-    swap.className = 't-morph-swap'
-    var out = document.createElement('span')
-    out.className = 't-morph-old'
-    out.setAttribute('aria-hidden', 'true')
-    out.textContent = previous.slice(head, previous.length - tail)
-    var inn = document.createElement('span')
-    inn.className = 't-morph-new'
-    inn.textContent = next.slice(head, next.length - tail)
-    swap.append(out, inn)
-    node.textContent = ''
-    node.append(next.slice(0, head), swap, next.slice(next.length - tail))
-    swap.style.width = out.getBoundingClientRect().width + 'px'
-    void swap.offsetWidth
-    swap.classList.add('is-morphing')
-    swap.style.width = inn.getBoundingClientRect().width + 'px'
-    node._morphTimer = setTimeout(function () { node.textContent = next }, Math.max(ms('--w-motion-morph', 180), ms('--w-motion-morph-resize', 240)) + 40)
-  }
-
-  /** 药丸对到选中的那一格；`animate` 为假时直接落位。 */
+  /** 药丸对到选中的那一格；动画与逐位数字在 weather-view.js 里。 */
   function moveTo(tab, animate) {
-    if (!animate) {
-      var previous = el.pill.style.transition
-      el.pill.style.transition = 'none'
-      el.pill.style.transform = 'translateX(' + tab.offsetLeft + 'px)'
-      el.pill.style.width = tab.offsetWidth + 'px'
-      void el.pill.offsetWidth
-      el.pill.style.transition = previous
-      return
-    }
-    el.pill.style.transform = 'translateX(' + tab.offsetLeft + 'px)'
-    el.pill.style.width = tab.offsetWidth + 'px'
+    viewLayer.moveTo(el.pill, tab, animate)
   }
 
   /** 数据还没到时的卡片：地点与结构在，读数留白，切换栏不能按。 */
@@ -503,7 +326,7 @@
     el.hi.textContent = '--'
     el.lo.textContent = '--'
     el.tabs.forEach(function (tab, index) {
-      tabIcon(tab, 'cloud')
+      viewLayer.tabIcon(tab, 'cloud')
       tab.querySelector('.wx-tab-day').textContent = '—'
       tab.querySelector('.wx-tab-temp').textContent = '--'
       tab.disabled = true
@@ -515,10 +338,12 @@
     adoptSky('cloudy', false, window.WxDaylight.localPhase())
   }
 
-  /** 数据还没到、请求也没回来：把等待换成一句可见的原因。 */
+  /** 数据还没到、请求也没回来：把等待换成一句可见的原因，状态条给出重试。 */
   function showUnavailable() {
     if (days.length > 0) return
+    unavailable = true
     el.cond.textContent = t('unavailable', 'Weather unavailable')
+    updateStatus()
   }
 
   /** 把第 i 天画到卡上；`instant` 用于首帧与语言切换。 */
@@ -533,15 +358,15 @@
       icon.toggleAttribute('data-active', icon.dataset.key === day.icon)
     })
     el.place.textContent = pick(place)
-    morphText(el.day, pick(day.name), instant)
+    viewLayer.morphText(el.day, pick(day.name), instant, reduced())
     el.phase.textContent = pick(day.phase.label)
-    swapText(el.cond, pick(day.condition), instant)
-    setDigits(el.temp, day.temp, instant)
-    setDigits(el.hi, day.high, instant)
-    setDigits(el.lo, day.low, instant)
+    viewLayer.swapText(el.cond, pick(day.condition), instant, reduced())
+    viewLayer.setDigits(el.temp, day.temp, instant, reduced())
+    viewLayer.setDigits(el.hi, day.high, instant, reduced())
+    viewLayer.setDigits(el.lo, day.low, instant, reduced())
     el.tabs.forEach(function (tab, index) {
       var entry = days[index]
-      if (entry !== undefined) tabIcon(tab, entry.icon)
+      if (entry !== undefined) viewLayer.tabIcon(tab, entry.icon)
       tab.disabled = entry === undefined
       tab.querySelector('.wx-tab-day').textContent = entry === undefined ? '—' : pick(entry.short)
       tab.querySelector('.wx-tab-temp').textContent = entry === undefined ? '--' : entry.mean + '°'
@@ -578,64 +403,92 @@
 
   /** 宿主推来的原始 Open-Meteo 数据换成卡片自己的五天预报。 */
   function adoptData(data) {
-    if (!data || !data.daily || !Array.isArray(data.daily.time)) return false
-    var daily = data.daily
-    var currentReading = data.current || {}
-    // 缓存的响应可能已经跨过地点的零点：丢掉过去的日子，从今天起算；全是过去的日子时原样显示。
-    var today = todayAt(typeof data.timezone === 'string' ? data.timezone : '')
-    var first = 0
-    while (first < daily.time.length && String(daily.time[first]) < today) first += 1
-    if (first >= daily.time.length) first = 0
-    var count = Math.min(daily.time.length - first, SLOTS, el.tabs.length)
-    if (count === 0) return false
-    var baseClock = window.WxDaylight.clockFromIso(currentReading.time)
-    if (baseClock === null) baseClock = currentReading.is_day === 0 ? 22 * 60 : 12 * 60
-    clockBase = { minutes: baseClock, at: Date.now() }
-    var sunriseList = Array.isArray(daily.sunrise) ? daily.sunrise : []
-    var sunsetList = Array.isArray(daily.sunset) ? daily.sunset : []
-    var next = []
-    for (var n = 0; n < count; n += 1) {
-      var i = first + n
-      var high = daily.temperature_2m_max[i]
-      var low = daily.temperature_2m_min[i]
-      if (typeof high !== 'number' || typeof low !== 'number') return false
-      var mean = daily.temperature_2m_mean[i]
-      var isToday = String(daily.time[i]) === today
-      var code = isToday && typeof currentReading.weather_code === 'number' ? currentReading.weather_code : daily.weather_code[i]
-      var sunrise = window.WxDaylight.parseClock(sunriseList[i], 6 * 60 + 20)
-      var sunset = window.WxDaylight.parseClock(sunsetList[i], 18 * 60 + 20)
-      var phase = window.WxDaylight.phaseFor(baseClock, sunrise, sunset)
-      var night = phase.night
-      var weather = describe(code, night)
-      var date = dayOf(daily.time[i])
-      var temp = isToday && typeof currentReading.temperature_2m === 'number'
-        ? Math.round(currentReading.temperature_2m)
-        : Math.round(typeof mean === 'number' ? mean : (high + low) / 2)
-      next.push({
-        name: { zh: longDate(date, 'zh-CN'), en: longDate(date, 'en-US') },
-        short: isToday ? { zh: '今天', en: 'Today' } : { zh: weekday(date, 'zh-CN', 'short'), en: weekday(date, 'en-US', 'short') },
-        mean: Math.round(typeof mean === 'number' ? mean : (high + low) / 2),
-        code: code,
-        icon: weather.icon,
-        sky: weather.sky,
-        night: night,
-        phase: phase,
-        sunrise: sunrise,
-        sunset: sunset,
-        condition: { zh: weather.zh, en: weather.en },
-        temp: temp,
-        high: Math.round(high),
-        low: Math.round(low)
-      })
-    }
-    days = next
+    var parsed = dataLayer.daysFrom(data, { slots: SLOTS, tabs: el.tabs.length, daylight: window.WxDaylight })
+    if (parsed === null) return false
+    days = parsed.days
+    clockBase = { minutes: parsed.clockMinutes, at: Date.now() }
+    fetchedAt = Date.now()
+    lastFailure = null
+    unavailable = false
+    if (widget) widget.setState({ fetchedAt: fetchedAt })
     place = placeOf(widget ? widget.props : {})
     clearTimeout(loadTimer)
     if (current >= days.length) current = 0
     paintDay(current, true)
     // 数据先到、状态后到：状态里选中的那一天盖回来。
     if (wanted >= 0) select(wanted, false, true)
+    updateStatus()
     return true
+  }
+
+  /** 刷新间隔：与 widget.json 的 ``refresh.everyMs`` 一致，另留半小时余量判过期。 */
+  var REFRESH_MS = 18000000
+
+  /** 一个时刻读成卡片语言的时分。 */
+  function timeText(stamp) {
+    if (typeof stamp !== 'number') return ''
+    try {
+      return new Intl.DateTimeFormat(zh() ? 'zh-CN' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(stamp))
+    } catch (error) {
+      return ''
+    }
+  }
+
+  /** 刷新能力在不在：manifest 声明了、宿主也解析得到时才有重试按钮（D11）。 */
+  function canRetry() {
+    return widget !== undefined && typeof widget.call === 'function' && Array.isArray(widget.capabilities) &&
+      widget.capabilities.indexOf(REFRESH_CAPABILITY) !== -1
+  }
+
+  /** 状态条：正常写更新时刻，过期与失败写原因，加载中留空。 */
+  function updateStatus() {
+    if (el.status === null || el.statusText === null || el.retry === null) return
+    var state = dataLayer.statusOf({
+      hasData: days.length > 0,
+      fetchedAt: fetchedAt,
+      failed: lastFailure !== null || unavailable,
+      now: Date.now(),
+      refreshMs: REFRESH_MS
+    })
+    var text = ''
+    var tone = 'ok'
+    if (state === 'ok') {
+      var stamp = timeText(fetchedAt)
+      text = stamp === '' ? t('updated', 'Updated') : t('updatedAt', 'Updated') + ' ' + stamp
+    } else if (state === 'stale') {
+      text = t('stale', 'Weather data may be out of date')
+      tone = 'warn'
+    } else if (state === 'failed-stale') {
+      text = t('refreshFailed', 'Update failed') + (lastFailure ? '：' + lastFailure : '') + ' · ' + t('showingLast', 'Showing the last data')
+      tone = 'warn'
+    } else if (state === 'failed-empty') {
+      text = t('unavailable', 'Weather unavailable') + (lastFailure ? '：' + lastFailure : '')
+      tone = 'error'
+    }
+    el.status.hidden = text === ''
+    el.status.dataset.tone = tone
+    el.statusText.textContent = text
+    el.retry.hidden = !(canRetry() && state !== 'loading')
+    el.retry.disabled = refreshing
+    el.retry.textContent = refreshing ? t('retrying', 'Retrying…') : t('retry', 'Retry')
+  }
+
+  /** 手动刷新：读一次卡片自己的源并写回；失败把原因留在状态条，旧数据不动。 */
+  function retry() {
+    if (!canRetry() || refreshing) return
+    refreshing = true
+    updateStatus()
+    widget.call(REFRESH_CAPABILITY).then(function (data) {
+      refreshing = false
+      lastFailure = null
+      if (!adoptData(data)) updateStatus()
+    }, function (error) {
+      refreshing = false
+      lastFailure = error !== null && error !== undefined && typeof error.message === 'string' && error.message !== ''
+        ? error.message
+        : String(error)
+      updateStatus()
+    })
   }
 
   /**
@@ -689,6 +542,10 @@
     })
     widget.onData(function (data) { adoptData(data) })
     widget.onState(function (value) {
+      if (value && typeof value.fetchedAt === 'number') {
+        fetchedAt = value.fetchedAt
+        updateStatus()
+      }
       if (!value || typeof value.day !== 'number') return
       wanted = value.day
       select(wanted, false, true)
@@ -724,10 +581,13 @@
   }
 
   place = placeOf(widget ? widget.props : {})
+  if (widget && widget.state && typeof widget.state.fetchedAt === 'number') fetchedAt = widget.state.fetchedAt
+  if (el.retry !== null) el.retry.addEventListener('click', retry)
   // 数据可能在本脚本注册监听之前就到了；先读一次当前值。
   if (widget && widget.data) adoptData(widget.data)
   else paintEmpty()
   loadTimer = window.setTimeout(showUnavailable, 15000)
+  updateStatus()
   window.requestAnimationFrame(function () { moveTo(el.tabs[current], false) })
   window.addEventListener('resize', function () {
     moveTo(el.tabs[current], false)

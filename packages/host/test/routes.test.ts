@@ -1071,7 +1071,7 @@ describe('按需读的错误语义', () => {
     const response = await test.send('POST', '/instance/board-first/call', JSON.stringify({ capability: 'widget-board:data.read', args: { source: 'other:nowhere' } }))
     expect(response.status).toBe(400)
     expect(JSON.parse(response.body)).toMatchObject({ code: 'source-unavailable', source: 'other:nowhere' })
-    expect(healthOf(test, 'widget-board')).toMatchObject({ provider: 'widget-board', registrations: 1, failures: 0, timeouts: 0 })
+    expect(healthOf(test, 'widget-board')).toMatchObject({ provider: 'widget-board', registrations: 2, failures: 0, timeouts: 0 })
     expect(healthOf(test, 'widget-board')?.lastError).toBeUndefined()
   })
 
@@ -1126,7 +1126,7 @@ describe('按需读的错误语义', () => {
     expect(healthOf(test, 'test-provider')).toMatchObject({ failures: 1, timeouts: 0 })
     expect(healthOf(test, 'test-provider')?.lastError).toBe('provider-failure：数据源 weather.now 失败：网络断了')
     // 读异常在 data.read 的读取边界已经翻成宿主拒绝：看板这一层不再记一次失败。
-    expect(healthOf(test, 'widget-board')).toMatchObject({ registrations: 1, failures: 0, timeouts: 0 })
+    expect(healthOf(test, 'widget-board')).toMatchObject({ registrations: 2, failures: 0, timeouts: 0 })
     expect(healthOf(test, 'widget-board')?.lastError).toBeUndefined()
   })
 })

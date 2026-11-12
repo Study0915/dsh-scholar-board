@@ -428,3 +428,62 @@
 :root[data-paused] .wx-sheen,
 :root[data-paused] .wx-idle,
 :root[data-paused] .wx-drops > span { animation-play-state: paused; }
+
+/* 数据状态条：正常写更新时刻，过期或失败写原因；重试只在这一条上。 */
+.wx-status {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 2px;
+  font-size: 11px;
+  line-height: 16px;
+  opacity: 0.78;
+}
+
+.wx-status[hidden],
+.wx-retry[hidden] {
+  display: none;
+}
+
+.wx-status-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wx-status[data-tone="warn"],
+.wx-status[data-tone="error"] {
+  opacity: 0.95;
+}
+
+.wx-retry {
+  flex: none;
+  padding: 0 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  line-height: 16px;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.wx-retry:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.wx-retry:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+:root[data-size="preview"] .wx-status {
+  display: none;
+}

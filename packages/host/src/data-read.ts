@@ -11,7 +11,7 @@
 import type { CapabilityRegistration, InstanceFace, WidgetManifest } from '@dsh-scholar-board/contracts'
 import { REGISTRATION_NAME_PATTERN, WIDGET_BOARD_API_VERSION } from '@dsh-scholar-board/contracts'
 import { isRecord } from './guards'
-import { loadData } from './instance-operations'
+import { loadData, readInto } from './instance-operations'
 import { locate } from './lookup'
 import { Refusal } from './refusal'
 import type { RouteContext } from './routes'
@@ -19,6 +19,9 @@ import type { Registries } from './sources'
 
 /** 能力的名字：组件在 manifest 的 `capabilities` 里声明 `widget-board:data.read`。 */
 export const DATA_READ_CAPABILITY = 'data.read'
+
+/** 刷新能力的名字：读一次卡片自己的源并写回卡片，用于用户按下的重试。 */
+export const DATA_REFRESH_CAPABILITY = 'data.refresh'
 
 /** 提供方：看板自己（D3），与内置数据源同一个来源。 */
 export const DATA_READ_PROVIDER = 'widget-board'
@@ -46,17 +49,15 @@ function isReadable(manifest: WidgetManifest, bound: string | undefined, asked: 
 }
 
 /**
- * 读一次这张卡的一个源，只把数据交回去。
+ * 这次要读哪个源：参数里的源，或卡片自己绑定的那个；必须在 manifest 的白名单里。
  *
  * @param context - 路由上下文。
  * @param instance - 发起调用的这张卡片。
  * @param args - 已经按 input schema 校验过的参数。
- * @param signal - 调用方取消或超时时中止提供方。
- * @returns 数据源读出来的数据。
- * @throws {Refusal} 组件不在库里、没有可读的源、源不在白名单、源没有安装、没有授权、超时、并发已满、
- * 数据与组件的 data schema 不符，或数据源读取失败（502）。
+ * @returns 卡片与要读的源名。
+ * @throws {Refusal} 组件不在库里、没有可读的源，或源不在白名单。
  */
-async function dataReadOf(context: RouteContext, instance: InstanceFace, args: unknown, signal: AbortSignal): Promise<unknown> {
+function askedSourceOf(context: RouteContext, instance: InstanceFace, args: unknown): { card: InstanceFace, asked: string } {
   const { instance: card } = locate(context, instance.id)
   const manifest = context.records.get(card.widget)?.manifest
   if (manifest === undefined) throw new Refusal(400, '这张卡的组件不在组件库里，先把它装回来')
@@ -69,8 +70,42 @@ async function dataReadOf(context: RouteContext, instance: InstanceFace, args: u
   if (!isReadable(manifest, bound, asked)) {
     throw new Refusal(400, `组件没有声明数据源 ${asked}：manifest 的 source 与 sources 里都没有它`, { code: 'source-unavailable', source: asked })
   }
+  return { card, asked }
+}
+
+/**
+ * 读一次这张卡的一个源，只把数据交回去。
+ *
+ * @param context - 路由上下文。
+ * @param instance - 发起调用的这张卡片。
+ * @param args - 已经按 input schema 校验过的参数。
+ * @param signal - 调用方取消或超时时中止提供方。
+ * @returns 数据源读出来的数据。
+ * @throws {Refusal} 组件不在库里、没有可读的源、源不在白名单、源没有安装、没有授权、超时、并发已满、
+ * 数据与组件的 data schema 不符，或数据源读取失败（502）。
+ */
+async function dataReadOf(context: RouteContext, instance: InstanceFace, args: unknown, signal: AbortSignal): Promise<unknown> {
+  const { card, asked } = askedSourceOf(context, instance, args)
   const { data } = await loadData(context, card.id, asked, signal).catch((error: unknown) => readFailure(asked, error))
   return data
+}
+
+/**
+ * 读一次这张卡的一个源并写回卡片：用户按下的重试走这条，结果和失败都留得下来。
+ *
+ * 读取、授权、schema 与写入全部复用 `/read` 那一条路径；写入成功后宿主照常推数据，
+ * 卡片不必自己保存一份。失败时卡片上的旧数据保持不变。
+ *
+ * @param context - 路由上下文。
+ * @param instance - 发起调用的这张卡片。
+ * @param args - 已经按 input schema 校验过的参数。
+ * @param signal - 调用方取消或超时时中止提供方。
+ * @returns 读回来并写进卡片的数据。
+ * @throws {Refusal} 与 {@link dataReadOf} 相同的拒绝，外加上写入失败。
+ */
+async function dataRefreshOf(context: RouteContext, instance: InstanceFace, args: unknown, signal: AbortSignal): Promise<unknown> {
+  const { card, asked } = askedSourceOf(context, instance, args)
+  return await readInto(context, card.id, asked, signal).catch((error: unknown) => readFailure(asked, error))
 }
 
 /**
@@ -118,12 +153,42 @@ export function dataReadCapability(context: RouteContext): CapabilityRegistratio
 }
 
 /**
- * 把按需读能力注册进看板的注册表。
+ * 建出刷新能力。
+ *
+ * 与按需读同一份白名单与读取路径，多一步写回卡片；不声明权限：要不要授权由数据源自己的注册项定。
+ *
+ * @param context - 路由上下文。
+ * @returns 刷新能力。
+ */
+export function dataRefreshCapability(context: RouteContext): CapabilityRegistration {
+  return {
+    apiVersion: WIDGET_BOARD_API_VERSION,
+    provider: DATA_READ_PROVIDER,
+    id: DATA_REFRESH_CAPABILITY,
+    title: { zh: '刷新卡片数据', en: 'Refresh card data' },
+    description: {
+      zh: '读一次这张卡的一个数据源并写回卡片；失败时卡片上的旧数据保持不变，原因回给组件。',
+      en: 'Reads one data source of this card and writes it back; on failure the old card data stays and the reason goes back to the widget.',
+    },
+    input: INPUT,
+    async call(instance, args, signal) {
+      return await dataRefreshOf(context, instance, args, signal)
+    },
+  }
+}
+
+/**
+ * 把按需读与刷新两个能力注册进看板的注册表。
  *
  * @param sources - 看板的注册表。
  * @param context - 路由上下文。
  * @returns 撤下这次注册的函数。
  */
 export function registerDataRead(sources: Registries, context: RouteContext): () => void {
-  return sources.registerCapability(dataReadCapability(context))
+  const disposeRead = sources.registerCapability(dataReadCapability(context))
+  const disposeRefresh = sources.registerCapability(dataRefreshCapability(context))
+  return () => {
+    disposeRefresh()
+    disposeRead()
+  }
 }
