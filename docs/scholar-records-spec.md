@@ -144,6 +144,28 @@ S05 补齐。研究记录是「我做过什么、看到了什么」，不是实�
 - 记录不触发实验、不下载材料、不遍历磁盘；结论与材料只是文字与链接（产品规划研究记录一节）。
 - 列表按做法筛选，可选全部、推导、仿真与实验；筛选只在活跃视图生效，归档与回收站各按自己的视图显示。
 
+### 毕业论文 thesis
+
+S06 补齐。毕业论文记录的是「写到哪、还差什么、材料在哪」，不是学校模板，也不判断毕业资格：
+
+| 字段 | 形状 | 必填 | 说明 |
+|---|---|---|---|
+| title | string ≤200 | 是 | 论文标题 |
+| question | string | 否 | 论文要回答的总问题 |
+| chapters | `ThesisChapter[]` | 否 | 章节与各自进度 |
+| results | `ThesisResult[]` | 否 | 已有的成果来源 |
+| experiments | `ThesisExperiment[]` | 否 | 待补实验 |
+| milestones | `ThesisMilestone[]` | 否 | 学位节点，由用户自行维护 |
+| related | `Ref[]` | 否 | 关联行动项；其余类型留到后续批次 |
+| materials | `MaterialRef[]` | 否 | 论文提纲、图表与全文的链接 |
+
+- `ThesisChapter` 为 `{ id, title ≤200, status, question?, note? }`。`status` 只能是计划 planned、撰写 drafting、修订 revising、完成 done；章节顺序就是数组顺序，宿主不重排也不补编号。
+- `ThesisResult` 为 `{ id, kind: 'manuscript'|'research', recordId, note? }`。成果只存来源记录的 id，指向稿件或研究记录；来源还没建好时也允许保存，读的时候界面显示「来源缺失」，不级联删除也不改写成一段文字摘要。
+- `ThesisExperiment` 为 `{ id, title ≤200, status, note? }`，`status` 只能是待补 todo、进行中 doing、完成 done。
+- `ThesisMilestone` 为 `{ id, label ≤60, status, due?, note? }`，`status` 与待补实验相同。`label` 是用户给节点起的名字（如「预答辩」），`due` 沿用 `Due` 形状。学位要求由用户维护，不预设学校规则，也不根据节点完成情况判断毕业资格。
+- 搜索匹配章节标题、问题与说明，成果来源的说明，待补实验与学位节点的标题、说明，以及论文问题与关联行动项。列表行显示章节进度、未完成实验数与最近的学位节点；没有节点时写「未定节点」。
+- 材料只是链接，不复制文件、不下载；一个节点或实验是否算完成由用户勾选，界面不按日期推断。
+
 ### 材料引用 MaterialRef
 
 材料引用是内嵌在记录里的对象，首批不作为独立存储记录：
@@ -168,6 +190,8 @@ S05 补齐。研究记录是「我做过什么、看到了什么」，不是实�
 | 单条 submissions | 50 |
 | 单条 revisions | 200 |
 | 单条 stageHistory | 200 |
+| 单条 chapters / results / experiments | 各 100 |
+| 单条 milestones | 50 |
 | 单条序列化字节 | 64 KiB |
 | 工作区记录条数 | 10000 |
 | 工作区记录总字节 | 16 MiB |
@@ -255,6 +279,7 @@ S05 补齐。研究记录是「我做过什么、看到了什么」，不是实�
 - 行动项 status：todo↔doing↔blocked；任意→done；任意→cancelled；done/cancelled 可重开→todo。cancelled 与删除（trash）分别处理。
 - 稿件 stage：idea→experiment→writing→internal-review→submitted→revision→accepted→archived；允许回退（如 submitted→writing），每次变更追加 stageHistory；archived 可恢复。
 - 稿件投稿轮次与修回：轮次只增不覆盖旧轮；修回必须指向同稿件的一轮，删除该轮时连带移除其修回；修回状态 todo→doing→done，或 todo/doing→declined，已完成但缺改动或证据时界面显式留空。
+- 论文章节与学位节点：章节 planned→drafting→revising→done，可回退；待补实验与学位节点 todo→doing→done，可回退；成果来源允许先写 id 后建记录，来源缺失时界面显示「来源缺失」，恢复来源后自动复原；学位要求与毕业资格不由宿主推断。
 - 生命周期：活跃→归档→恢复活跃；活跃/归档→回收站→恢复先前状态；回收站→永久删除（仅界面）或 30 天自动清除。
 - 引用：删除来源记录后引用方保留 id 并显示来源缺失；恢复来源后引用复原；移除卡片不影响记录。
 - 冲突：两页面并发更新同一记录，后到者带旧 expectedRevision 收 409 与当前记录；草稿保留。

@@ -1,0 +1,122 @@
+<div class="t-data ts" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">毕业论文</h2>
+    </div>
+    <div class="ts__head-aside">
+      <span class="t-data__meta ts__count" data-field="count"></span>
+      <button class="ts__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="ts__toolbar">
+    <div class="ts__tabs" role="tablist" aria-label="记录范围">
+      <button class="ts__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="ts__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="ts__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <input class="ts__search" type="search" data-role="search" aria-label="搜索记录" placeholder="搜索标题、问题、章节与节点" />
+  </div>
+
+  <div class="ts__body">
+    <div class="t-data__scroll ts__list" data-role="list" hidden></div>
+    <div class="ts__note-wrap">
+      <p class="t-data__empty ts__note" data-role="note">正在读取记录…</p>
+      <button class="ts__ghost ts__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="ts__detail" data-role="detail" hidden aria-label="记录详情">
+    <div class="ts__detail-head">
+      <button class="ts__ghost ts__back" type="button" data-action="back">返回</button>
+      <span class="ts__state" data-role="detail-state"></span>
+      <span class="ts__spacer"></span>
+      <button class="ts__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="ts__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="ts__ghost ts__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll ts__detail-body">
+      <p class="ts__hint" data-role="detail-hint" hidden></p>
+      <label class="ts__field">
+        <span class="ts__label" data-role="label-title">标题</span>
+        <input class="ts__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <label class="ts__field">
+        <span class="ts__label" data-role="label-question">论文问题</span>
+        <textarea class="ts__input ts__textarea" rows="2" data-field="question"></textarea>
+      </label>
+
+      <fieldset class="ts__group">
+        <legend class="ts__label" data-role="label-chapters">章节</legend>
+        <ul class="ts__line-list" data-role="chapters"></ul>
+        <button class="ts__ghost" type="button" data-action="add-chapter">添加章节</button>
+      </fieldset>
+
+      <fieldset class="ts__group">
+        <legend class="ts__label" data-role="label-results">研究成果</legend>
+        <p class="ts__note-line" data-role="results-hint"></p>
+        <ul class="ts__line-list" data-role="results"></ul>
+        <button class="ts__ghost" type="button" data-action="add-result">添加成果</button>
+      </fieldset>
+
+      <fieldset class="ts__group">
+        <legend class="ts__label" data-role="label-experiments">待补实验</legend>
+        <ul class="ts__line-list" data-role="experiments"></ul>
+        <button class="ts__ghost" type="button" data-action="add-experiment">添加实验</button>
+      </fieldset>
+
+      <fieldset class="ts__group">
+        <legend class="ts__label" data-role="label-milestones">学位节点</legend>
+        <ul class="ts__line-list" data-role="milestones"></ul>
+        <button class="ts__ghost" type="button" data-action="add-milestone">添加学位节点</button>
+        <p class="ts__note-line" data-role="milestone-hint"></p>
+      </fieldset>
+
+      <fieldset class="ts__group">
+        <legend class="ts__label" data-role="label-related">关联行动项</legend>
+        <ul class="ts__related-list" data-role="related"></ul>
+        <div class="ts__related-add">
+          <select class="ts__input" data-role="action-select" aria-label="关联行动项"></select>
+          <button class="ts__ghost" type="button" data-action="add-action">关联</button>
+        </div>
+      </fieldset>
+
+      <p class="ts__error" data-role="rows-error" role="status"></p>
+
+      <fieldset class="ts__group">
+        <legend class="ts__label" data-role="label-materials">论文材料</legend>
+        <ul class="ts__material-list" data-role="materials"></ul>
+        <div class="ts__material-add">
+          <input class="ts__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="ts__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="ts__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="ts__error" data-role="material-error" role="status"></p>
+      </fieldset>
+
+      <div class="ts__detail-actions">
+        <button class="ts__primary" type="button" data-action="save">保存</button>
+        <button class="ts__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="ts__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="ts__dialog-actions">
+      <button class="ts__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="ts__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="ts__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="ts__dialog-actions">
+      <button class="ts__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="ts__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

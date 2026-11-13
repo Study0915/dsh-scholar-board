@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 3,
+  "at": "2026-11-13",
+  "external": true,
+  "zh": "新增「毕业论文」卡：章节进度、已有成果来源、待补实验与学位节点放在一张卡里。成果只记来源记录 id，来源缺失时显示「来源缺失」；学位节点与实验进度由你维护，卡片不预设学校规则，也不判断毕业资格。列表显示章节进度、未完成实验与最近的学位节点，支持搜索、归档与回收站；记录类型、检索、导出导入、配额与内置组件画廊一并支持毕业论文。",
+  "en": "Adds the Thesis card: chapter progress, existing result sources, experiments still to run and degree milestones on one card. Results keep only the source record id and a missing source shows as missing; milestones and experiment progress are yours to maintain, and the card neither assumes school rules nor judges graduation eligibility. List rows show chapter progress, open experiments and the nearest milestone, with search, archive and trash; records, search, export/import, quota and the built-in gallery now cover theses too."
+}
