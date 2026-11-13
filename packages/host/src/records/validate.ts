@@ -12,6 +12,11 @@ import type {
   ManuscriptFigure,
   ManuscriptStage,
   MaterialRef,
+  ProjectCommunication,
+  ProjectDeliverable,
+  ProjectIssue,
+  ProjectMilestone,
+  ProjectTask,
   RecordKind,
   RecordRef,
   ResearchEntry,
@@ -30,9 +35,17 @@ import { RECORDS_FORMAT, RECORDS_LIMITS, isOpenableUrl } from '@dsh-scholar-boar
 import { isRecord } from '../guards'
 import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
 import { chaptersOf, experimentsOf, thesisArraysProblem, thesisMilestonesOf, thesisResultsOf } from './thesis-validate'
+import {
+  projectArraysProblem,
+  projectCommunicationsOf,
+  projectDeliverablesOf,
+  projectIssuesOf,
+  projectMilestonesOf,
+  projectTasksOf,
+} from './project-validate'
 
-/** 六种记录。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis']
+/** 七种记录。 */
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project']
 
 /** 行动项的五个状态。 */
 export const ACTION_STATUSES: readonly ActionStatus[] = ['todo', 'doing', 'blocked', 'done', 'cancelled']
@@ -63,6 +76,7 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'related', 'materials'],
   research: ['title', 'method', 'question', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials'],
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
+  project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
 }
 
 /** 每种记录允许指向的引用类型。 */
@@ -73,10 +87,11 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   literature: ['manuscript'],
   research: ['manuscript'],
   thesis: ['action'],
+  project: ['meeting', 'action', 'manuscript'],
 }
 
 /** 搜索和展示时要读的文本字段。 */
-const TEXT_FIELDS = ['title', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion'] as const
+const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion'] as const
 
 /**
  * 一组指向前向记录的引用。
@@ -371,6 +386,7 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.topics !== undefined) out.topics = textOf(input.topics, 'topics')
   if (input.feedback !== undefined) out.feedback = textOf(input.feedback, 'feedback')
   if (input.openQuestions !== undefined) out.openQuestions = textOf(input.openQuestions, 'openQuestions')
+  if (input.summary !== undefined) out.summary = textOf(input.summary, 'summary')
   if (input.question !== undefined) out.question = textOf(input.question, 'question')
   if (input.nextStep !== undefined) out.nextStep = textOf(input.nextStep, 'nextStep')
   if (input.blockers !== undefined) out.blockers = textOf(input.blockers, 'blockers')
@@ -396,7 +412,11 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.chapters !== undefined) out.chapters = chaptersOf(input.chapters, 'chapters')
   if (input.results !== undefined) out.results = thesisResultsOf(input.results, 'results')
   if (input.experiments !== undefined) out.experiments = experimentsOf(input.experiments, 'experiments')
-  if (input.milestones !== undefined) out.milestones = thesisMilestonesOf(input.milestones, 'milestones')
+  if (input.milestones !== undefined) out.milestones = kind === 'project' ? projectMilestonesOf(input.milestones, 'milestones') : thesisMilestonesOf(input.milestones, 'milestones')
+  if (input.tasks !== undefined) out.tasks = projectTasksOf(input.tasks, 'tasks')
+  if (input.deliverables !== undefined) out.deliverables = projectDeliverablesOf(input.deliverables, 'deliverables')
+  if (input.communications !== undefined) out.communications = projectCommunicationsOf(input.communications, 'communications')
+  if (input.issues !== undefined) out.issues = projectIssuesOf(input.issues, 'issues')
   if (input.derivedFrom !== undefined) {
     if (input.derivedFrom === null) out.derivedFrom = null
     else if (typeof input.derivedFrom !== 'string' || input.derivedFrom === '' || input.derivedFrom.length > 64) fail('derivedFrom 不合法')
@@ -544,6 +564,10 @@ export function storedProblem(value: unknown): string | null {
     const arraysProblem = thesisArraysProblem(value)
     if (arraysProblem !== null) return arraysProblem
   }
+  if (value.kind === 'project') {
+    const arraysProblem = projectArraysProblem(value)
+    if (arraysProblem !== null) return arraysProblem
+  }
   return null
 }
 
@@ -612,6 +636,29 @@ export function searchTextOf(record: DomainRecord): string {
   for (const milestone of (Array.isArray(entry.milestones) ? entry.milestones : []) as ThesisMilestone[]) {
     if (typeof milestone?.label === 'string') parts.push(milestone.label)
     if (typeof milestone?.note === 'string') parts.push(milestone.note)
+  }
+  for (const task of (Array.isArray(entry.tasks) ? entry.tasks : []) as ProjectTask[]) {
+    if (typeof task?.title === 'string') parts.push(task.title)
+    if (typeof task?.note === 'string') parts.push(task.note)
+    for (const material of Array.isArray(task?.materials) ? task.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const deliverable of (Array.isArray(entry.deliverables) ? entry.deliverables : []) as ProjectDeliverable[]) {
+    if (typeof deliverable?.name === 'string') parts.push(deliverable.name)
+    if (typeof deliverable?.version === 'string') parts.push(deliverable.version)
+    if (typeof deliverable?.note === 'string') parts.push(deliverable.note)
+    for (const material of Array.isArray(deliverable?.materials) ? deliverable.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const communication of (Array.isArray(entry.communications) ? entry.communications : []) as ProjectCommunication[]) {
+    if (typeof communication?.summary === 'string') parts.push(communication.summary)
+    if (typeof communication?.note === 'string') parts.push(communication.note)
+  }
+  for (const issue of (Array.isArray(entry.issues) ? entry.issues : []) as ProjectIssue[]) {
+    if (typeof issue?.title === 'string') parts.push(issue.title)
+    if (typeof issue?.note === 'string') parts.push(issue.note)
   }
   return parts.join('\n').toLowerCase()
 }

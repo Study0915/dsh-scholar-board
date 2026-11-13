@@ -1,0 +1,472 @@
+{
+  "id": "project-records",
+  "title": {
+    "zh": "横向项目",
+    "en": "Project"
+  },
+  "description": {
+    "zh": "整理横向项目：需求摘要、个人负责事项、交付物与版本、沟通结论、验收节点、待确认问题、关联会议 / 行动项 / 稿件与项目材料。默认模板不收合同金额与其他敏感业务细节；事项与节点状态由用户维护，不判断合同履约，审批与经费另行决定。",
+    "en": "Organises a sponsored project: brief, your own tasks, deliverables with versions, communication conclusions, acceptance milestones, open questions, linked meetings / actions / manuscripts and project materials. The default template stores no contract amounts or other sensitive business details; you maintain task and milestone status, contract acceptance is not judged, and approval and budget are handled elsewhere."
+  },
+  "author": "dsh-scholar-board",
+  "version": "0.1.0",
+  "sizes": [
+    "m",
+    "l"
+  ],
+  "source": "widget-board:records",
+  "capabilities": [
+    "widget-board:records.read",
+    "widget-board:records.write",
+    "widget-board:records.draft"
+  ],
+  "defaultBox": {
+    "w": 2,
+    "h": 30
+  },
+  "minBox": {
+    "w": 1,
+    "h": 16
+  },
+  "scripts": [
+    "project-model.js",
+    "copy.js",
+    "view.js",
+    "rows.js",
+    "editor.js"
+  ],
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string",
+        "maxLength": 80
+      },
+      "kicker": {
+        "type": "string",
+        "maxLength": 40
+      }
+    }
+  },
+  "data": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "records": {
+        "type": "array",
+        "maxItems": 200,
+        "items": {
+          "type": "object"
+        }
+      },
+      "quota": {
+        "type": "object"
+      },
+      "total": {
+        "type": "number"
+      },
+      "truncated": {
+        "type": "boolean"
+      }
+    }
+  },
+  "text": {
+    "title": {
+      "zh": "横向项目",
+      "en": "Project"
+    },
+    "kicker": {
+      "zh": "事项、交付物与验收节点",
+      "en": "Tasks, deliverables and milestones"
+    },
+    "new": {
+      "zh": "新建",
+      "en": "New"
+    },
+    "search": {
+      "zh": "搜索标题、事项、交付物与沟通",
+      "en": "Search titles, tasks, deliverables and notes"
+    },
+    "active": {
+      "zh": "活跃",
+      "en": "Active"
+    },
+    "archived": {
+      "zh": "归档",
+      "en": "Archived"
+    },
+    "trash": {
+      "zh": "回收站",
+      "en": "Trash"
+    },
+    "loading": {
+      "zh": "正在读取记录…",
+      "en": "Reading records…"
+    },
+    "failed": {
+      "zh": "读取失败",
+      "en": "Records unavailable"
+    },
+    "retry": {
+      "zh": "重试",
+      "en": "Retry"
+    },
+    "emptyActive": {
+      "zh": "还没有横向项目；点「新建」记下需求摘要、负责事项与交付物。",
+      "en": "No project yet; use New to record the brief, your tasks and deliverables."
+    },
+    "emptyArchived": {
+      "zh": "没有归档的横向项目。",
+      "en": "No archived projects."
+    },
+    "emptyTrash": {
+      "zh": "回收站是空的。移入回收站的记录三十天后自动清除。",
+      "en": "The trash is empty. Trashed records are cleared after thirty days."
+    },
+    "emptySearch": {
+      "zh": "没有匹配的记录。",
+      "en": "No matching records."
+    },
+    "truncated": {
+      "zh": "只列出最近 {n} 条，共 {total} 条；用搜索找更早的记录。",
+      "en": "Showing the latest {n} of {total}; search for older records."
+    },
+    "quotaWarning": {
+      "zh": "记录已用到 {percent}%，先整理归档或回收站。",
+      "en": "Records use {percent}% of the limit; tidy the archive or trash."
+    },
+    "unknown": {
+      "zh": "未知",
+      "en": "Unknown"
+    },
+    "materials": {
+      "zh": "{n} 份材料",
+      "en": "{n} materials"
+    },
+    "material": {
+      "zh": "项目材料",
+      "en": "Project materials"
+    },
+    "materialUrl": {
+      "zh": "https://…",
+      "en": "https://…"
+    },
+    "materialTitle": {
+      "zh": "链接说明",
+      "en": "Link title"
+    },
+    "addMaterial": {
+      "zh": "添加",
+      "en": "Add"
+    },
+    "removeMaterial": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "materialInvalid": {
+      "zh": "材料地址只收 http/https 的完整地址，说明不能为空。",
+      "en": "Material links must be complete http/https addresses with a title."
+    },
+    "fieldTitle": {
+      "zh": "标题",
+      "en": "Title"
+    },
+    "summary": {
+      "zh": "需求摘要",
+      "en": "Brief"
+    },
+    "tasks": {
+      "zh": "负责事项",
+      "en": "My tasks"
+    },
+    "deliverables": {
+      "zh": "交付物",
+      "en": "Deliverables"
+    },
+    "communications": {
+      "zh": "沟通结论",
+      "en": "Communication notes"
+    },
+    "milestones": {
+      "zh": "验收节点",
+      "en": "Acceptance milestones"
+    },
+    "issues": {
+      "zh": "待确认问题",
+      "en": "Open questions"
+    },
+    "related": {
+      "zh": "关联记录",
+      "en": "Linked records"
+    },
+    "taskTitle": {
+      "zh": "事项",
+      "en": "Task"
+    },
+    "taskStatus": {
+      "zh": "事项状态",
+      "en": "Task status"
+    },
+    "taskTodo": {
+      "zh": "待办",
+      "en": "To do"
+    },
+    "taskDoing": {
+      "zh": "进行中",
+      "en": "Doing"
+    },
+    "taskBlocked": {
+      "zh": "受阻",
+      "en": "Blocked"
+    },
+    "taskDone": {
+      "zh": "完成",
+      "en": "Done"
+    },
+    "taskDue": {
+      "zh": "日期",
+      "en": "Date"
+    },
+    "addTask": {
+      "zh": "添加事项",
+      "en": "Add task"
+    },
+    "deliverableName": {
+      "zh": "交付物名称",
+      "en": "Deliverable name"
+    },
+    "deliverableVersion": {
+      "zh": "版本",
+      "en": "Version"
+    },
+    "deliverableStatus": {
+      "zh": "交付状态",
+      "en": "Delivery status"
+    },
+    "deliverableDraft": {
+      "zh": "草稿",
+      "en": "Draft"
+    },
+    "deliverableReview": {
+      "zh": "评审中",
+      "en": "In review"
+    },
+    "deliverableDelivered": {
+      "zh": "已交付",
+      "en": "Delivered"
+    },
+    "deliverableAccepted": {
+      "zh": "已验收",
+      "en": "Accepted"
+    },
+    "deliverableDue": {
+      "zh": "日期",
+      "en": "Date"
+    },
+    "addDeliverable": {
+      "zh": "添加交付物",
+      "en": "Add deliverable"
+    },
+    "communicationSummary": {
+      "zh": "结论",
+      "en": "Conclusion"
+    },
+    "communicationAt": {
+      "zh": "沟通日期",
+      "en": "Date"
+    },
+    "addCommunication": {
+      "zh": "添加沟通",
+      "en": "Add note"
+    },
+    "milestoneLabel": {
+      "zh": "节点名称",
+      "en": "Milestone"
+    },
+    "milestoneDue": {
+      "zh": "日期",
+      "en": "Date"
+    },
+    "milestoneStatus": {
+      "zh": "节点状态",
+      "en": "Milestone status"
+    },
+    "addMilestone": {
+      "zh": "添加验收节点",
+      "en": "Add milestone"
+    },
+    "issueTitle": {
+      "zh": "问题",
+      "en": "Question"
+    },
+    "issueStatus": {
+      "zh": "问题状态",
+      "en": "Question status"
+    },
+    "issueOpen": {
+      "zh": "待确认",
+      "en": "Open"
+    },
+    "issueDoing": {
+      "zh": "沟通中",
+      "en": "Discussing"
+    },
+    "issueResolved": {
+      "zh": "已解决",
+      "en": "Resolved"
+    },
+    "addIssue": {
+      "zh": "添加问题",
+      "en": "Add question"
+    },
+    "itemTodo": {
+      "zh": "待办",
+      "en": "To do"
+    },
+    "itemDoing": {
+      "zh": "进行中",
+      "en": "Doing"
+    },
+    "itemDone": {
+      "zh": "完成",
+      "en": "Done"
+    },
+    "noMilestone": {
+      "zh": "没有未完成的验收节点",
+      "en": "No open acceptance milestones"
+    },
+    "noTasks": {
+      "zh": "还没有负责事项",
+      "en": "No tasks yet"
+    },
+    "tasksCount": {
+      "zh": "负责事项 {done}/{total}",
+      "en": "Tasks {done}/{total}"
+    },
+    "deliverablesCount": {
+      "zh": "交付物 {n}",
+      "en": "{n} deliverables"
+    },
+    "issuesCount": {
+      "zh": "待确认 {n}",
+      "en": "{n} open questions"
+    },
+    "milestoneHint": {
+      "zh": "节点名称、日期与状态都由你维护；这里不判断合同履约，也不管审批与经费。",
+      "en": "You maintain milestone names, dates and status; contract acceptance, approval and budget are out of scope here."
+    },
+    "relatedMeeting": {
+      "zh": "会议",
+      "en": "Meeting"
+    },
+    "relatedAction": {
+      "zh": "行动项",
+      "en": "Action"
+    },
+    "relatedManuscript": {
+      "zh": "稿件",
+      "en": "Manuscript"
+    },
+    "addRelated": {
+      "zh": "关联",
+      "en": "Link"
+    },
+    "relatedPlaceholder": {
+      "zh": "选择会议、行动项或稿件",
+      "en": "Choose a meeting, action or manuscript"
+    },
+    "noRelated": {
+      "zh": "没有关联的记录。",
+      "en": "No linked records."
+    },
+    "relatedMissing": {
+      "zh": "记录已不在",
+      "en": "Record missing"
+    },
+    "removeRow": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "invalidRows": {
+      "zh": "事项、交付物、沟通、节点与问题要填完整；交付物要写名称与版本，版本不超过 32 字，节点名称不超过 60 字。",
+      "en": "Tasks, deliverables, notes, milestones and questions must be complete; deliverables need a name and a version within 32 characters, and milestone names stay within 60 characters."
+    },
+    "close": {
+      "zh": "关闭",
+      "en": "Close"
+    },
+    "save": {
+      "zh": "保存",
+      "en": "Save"
+    },
+    "saving": {
+      "zh": "保存中…",
+      "en": "Saving…"
+    },
+    "saved": {
+      "zh": "已保存",
+      "en": "Saved"
+    },
+    "saveFailed": {
+      "zh": "保存失败",
+      "en": "Save failed"
+    },
+    "draftSaved": {
+      "zh": "草稿已存",
+      "en": "Draft kept"
+    },
+    "draftRestored": {
+      "zh": "已恢复上次未保存的内容。",
+      "en": "Restored the unsaved draft."
+    },
+    "archive": {
+      "zh": "归档",
+      "en": "Archive"
+    },
+    "restore": {
+      "zh": "恢复",
+      "en": "Restore"
+    },
+    "trashAction": {
+      "zh": "移入回收站",
+      "en": "Move to trash"
+    },
+    "deletedIn": {
+      "zh": "{n} 天后自动清除",
+      "en": "Cleared in {n} days"
+    },
+    "unsavedClose": {
+      "zh": "还有没保存的修改；关闭后草稿会保留。",
+      "en": "There are unsaved changes; closing keeps the draft."
+    },
+    "keepEditing": {
+      "zh": "继续编辑",
+      "en": "Keep editing"
+    },
+    "closeKeepDraft": {
+      "zh": "关闭并保留草稿",
+      "en": "Close and keep draft"
+    },
+    "conflict": {
+      "zh": "这条记录在别处更新过，保存被拒绝。可以载入最新的内容，或继续用你的编辑。",
+      "en": "This record changed elsewhere and the save was rejected. Load the latest content, or continue with your edits."
+    },
+    "loadLatest": {
+      "zh": "载入最新（放弃本地修改）",
+      "en": "Load latest (discard local edits)"
+    },
+    "recordMissing": {
+      "zh": "这条记录已经不在了。",
+      "en": "This record no longer exists."
+    },
+    "trashRestoreHint": {
+      "zh": "回收站里的记录三十天后自动清除；先恢复再编辑。",
+      "en": "Trashed records are cleared after thirty days; restore before editing."
+    },
+    "titleRequired": {
+      "zh": "标题不能是空的。",
+      "en": "The title is required."
+    }
+  }
+}

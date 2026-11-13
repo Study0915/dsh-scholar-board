@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 4,
+  "at": "2026-11-13",
+  "external": true,
+  "zh": "新增「横向项目」卡：需求摘要、个人负责事项、交付物与版本、沟通结论、验收节点与待确认问题放在一张卡里，可关联会议、行动项、稿件与材料；默认模板不收合同金额、报价与付款节点等敏感业务详情，事项与节点状态由你维护，卡片不判断合同履约。列表显示未完成事项、待确认问题、最近的验收节点与首个交付物，支持搜索、归档与回收站；记录类型、检索、导出导入、配额与内置组件画廊一并支持横向项目。",
+  "en": "Adds the industry-sponsored project card: requirement summary, your own tasks, deliverables with versions, communication conclusions, acceptance milestones and open issues on one card, linked to meetings, action items, manuscripts and materials; the default template keeps no contract amounts, quotes or payment milestones, you maintain the item and milestone statuses, and the card does not judge contract fulfilment. List rows show open tasks, open issues, the nearest milestone and the first deliverable, with search, archive and trash; records, search, export/import, quota and the built-in gallery now cover projects too."
+}
