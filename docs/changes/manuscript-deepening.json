@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 2,
+  "at": "2026-11-13",
+  "external": true,
+  "zh": "「小论文」卡新增图表目录、逐轮投稿与修回事项：每条修回指向具体的一轮投稿，记录反馈、改动与 http/https 证据材料，列表行显示图表数、投稿轮数与待改条数。删除一轮投稿会连带移除该轮修回；已完成但没写改动或没附证据时显示「未记改动」「未附证据」，不补写成结论。搜索覆盖图表编号与标题、刊会与修回反馈，导出导入保留三个数组。",
+  "en": "The Manuscripts card now keeps a figure and table list, submission rounds and revision items: each revision points at a specific round and records feedback, the change and http/https evidence links, and list rows show figure, round and open-revision counts. Removing a round also removes its revisions; a completed revision without a change or evidence shows as such instead of being filled in. Search covers figure labels and titles, venues and revision feedback, and export/import keeps all three arrays."
+}

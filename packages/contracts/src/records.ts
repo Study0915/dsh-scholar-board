@@ -29,6 +29,11 @@ export const RECORDS_LIMITS = {
   entries: 64,
   unitLength: 32,
   stageHistory: 200,
+  figures: 100,
+  submissions: 50,
+  revisions: 200,
+  figureLabelLength: 32,
+  revisionText: 2000,
   searchLength: 200,
 } as const
 
@@ -52,6 +57,42 @@ export interface StageEntry {
   stage: ManuscriptStage
   at: string
   note?: string
+}
+
+/** 图表目录里的一行：图或表、编号、标题与证据材料。 */
+export type FigureKind = 'figure' | 'table'
+
+export interface ManuscriptFigure {
+  id: string
+  kind: FigureKind
+  label: string
+  title: string
+  note?: string
+  materials?: MaterialRef[]
+}
+
+/** 一轮投稿的结果；拒稿、撤稿与转投都留在这里，旧轮次不删。 */
+export type SubmissionDecision = 'pending' | 'minor' | 'major' | 'accepted' | 'rejected' | 'withdrawn' | 'transferred'
+
+export interface SubmissionRound {
+  id: string
+  venue: string
+  submittedAt?: Due
+  decision: SubmissionDecision
+  decidedAt?: Due
+  note?: string
+}
+
+/** 一条修回事项：审稿反馈、对应改动与证据材料。 */
+export type RevisionStatus = 'todo' | 'doing' | 'done' | 'declined'
+
+export interface RevisionItem {
+  id: string
+  roundId: string
+  feedback: string
+  change?: string
+  status: RevisionStatus
+  materials?: MaterialRef[]
 }
 
 /** 指向前向记录的引用；反向引用由宿主现算，不双写。 */
@@ -127,6 +168,9 @@ export interface ManuscriptRecord extends RecordBase {
   due?: Due
   related?: RecordRef[]
   materials?: MaterialRef[]
+  figures?: ManuscriptFigure[]
+  submissions?: SubmissionRound[]
+  revisions?: RevisionItem[]
 }
 
 /** 文献阅读。 */

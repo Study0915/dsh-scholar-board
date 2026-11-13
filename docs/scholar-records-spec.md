@@ -85,8 +85,19 @@
 | due | date 或 instant | 否 | 可选投稿期限 |
 | related | `Ref[]` | 否 | 关联会议、行动项；研究记录后续批次 |
 | materials | `MaterialRef[]` | 否 | 正文与代码材料 |
+| figures | `ManuscriptFigure[]` | 否 | 图表目录 |
+| submissions | `SubmissionRound[]` | 否 | 投稿轮次 |
+| revisions | `RevisionItem[]` | 否 | 修回事项，每条指向一轮投稿 |
 
 阶段枚举：构思 idea、实验 experiment、写作 writing、内审 internal-review、已投稿 submitted、修回 revision、已接收 accepted、归档 archived。阶段可退回，拒稿、撤稿、转投记入 `stageHistory` 的 note。首批不显示完成百分比；通信研究可选检查模板（问题与假设、系统模型等）作为可选字段留到 S04/S05，不强制填写。
+
+S05 补齐三个内嵌数组，反馈、改动与证据在同一条稿件里串起来：
+
+- `ManuscriptFigure` 为 `{ id, kind: 'figure'|'table', label ≤32, title ≤200, note?, materials? }`。`label` 是「图 1」「表 2」这样的编号，`title` 是图表标题；没有图表时不写这个字段，界面不虚构编号。
+- `SubmissionRound` 为 `{ id, venue, decision, submittedAt?, decidedAt?, note? }`。`decision` 只能是待定 pending、小修 minor、大修 major、接收 accepted、拒稿 rejected、撤稿 withdrawn、转投 transferred；日期沿用 `Due` 形状。
+- `RevisionItem` 为 `{ id, roundId, feedback, change?, status, materials? }`。`roundId` 必须指向本稿件 `submissions` 里的一轮；`status` 只能是待改 todo、处理中 doing、已完成 done、不改 declined。`feedback` 必填且不超过 2000 字符，`change` 与证据可留空。
+- 删除一轮投稿时，界面连带移除指向该轮的修回事项；宿主在读盘时也拒绝指向不存在轮次的记录。修回已完成但没写改动或没附证据时，界面写「未记改动」「未附证据」，不用具名结论顶替。
+- 搜索匹配图表编号、标题、备注与图表材料标题，轮次的刊会与备注，修回的反馈、改动与材料标题。
 
 ### 文献 literature
 
@@ -153,6 +164,9 @@ S05 补齐。研究记录是「我做过什么、看到了什么」，不是实�
 | 单条 related | 100 |
 | 单条 materials | 64 |
 | 单条 parameters 或 metrics | 64 |
+| 单条 figures | 100 |
+| 单条 submissions | 50 |
+| 单条 revisions | 200 |
 | 单条 stageHistory | 200 |
 | 单条序列化字节 | 64 KiB |
 | 工作区记录条数 | 10000 |
@@ -240,6 +254,7 @@ S05 补齐。研究记录是「我做过什么、看到了什么」，不是实�
 
 - 行动项 status：todo↔doing↔blocked；任意→done；任意→cancelled；done/cancelled 可重开→todo。cancelled 与删除（trash）分别处理。
 - 稿件 stage：idea→experiment→writing→internal-review→submitted→revision→accepted→archived；允许回退（如 submitted→writing），每次变更追加 stageHistory；archived 可恢复。
+- 稿件投稿轮次与修回：轮次只增不覆盖旧轮；修回必须指向同稿件的一轮，删除该轮时连带移除其修回；修回状态 todo→doing→done，或 todo/doing→declined，已完成但缺改动或证据时界面显式留空。
 - 生命周期：活跃→归档→恢复活跃；活跃/归档→回收站→恢复先前状态；回收站→永久删除（仅界面）或 30 天自动清除。
 - 引用：删除来源记录后引用方保留 id 并显示来源缺失；恢复来源后引用复原；移除卡片不影响记录。
 - 冲突：两页面并发更新同一记录，后到者带旧 expectedRevision 收 409 与当前记录；草稿保留。
