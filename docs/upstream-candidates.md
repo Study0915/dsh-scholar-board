@@ -29,6 +29,6 @@
 
 ## 证据索引
 
-- 本轮测量与浏览器、宿主读数：`.debug/s01/report.json`（gitignored）。
+- 本轮测量、浏览器与宿主读数：见 [性能测量](scholar-performance.md)；原始报告在 `.debug/s01/perf-<时间戳>.json`（gitignored）。
 - 候选提交的文件范围：`git show --stat <提交>`。
 - 上游基线原文核对：`853a454` 下对应文件的只读副本保存在 `.debug/upstream-check/`（gitignored），不随仓库分发。
