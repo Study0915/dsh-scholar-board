@@ -1,0 +1,5 @@
+#!/bin/sh
+# 云端推送前的隐私与身份检查；私有词表由环境提供，不进入仓库。
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+exec node "$root/scripts/privacy-check.mjs" --pre-push --require-private "$2"

@@ -6,6 +6,8 @@
 
 当前实施顺序见 [docs/PLAN-scholar.md](docs/PLAN-scholar.md)；设计领域功能前读 [产品规划](docs/scholar-product.md) 与 [领域术语](docs/scholar-domain.md)，修改交互或排版前读 [体验验收要求](docs/scholar-experience.md)。PLAN.md 与 PLAN-motion.md 为历史基础能力和动效候选清单，勾选不代表当前指纹通过验收。独立维护、个人使用与上游协作边界见 D35。
 
+云端 QoderWake 的初始化和推送流程见 [docs/cloud-environment.md](docs/cloud-environment.md)；云端提交仍守本文件的测试、隐私和边界。
+
 ## 产品开发规则
 
 - 面向通信方向硕博的个人科研工作台；当前优先组会记录、行动项与小论文进度。每次只实施当前计划中一个有明确验收条件的任务。
@@ -13,6 +15,7 @@
 - 共享记录通过宿主公开契约访问；新增多张卡片展示同一记录时先确定记录身份、写入、引用和删除语义。新增组件保持内置与用户组件能力一致。
 - 延续现有卡片审美与令牌，按内容调整信息密度；交付同时覆盖编辑、保存反馈、空态、长内容、键盘操作、浅深色、尺寸适配和减弱动效。性能结论附相同环境下的前后测量。
 - 学术领域功能与通用体验改进分开提交。上游候选需能从上游最新基线独立验证，具体流程见产品规划；创建上游 Issue/PR、合并与发布仍须用户明确授权。
+- 云端 Waker 只在 `Study0915/dsh-scholar-board` 建任务分支、提 PR 并合并；合并前 CI 必须通过；上游 Issue/PR、合并与 npm 发布仍需用户明确授权。
 
 ## 写作规则
 
@@ -95,8 +98,8 @@
 ## 参考来源
 
 - 宿主源码：全局安装的 `@deepseek-ai/dsh`，包在其 `node_modules/@deepseek-ai/` 下，类型声明在各包的 `lib/types/`。方案核实时的宿主版本是 0.2.1-rc.1。
-- 任务看板插件（面板注册、工具注册、扩展契约的先例）：上游 `https://github.com/zhu1090093659/dsh-web` 的 `packages/dsh-task-board`；本机有一份只读副本在 `D:\DSH\dsh-claude-style\.debug\dsh-web\packages\dsh-task-board`。
-- 检查与工具脚本（lint、jscpd、verify、ADR 索引、changelog、AGENTS 命令表）照搬 `D:\DSH\dsh-claude-style\scripts\` 与 `packages/testing/`，按本仓库的包结构改写。
+- 任务看板插件（面板注册、工具注册、扩展契约的先例）：上游 `https://github.com/zhu1090093659/dsh-web` 的 `packages/dsh-task-board`；工作区只读副本不入库。
+- 检查与工具脚本（lint、jscpd、verify、ADR 索引、changelog、AGENTS 命令表）照搬上游 `dsh-web` 的 `scripts/` 与 `packages/testing/`，按本仓库的包结构改写。
 - 视觉参考：`https://transitions.dev/studio.html?id=cWqA5gXWQV9`，组件是 HTML、CSS、JS 三份文件，动效原语用类名声明，时长从根节点的 CSS 变量读。
 
 ## 命令
@@ -136,5 +139,6 @@
 ## Git 与发布
 
 - 约定式提交前缀（`feat(scope):`、`fix(scope):`、`refactor(scope):`、`docs(scope):`、`chore(release):` …）；提交标题与正文用中文；一次提交一个逻辑改动，不提交 WIP，不夹带无关改动；移动与逻辑改动分开提交。
-- 只有用户要求时才提交或推送。
+- 只有用户要求时才提交或推送；云端 Waker 按 [docs/cloud-environment.md](docs/cloud-environment.md) 的分支/PR 流程执行，合并前 CI 必须通过。
+- 每次推送公共仓库前运行隐私检查；真实姓名、手机号、个人邮箱、个人目录路径、凭据不得进入仓库；GitHub 用户名与 noreply 邮箱除外；私有词表由运行环境提供，不入库。
 - `lib/` 是构建产物，从不提交（D2）。

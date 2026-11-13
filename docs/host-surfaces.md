@@ -1,6 +1,6 @@
 # 宿主接入面
 
-方案依赖的宿主能力，以及每一项的出处。核实时的宿主是全局安装的 `@deepseek-ai/dsh` 0.2.1-rc.1，宿主包在它的 `node_modules/@deepseek-ai/` 下，类型声明在各包的 `lib/types/`。下文的「任务看板」指 `dsh-web` 仓库的 `packages/dsh-task-board`（本机只读副本：`D:\DSH\dsh-claude-style\.debug\dsh-web\packages\dsh-task-board`）。
+方案依赖的宿主能力，以及每一项的出处。核实时的宿主是全局安装的 `@deepseek-ai/dsh` 0.2.1-rc.1，宿主包在它的 `node_modules/@deepseek-ai/` 下，类型声明在各包的 `lib/types/`。下文的「任务看板」指 `dsh-web` 仓库的 `packages/dsh-task-board`。
 
 这些条目在 `packages/contracts` 的契约表建立后搬进契约表，各带一条契约测试（D1），本文件随之删去对应条目。
 
@@ -10,7 +10,7 @@
 
 - 一个包两个半边：`exports["."]` 是宿主半边，`exports["./client"]` 是浏览器半边；`package.json` 的 `dsh.client`（`inject`、`platform: "web"`）声明浏览器半边，它由宿主在 `/plugins/<id>/client.js` 提供；`dsh.bundle.patch` 指向 `cordis.patch.yml`，向 profile 插入一行 `{ id, name: <包名> }`。出处：任务看板 `package.json` 与 `cordis.patch.yml`。
 - 宿主配置：`Config` 用 schemastery 声明，可热改的字段标 `Volatile<…>`；改动经 `loader/volatile-update` 事件生效，不重新挂载。出处：任务看板 `src/index.ts`。
-- 浏览器半边外部化 `react`、`react-dom/client`、`@deepseek-ai/dsh-client-ui-primitives`。出处：`D:\DSH\dsh-claude-style\scripts\build.mjs` 的 `HOST_PACKAGES`。
+- 浏览器半边外部化 `react`、`react-dom/client`、`@deepseek-ai/dsh-client-ui-primitives`。出处：上游 `dsh-web` 的 `scripts/build.mjs` 的 `HOST_PACKAGES`。
 - **浏览器半边读宿主服务前必须在插件上声明 `inject`**：cordis 只允许读声明过的服务，`apply` 里读未声明的属性会抛 `cannot get property "<名字>" without inject`，插件整条变成 failed，宿主的启动检查只说那一条没起来。声明之后 cordis 等到服务出现才调用 `apply`，服务不出现时插件停在 pending，检查报出在等哪一项。本仓库在 0.2.1-rc.1 上实证：未声明时 `dsh-widget-board: failed`，声明 `inject = ['slots']` 后侧栏入口与中栏页面都出现。出处：宿主启动检查报出的那条错误与 `packages/testing/smoke.cjs`。
 - 浏览器半边的脚本由宿主按内容组合成一条 combo 地址（`/plugins/??<包名>/client.js&rev=<哈希>`），单包的 `/plugins/<包名>/client.js` 不是路由。出处同上。
 - **客户端模块表与平台种子**：`window.__DSH_BOOT__` 是宿主组合的 entry 图；Web shell 启动时建一张冻结的 lazy CJS 模块表，平台种子是 `react`、`react/jsx-runtime`、`react-dom`、`react-dom/client`、`@deepseek-ai/cordis`、`@deepseek-ai/dsh-client-store`、`@deepseek-ai/dsh-client-ui-slots`、`@deepseek-ai/dsh-client-ui-primitives`、`@deepseek-ai/dsh-client-ui-dockkit`。`dsh.client.external` 是请求非基线模块行的字段；功能插件不添加它，跨包行为走 cordis 服务，跨包界面走插槽。`import type` 在编译时被抹掉，不产生模块请求。出处：宿主 `dsh-client-modules/README.md`、Web shell 的 `staticModules`、`dsh-package-manifest` 的 `DshClientManifest`；本仓库的 `scripts/build.mjs`、`scripts/lint.mjs` 与 `packages/testing/fixtures/provider-types/`。
@@ -37,7 +37,7 @@
 - **skill**：`ctx.skills.register(SkillRegistration)` 注册运行时 skill。出处：`dsh-skill/lib/types/index.d.ts`。
 - **虚拟 skill 会被列出来、模型能加载**（D9）：注册的 `widget-authoring` 在一个空的临时会话里输入 `/` 之后出现在「技能」一节；`invocation.modelInvocable` 与 `userInvocable` 都为真。出处：本仓库的 `packages/host/src/tools/index.ts`，在 0.2.1-rc.2 的真实临时宿主里核实（`packages/testing/dsh-web.cjs` 起的实例，打开新会话输入 `/`）。
 - **工具视图在 `result` 阶段读得到工具写的那一份数据**（D9）：工具注册项可以用 `output.presentationMeta(args, value)` 把一份 JSON 交给 `tool/result` 的 `meta`，视图的 `result` 阶段从 `block.meta` 读到同一份（`ToolResultNode` 的 `meta`）。出处：`dsh-tools/lib/types/index.d.ts` 的 `ToolOutputDefinition.presentationMeta` 与 `dsh-client-ui-conversation/lib/types/client/contract/records.d.ts` 的 `ToolResultNode`（0.2.1-rc.2，按类型声明核实）。会话重新打开时按同一份重画与视图在真实会话里的样子，还没有人在场的端到端核对（D9 的完成判据）。
-- **路由**：`ctx.webServer.register(route)`（`WebRoute` 来自 `@deepseek-ai/dsh-host-webserver`）交给插件原始请求，宿主的 `/api` 栅栏不覆盖插件路由。插件自己调用 `ctx.get('connection')?.requestRejection(req)` 借用宿主的栅栏与认证；没有这项服务时只放行本机回环。出处：`D:\DSH\dsh-claude-style\packages\engine\node\http.ts`。
+- **路由**：`ctx.webServer.register(route)`（`WebRoute` 来自 `@deepseek-ai/dsh-host-webserver`）交给插件原始请求，宿主的 `/api` 栅栏不覆盖插件路由。插件自己调用 `ctx.get('connection')?.requestRejection(req)` 借用宿主的栅栏与认证；没有这项服务时只放行本机回环。出处：上游 `dsh-web` 的 `packages/engine/node/http.ts`。
 - **组件文档路由与 CSP 在真实宿主里跑通**（D3）：`kind: 'prefix'` 的一条路由交给插件整棵子树；`sandbox="allow-scripts"` 的 iframe 指向按哈希寻址的文档，文档里的运行时与组件脚本以内联 `<script nonce=…>` 运行，响应头的 CSP 是 `default-src 'none'`、`connect-src 'none'`；iframe 的导航请求带着会话 cookie，`requestRejection({ headers })` 放行。出处：本仓库的 `packages/host/src/routes.ts` 与 `packages/testing/smoke.cjs`（在 0.2.1-rc.1 上实证）。
 - **插件的私有路由必须放在 `/api/` 下，浏览器半边用文档相对的地址**（D1）：桌面外壳的页面来源是 `dsh-app://app`，它的协议处理器只把 `/api/*` 转给宿主的 web 服务——`api/task-board/state` 回 200，`plugins/…` 回 404，随包发布的客户端脚本地址也是文档相对的（`plugins/??<包名>/client.js` 没有开头斜杠）。前缀因此定成 `/api/widget-board`，客户端只从 `CLIENT_ROUTE` 拼地址。同一协议下的沙箱 iframe 指向 `api/…` 能正常加载（`load` 事件与 `contentWindow` 都正常）。出处：任务看板 `src/protocol.ts` 与 `src/client/host-api.ts` 的「DOCUMENT-RELATIVE」注释；本仓库在桌面外壳的页面里实测。
 - **凭据**：`ctx.get('credentials')` 是凭据接缝，`describe(ref)` 回 `{ configured, source?, writable }`（永不回值），`set(ref, value)` 与 `unset(ref)` 写提供方管理的存储。来源层由提供方定义（本地提供方用 `env`、`file`、`project-env`、`user-env`），启动环境供值的项是只读的。形状按本插件用到的部分记在 `packages/contracts/src/host.ts` 的 `credentialsOf`。出处：`dsh-credentials/lib/types/index.d.ts` 与 `dsh-credentials-local` 的 README（0.2.1-rc.2）。
