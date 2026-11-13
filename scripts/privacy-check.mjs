@@ -33,6 +33,7 @@ const ALLOWED_REPOS = new Set([
 const ALLOWED_EMAIL_DOMAINS = new Set(['example.com', 'example.org', 'example.net', 'localhost', 'invalid'])
 const ALLOWED_HOMES = new Set(['widgets', 'market-widgets', 'runner', 'ubuntu', 'node', 'user', 'vscode', 'codespace', 'cloud'])
 const ALLOWED_PHONES = new Set(['13800138000', '13900139000'])
+const SYNTHETIC_VALUES = new Set([['C:', 'escape.js'].join('/')])
 const SKIP_SEGMENTS = new Set(['.git', '.debug', 'node_modules', 'lib', 'vendor'])
 const IMAGE = /\.(?:png|jpe?g|gif|webp|ico|bmp|pdf|zip|gz|tgz|woff2?|ttf|otf|mp4|mov|wasm)$/i
 const SENSITIVE_FILE = /(?:^|\/)(?:\.env(?:\..*)?|\.credentials[^/]*|id_rsa|id_ed25519)$|\.(?:pem|p12|pfx|key)$/i
@@ -42,7 +43,7 @@ const RULES = {
   macHome: /(?:^|[^A-Za-z0-9])\/Users\/[A-Za-z0-9._-]+\//,
   linuxHome: /(?:^|[^A-Za-z0-9])\/home\/([A-Za-z0-9._-]+)\//g,
   email: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,
-  mobile: /(^|[^0-9])(1[3-9][0-9]{9})(?=[^0-9]|$)/g,
+  mobile: /(^|[^0-9A-Za-z])(1[3-9][0-9]{9})(?=[^0-9A-Za-z]|$)/g,
   credential: /gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----|AKIA[0-9A-Z]{16}/,
 }
 const USAGE = `用法：
@@ -113,7 +114,7 @@ function checkPath(file, terms) {
 
 function scanText(text, file, terms, allow) {
   const findings = []
-  const allowSet = new Set(allow.map(normalize))
+  const allowSet = new Set([...allow, ...SYNTHETIC_VALUES].map(normalize))
   const lines = text.split('\n')
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index].replace(/\r$/, '')
@@ -322,6 +323,9 @@ function selfTest() {
     assert.equal(allowedEmail('git@github.com'), true)
     assert.equal(allowedEmail('Study0915@users.noreply.github.com'), true)
     assert.equal(allowedEmail(synthetic.email), false)
+    assert.equal(scanText(SYNTHETIC_VALUES.values().next().value, 'fixture', [], []).length, 0, '合成测试路径应放行')
+    const numericHandle = ['lxjs', '153', '3084', '9733', '-max'].join('')
+    assert.equal(scanText(numericHandle, 'fixture', [], []).some((finding) => finding.rule === 'cn-mobile'), false, 'GitHub 用户名中的长数字不应当作手机号')
     assert.equal(ancestor(cleanSha, badSha), 0)
     assert.equal(ancestor(badSha, cleanSha), 1)
 
