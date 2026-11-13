@@ -36,6 +36,40 @@ The gallery is the third board: one card per built-in widget, grouped into data,
 
 <hr>
 
+## Record cards
+
+This batch of record cards is added from the gallery and is not laid out on the default board. Records are stored by the host: the list searches and switches between active, archived and trash, the detail edits in place and keeps a draft while you type, a failed save keeps your input, and a revision conflict offers the latest record; removing a card keeps its records, and trashed records are cleared after thirty days.
+
+The six research-side cards:
+
+<p align="center">
+  <img src="docs/images/records-light.png" alt="The research records board in light mode: group meetings, literature, action items, manuscripts, research notes and the research overview" width="49%">
+  <img src="docs/images/records-dark.png" alt="The research records board in dark mode: group meetings, literature, action items, manuscripts, research notes and the research overview" width="49%">
+</p>
+
+- **Group meetings**: title, date, brief, discussion feedback, open questions and materials; feedback can create an action item that keeps its source, a new meeting can be prepared from the last one, and the outline copies as Markdown.
+- **Action items**: filters by status, overdue, no due date and blocked, with completed items kept in history.
+- **Manuscripts**: research question, stage and stage history, next step, blockers, target venue and submission date; a figure and table list, submission rounds and revision items let feedback trace to the change and evidence, and a missing change or evidence shows as such.
+- **Literature**: organises papers by to read, reading and understood, keeping authors, venue, year, source link and your own understanding; a feed abstract never becomes your notes.
+- **Research notes**: records a derivation, simulation or experiment with the research question, environment, seeds, parameters and metrics with units, conclusion and result materials; missing content shows as unknown, and parameters and materials are recorded only, never executed.
+- **Research overview**: recent action items, the latest meetings and active manuscripts on one card; complete an action item in place, read its source meeting without leaving the card, or quickly record a new action item.
+
+The four study-and-project cards:
+
+<p align="center">
+  <img src="docs/images/records-study-light.png" alt="The study and projects board in light mode: thesis, industry projects, courses and other tasks" width="49%">
+  <img src="docs/images/records-study-dark.png" alt="The study and projects board in dark mode: thesis, industry projects, courses and other tasks" width="49%">
+</p>
+
+- **Thesis**: chapter progress, result sources, experiments still to run and degree milestones; results keep only the source record id, a missing source is marked, and the card neither assumes school rules nor judges graduation eligibility.
+- **Industry projects**: requirement summary, your own tasks, deliverables with versions, communication conclusions, acceptance milestones and open issues; the default template keeps no contract amounts, quotes or payment milestones.
+- **Courses**: groups courses by term with assignments, exams and study notes, and a coming-up section lines up open work across courses by date.
+- **Other tasks**: collects errands outside courses and papers under custom categories, ordered by due date with filters for overdue, next seven days and no due date, and a done errand can be archived.
+
+Record backup in the settings page exports a `.dshrecords` file and previews the count before importing; every imported record gets a new id, references inside the package are kept, and existing records are left untouched.
+
+<hr>
+
 ## Three files
 
 `widget.json` names and sizes the widget; next to it sit `index.html` and `style.css`, and `main.js` when it needs a script. Built-in widgets, your own and agent-written ones share this one format. Once the files are written, the card appears in the library.
