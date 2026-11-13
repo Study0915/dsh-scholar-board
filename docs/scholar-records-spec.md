@@ -19,7 +19,7 @@
 - 每条记录一个稳定不透明 id（UUID，与卡片实例同生成方式），永不复用。删除卡片不触碰记录；记录独立于任何卡片存在。
 - 每条记录带自己的 `revision`，每次成功写入加一。更新必须带 `expectedRevision`，宿主在写入队列内再核一次，过期回 `409 { code: 'stale-revision', revision, record }`（沿用 `content/routes.ts:240` 的形状）。创建不带 expectedRevision。
 - `createdAt`、`updatedAt` 由宿主记录，UTC ISO 字符串，组件不可写。`schemaVersion` 标记记录形状版本，首批为 1。
-- 每条记录有 `kind`（meeting、action、manuscript、literature）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
+- 每条记录有 `kind`（meeting、action、manuscript、literature、research）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
 
 | 状态 | 判据 | 默认列表 |
 |---|---|---|
@@ -109,6 +109,30 @@ S05 补齐。文献记录的是「我读到了什么、读懂了什么」，不�
 - 同一来源地址的活跃或归档文献视为已在工作台；回收站里的记录不挡重新加入。
 - `related` 只含 `{ kind: 'manuscript', id }`。理解与问题是短文本，搜索会一并匹配。
 
+### 研究记录 research
+
+S05 补齐。研究记录是「我做过什么、看到了什么」，不是实验程序本身；卡片只记录，不执行任何代码或仿真：
+
+| 字段 | 形状 | 必填 | 说明 |
+|---|---|---|---|
+| title | string ≤200 | 是 | 这次推导、仿真或实验的标题 |
+| method | 枚举 | 是 | 推导 derivation、仿真 simulation、实验 experiment |
+| question | string | 否 | 这次想回答的研究问题 |
+| environment | string | 否 | 机器、工具链版本与依赖，原样记录 |
+| seed | string | 否 | 一组或多组随机种子，原样记录 |
+| parameters | `ResearchEntry[]` | 否 | 参数，每条带名称、数值与可选单位 |
+| metrics | `ResearchEntry[]` | 否 | 指标，每条带名称、数值与可选单位 |
+| conclusion | string | 否 | 看到的结论 |
+| related | `Ref[]` | 否 | 关联稿件；课题留到后续批次 |
+| materials | `MaterialRef[]` | 否 | 结果表、图、日志或复现代码的链接 |
+
+`ResearchEntry` 形状为 `{ name: string, value: string, unit?: string }`：名称与数值都非空、按 Unicode 码点不超过 200，单位不超过 32 字符，单组最多 64 条。数值与种子都按文字保存（如 `0–20`、`3.2e-4`、`11, 42, 97`），宿主不解析数值也不换算单位。
+
+- 环境、种子、参数与指标缺失时界面显示「未知」，不猜默认值；`method` 缺省不是合法记录，创建时必须写明。
+- `related` 只含 `{ kind: 'manuscript', id }`。标题、问题、环境、种子、结论与参数指标的文本都参与搜索。
+- 记录不触发实验、不下载材料、不遍历磁盘；结论与材料只是文字与链接（产品规划研究记录一节）。
+- 列表按做法筛选，可选全部、推导、仿真与实验；筛选只在活跃视图生效，归档与回收站各按自己的视图显示。
+
 ### 材料引用 MaterialRef
 
 材料引用是内嵌在记录里的对象，首批不作为独立存储记录：
@@ -128,6 +152,7 @@ S05 补齐。文献记录的是「我读到了什么、读懂了什么」，不�
 |---|---|
 | 单条 related | 100 |
 | 单条 materials | 64 |
+| 单条 parameters 或 metrics | 64 |
 | 单条 stageHistory | 200 |
 | 单条序列化字节 | 64 KiB |
 | 工作区记录条数 | 10000 |

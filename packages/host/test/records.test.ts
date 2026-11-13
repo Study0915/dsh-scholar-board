@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ActionRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord } from '@dsh-scholar-board/contracts'
+import type { ActionRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ResearchRecord } from '@dsh-scholar-board/contracts'
 import { openDrafts } from '../src/drafts/store'
 import { exportRecords, importRecords, previewRecords, readRecordsPackage } from '../src/records/exchange'
 import { registerRecords } from '../src/records/access'
@@ -65,6 +65,28 @@ function literature(overrides: Record<string, unknown> = {}): Record<string, unk
     stage: 'queued',
     understanding: '把干扰建模成非平稳过程',
     questions: '信道状态更新频率对误码率的影响还没算清',
+    ...overrides,
+  }
+}
+
+/** 一条研究记录的输入。 */
+function research(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'research',
+    title: '不同种子下的干扰对齐仿真',
+    method: 'simulation',
+    question: '种子变化会不会让误码率曲线翻转',
+    environment: 'Ubuntu 24.04 / Node 22 / numpy 2.1',
+    seed: '11, 42, 97',
+    parameters: [
+      { name: 'snr', value: '0–20', unit: 'dB' },
+      { name: 'users', value: '8' },
+    ],
+    metrics: [
+      { name: 'ber', value: '3.2e-4' },
+      { name: 'runtime', value: '820', unit: 's' },
+    ],
+    conclusion: '种子只影响小样本段的抖动，趋势一致',
     ...overrides,
   }
 }
@@ -171,6 +193,35 @@ describe('记录存储', () => {
     await expect(store.create(literature({ year: 999 }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(literature({ url: 'javascript:alert(1)' }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(literature({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('研究记录带做法、环境、种子与带单位的参数指标，搜索也看参数与结论', async () => {
+    const { store } = await open()
+    const created = await store.create(research(), ACTOR)
+    const record = created.record as ResearchRecord
+    expect(record).toMatchObject({
+      kind: 'research',
+      method: 'simulation',
+      environment: 'Ubuntu 24.04 / Node 22 / numpy 2.1',
+      seed: '11, 42, 97',
+    })
+    expect(record.parameters).toEqual([
+      { name: 'snr', value: '0–20', unit: 'dB' },
+      { name: 'users', value: '8' },
+    ])
+    expect(record.metrics?.[1]).toEqual({ name: 'runtime', value: '820', unit: 's' })
+    expect(store.view({ kind: 'research' }).records).toHaveLength(1)
+    expect(store.view({ search: 'runtime' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '种子只影响' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const moved = await store.update(record.id, 1, { method: 'experiment', conclusion: '复现一致' }, ACTOR)
+    expect((moved.record as ResearchRecord).method).toBe('experiment')
+    expect((moved.record as ResearchRecord).conclusion).toBe('复现一致')
+
+    await expect(store.create(research({ method: 'field' }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ parameters: [{ name: 'snr' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ metrics: [{ name: 'ber', value: '1e-3', unit: 'x'.repeat(33) }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
   it('归档收起、恢复回到活跃', async () => {
@@ -367,13 +418,18 @@ describe('记录存储', () => {
     expect(preview.byKind.meeting).toBe(3)
   })
 
-  it('导出可以只勾文献，预览按四种记录计数', async () => {
+  it('导出可以只勾文献或研究记录，预览按五种记录计数', async () => {
     const { store } = await open()
     await store.create(meeting(), ACTOR)
     await store.create(literature(), ACTOR)
+    await store.create(research(), ACTOR)
     const bytes = exportRecords(store, { includeArchived: false, includeTrashed: false, kinds: ['literature'] }, Date.now())
     expect(readRecordsPackage(bytes).records.map((record) => record.kind)).toEqual(['literature'])
-    expect(previewRecords(bytes).byKind).toMatchObject({ meeting: 0, action: 0, manuscript: 0, literature: 1 })
+    expect(previewRecords(bytes).byKind).toMatchObject({ meeting: 0, action: 0, manuscript: 0, literature: 1, research: 0 })
+
+    const notes = exportRecords(store, { includeArchived: false, includeTrashed: false, kinds: ['research'] }, Date.now())
+    expect(readRecordsPackage(notes).records.map((record) => record.kind)).toEqual(['research'])
+    expect(previewRecords(notes).byKind).toMatchObject({ meeting: 0, action: 0, manuscript: 0, literature: 0, research: 1 })
   })
 
   it('导出再导入重映射 id、保留关联，不覆盖已有记录', async () => {

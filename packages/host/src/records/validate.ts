@@ -12,6 +12,8 @@ import type {
   MaterialRef,
   RecordKind,
   RecordRef,
+  ResearchEntry,
+  ResearchMethod,
   StageEntry,
 } from '@dsh-scholar-board/contracts'
 import type { Due } from '@dsh-scholar-board/contracts/campus'
@@ -20,8 +22,8 @@ import { validZone } from '@dsh-scholar-board/model'
 import { isRecord } from '../guards'
 import { Refusal } from '../refusal'
 
-/** 四种记录。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature']
+/** 五种记录。 */
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research']
 
 /** 行动项的五个状态。 */
 export const ACTION_STATUSES: readonly ActionStatus[] = ['todo', 'doing', 'blocked', 'done', 'cancelled']
@@ -32,12 +34,16 @@ export const MANUSCRIPT_STAGES: readonly ManuscriptStage[] = ['idea', 'experimen
 /** 文献的三个阅读阶段。 */
 export const LITERATURE_STAGES: readonly LiteratureStage[] = ['queued', 'reading', 'understood']
 
+/** 研究记录的三种做法。 */
+export const RESEARCH_METHODS: readonly ResearchMethod[] = ['derivation', 'simulation', 'experiment']
+
 /** 每种记录可写的字段；系统字段与阶段历史不在这张表里。 */
 const WRITABLE: Record<RecordKind, readonly string[]> = {
   meeting: ['title', 'date', 'topics', 'feedback', 'openQuestions', 'related', 'materials', 'derivedFrom'],
   action: ['title', 'status', 'due', 'source', 'related', 'blockedNote', 'doneNote', 'materials'],
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials'],
   literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'related', 'materials'],
+  research: ['title', 'method', 'question', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials'],
 }
 
 /** 每种记录允许指向的引用类型。 */
@@ -46,10 +52,11 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   action: ['meeting', 'manuscript'],
   manuscript: ['meeting', 'action'],
   literature: ['manuscript'],
+  research: ['manuscript'],
 }
 
 /** 搜索和展示时要读的文本字段。 */
-const TEXT_FIELDS = ['title', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions'] as const
+const TEXT_FIELDS = ['title', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion'] as const
 
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const INSTANT_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?Z$/
@@ -214,6 +221,43 @@ function literatureStageOf(value: unknown): LiteratureStage {
 }
 
 /**
+ * 研究记录的做法：推导、仿真或实验。
+ *
+ * @param value - 外来值。
+ * @returns 做法。
+ */
+function researchMethodOf(value: unknown): ResearchMethod {
+  if (typeof value !== 'string' || !RESEARCH_METHODS.includes(value as ResearchMethod)) {
+    fail(`method 只能是 ${RESEARCH_METHODS.join('、')}`)
+  }
+  return value as ResearchMethod
+}
+
+/**
+ * 一组参数或指标：名称与数值必填，单位可留空；名称与数值都不能是空白。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns 条目表；未填时是 `null`。
+ */
+function entriesOf(value: unknown, field: string): ResearchEntry[] | null {
+  if (value === null) return null
+  if (!Array.isArray(value)) fail(`${field} 要是数组`)
+  if (value.length > RECORDS_LIMITS.entries) fail(`${field} 最多 ${String(RECORDS_LIMITS.entries)} 项`)
+  return value.map((entry, index) => {
+    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { name, value, unit? }`)
+    const name = titleOf(entry.name, `${field}[${String(index)}].name`)
+    const quantity = titleOf(entry.value, `${field}[${String(index)}].value`)
+    if (entry.unit !== undefined && entry.unit !== null) {
+      if (typeof entry.unit !== 'string') fail(`${field}[${String(index)}].unit 要是文字`)
+      if ([...entry.unit.trim()].length > RECORDS_LIMITS.unitLength) fail(`${field}[${String(index)}].unit 最多 ${String(RECORDS_LIMITS.unitLength)} 个字符`)
+    }
+    const unit = entry.unit === undefined ? null : textOf(entry.unit, `${field}[${String(index)}].unit`)
+    return { name, value: quantity, ...(unit === null ? {} : { unit }) }
+  })
+}
+
+/**
  * 出版年份：可留空，填了就要是一个像样的整数。
  *
  * @param value - 外来值。
@@ -271,6 +315,11 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.url !== undefined) out.url = urlOf(input.url)
   if (input.understanding !== undefined) out.understanding = textOf(input.understanding, 'understanding')
   if (input.questions !== undefined) out.questions = textOf(input.questions, 'questions')
+  if (input.environment !== undefined) out.environment = textOf(input.environment, 'environment')
+  if (input.seed !== undefined) out.seed = textOf(input.seed, 'seed')
+  if (input.parameters !== undefined) out.parameters = entriesOf(input.parameters, 'parameters')
+  if (input.metrics !== undefined) out.metrics = entriesOf(input.metrics, 'metrics')
+  if (input.conclusion !== undefined) out.conclusion = textOf(input.conclusion, 'conclusion')
   if (input.blockedNote !== undefined) out.blockedNote = textOf(input.blockedNote, 'blockedNote')
   if (input.doneNote !== undefined) out.doneNote = textOf(input.doneNote, 'doneNote')
   if (input.related !== undefined) out.related = refsOf(input.related, 'related', REFERRABLE[kind])
@@ -291,6 +340,7 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (kind === 'action' && (input.status !== undefined || mode === 'create')) out.status = statusOf(input.status)
   if (kind === 'manuscript' && (input.stage !== undefined || mode === 'create')) out.stage = stageOf(input.stage)
   if (kind === 'literature' && (input.stage !== undefined || mode === 'create')) out.stage = literatureStageOf(input.stage)
+  if (kind === 'research' && (input.method !== undefined || mode === 'create')) out.method = researchMethodOf(input.method)
   if (out.stage !== undefined && input.stageNote !== undefined) {
     out.stageNote = textOf(input.stageNote, 'stageNote')
   }
@@ -348,6 +398,18 @@ export function storedProblem(value: unknown): string | null {
   if (typeof value.title !== 'string' || value.title.trim() === '') return '缺少 title'
   if (value.kind === 'action' && (typeof value.status !== 'string' || !ACTION_STATUSES.includes(value.status as ActionStatus))) return 'status 不认识'
   if (value.kind === 'literature' && (typeof value.stage !== 'string' || !LITERATURE_STAGES.includes(value.stage as LiteratureStage))) return 'stage 不认识'
+  if (value.kind === 'research') {
+    if (typeof value.method !== 'string' || !RESEARCH_METHODS.includes(value.method as ResearchMethod)) return 'method 不认识'
+    for (const field of ['parameters', 'metrics'] as const) {
+      const entries = value[field]
+      if (entries === undefined) continue
+      if (!Array.isArray(entries)) return `${field} 不是数组`
+      for (const entry of entries as unknown[]) {
+        if (!isRecord(entry) || typeof entry.name !== 'string' || entry.name === '' || typeof entry.value !== 'string' || entry.value === '') return `${field} 的条目缺少名称或数值`
+        if (entry.unit !== undefined && (typeof entry.unit !== 'string' || entry.unit === '')) return `${field} 的单位不合法`
+      }
+    }
+  }
   if (value.kind === 'manuscript') {
     if (typeof value.stage !== 'string' || !MANUSCRIPT_STAGES.includes(value.stage as ManuscriptStage)) return 'stage 不认识'
     if (!Array.isArray(value.stageHistory)) return '缺少 stageHistory'
@@ -376,6 +438,15 @@ export function searchTextOf(record: DomainRecord): string {
   if (Array.isArray(materials)) {
     for (const material of materials as MaterialRef[]) {
       if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const field of ['parameters', 'metrics'] as const) {
+    const entries = entry[field]
+    if (!Array.isArray(entries)) continue
+    for (const item of entries as ResearchEntry[]) {
+      if (typeof item?.name === 'string') parts.push(item.name)
+      if (typeof item?.value === 'string') parts.push(item.value)
+      if (typeof item?.unit === 'string') parts.push(item.unit)
     }
   }
   return parts.join('\n').toLowerCase()
