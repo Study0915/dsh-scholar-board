@@ -100,6 +100,11 @@ function loadPrivateTerms({ requirePrivate }) {
   return { terms: cleaned(terms), allow: cleaned(allow) }
 }
 
+function allowedMatch(allowSet, value) {
+  const trimmed = value.replace(/^[^A-Za-z0-9]+/, '')
+  return allowSet.has(normalize(value)) || allowSet.has(normalize(trimmed))
+}
+
 function checkPath(file, terms) {
   const findings = []
   if (SENSITIVE_FILE.test(file) && !/\.env\.(?:example|sample|template)$/i.test(file)) {
@@ -120,13 +125,13 @@ function scanText(text, file, terms, allow) {
     const line = lines[index].replace(/\r$/, '')
     const add = (rule) => findings.push({ file, line: index + 1, rule })
     const userPath = line.match(RULES.windowsUserPath)
-    if (userPath !== null && !allowSet.has(normalize(userPath[0]))) add('windows-user-path')
+    if (userPath !== null && !allowedMatch(allowSet, userPath[0])) add('windows-user-path')
     const localPath = line.match(RULES.windowsLocalPath)
-    if (localPath !== null && !allowSet.has(normalize(localPath[0]))) add('windows-local-path')
+    if (localPath !== null && !allowedMatch(allowSet, localPath[0])) add('windows-local-path')
     const macHome = line.match(RULES.macHome)
-    if (macHome !== null && !allowSet.has(normalize(macHome[0]))) add('mac-home')
+    if (macHome !== null && !allowedMatch(allowSet, macHome[0])) add('mac-home')
     for (const match of line.matchAll(RULES.linuxHome)) {
-      if (!ALLOWED_HOMES.has(match[1]) && !allowSet.has(normalize(match[0]))) add('linux-home')
+      if (!ALLOWED_HOMES.has(match[1]) && !allowedMatch(allowSet, match[0])) add('linux-home')
     }
     for (const match of line.matchAll(RULES.email)) {
       if (!allowedEmail(match[0]) && !allowSet.has(normalize(match[0]))) add('email')
@@ -324,6 +329,7 @@ function selfTest() {
     assert.equal(allowedEmail('Study0915@users.noreply.github.com'), true)
     assert.equal(allowedEmail(synthetic.email), false)
     assert.equal(scanText(SYNTHETIC_VALUES.values().next().value, 'fixture', [], []).length, 0, '合成测试路径应放行')
+    assert.equal(scanText(`'${SYNTHETIC_VALUES.values().next().value}'`, 'fixture', [], []).length, 0, '带引号的合成测试路径应放行')
     const numericHandle = ['lxjs', '153', '3084', '9733', '-max'].join('')
     assert.equal(scanText(numericHandle, 'fixture', [], []).some((finding) => finding.rule === 'cn-mobile'), false, 'GitHub 用户名中的长数字不应当作手机号')
     assert.equal(ancestor(cleanSha, badSha), 0)
