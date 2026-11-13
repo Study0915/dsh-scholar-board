@@ -32,6 +32,7 @@
     "manuscript-model.js",
     "copy.js",
     "view.js",
+    "editor-deep.js",
     "editor.js"
   ],
   "props": {
@@ -84,8 +85,8 @@
       "en": "New"
     },
     "search": {
-      "zh": "搜索标题、问题、下一步与阻碍",
-      "en": "Search titles, questions, next steps and blockers"
+      "zh": "搜索标题、问题、下一步、图表与修回",
+      "en": "Search titles, questions, next steps, figures and revisions"
     },
     "active": {
       "zh": "活跃",
@@ -226,6 +227,202 @@
     "historyEmpty": {
       "zh": "还没有阶段变更。",
       "en": "No stage changes yet."
+    },
+    "figures": {
+      "zh": "图表目录",
+      "en": "Figures and tables"
+    },
+    "figuresEmpty": {
+      "zh": "还没有图表；有图或表就记下编号与标题。",
+      "en": "No figures yet; record a label and title when one exists."
+    },
+    "figureKind": {
+      "zh": "类型",
+      "en": "Kind"
+    },
+    "figureFigure": {
+      "zh": "图",
+      "en": "Figure"
+    },
+    "figureTable": {
+      "zh": "表",
+      "en": "Table"
+    },
+    "figureLabel": {
+      "zh": "编号",
+      "en": "Label"
+    },
+    "figureTitle": {
+      "zh": "标题",
+      "en": "Title"
+    },
+    "figureNote": {
+      "zh": "备注（可选）",
+      "en": "Note (optional)"
+    },
+    "addFigure": {
+      "zh": "添加图表",
+      "en": "Add figure"
+    },
+    "figuresChip": {
+      "zh": "{n} 图表",
+      "en": "{n} figures"
+    },
+    "figureInvalid": {
+      "zh": "图表要填编号和标题。",
+      "en": "A figure needs a label and a title."
+    },
+    "submissions": {
+      "zh": "投稿轮次",
+      "en": "Submission rounds"
+    },
+    "submissionsEmpty": {
+      "zh": "还没有投稿记录。",
+      "en": "No submissions yet."
+    },
+    "submission": {
+      "zh": "第 {n} 轮",
+      "en": "Round {n}"
+    },
+    "venue": {
+      "zh": "刊会",
+      "en": "Venue"
+    },
+    "decision": {
+      "zh": "决定",
+      "en": "Decision"
+    },
+    "decisionPending": {
+      "zh": "待定",
+      "en": "Pending"
+    },
+    "decisionMinor": {
+      "zh": "小修",
+      "en": "Minor revision"
+    },
+    "decisionMajor": {
+      "zh": "大修",
+      "en": "Major revision"
+    },
+    "decisionAccepted": {
+      "zh": "接收",
+      "en": "Accepted"
+    },
+    "decisionRejected": {
+      "zh": "拒稿",
+      "en": "Rejected"
+    },
+    "decisionWithdrawn": {
+      "zh": "撤稿",
+      "en": "Withdrawn"
+    },
+    "decisionTransferred": {
+      "zh": "转投",
+      "en": "Transferred"
+    },
+    "submittedAt": {
+      "zh": "投稿日期",
+      "en": "Submitted"
+    },
+    "decidedAt": {
+      "zh": "决定日期",
+      "en": "Decided"
+    },
+    "roundNote": {
+      "zh": "备注（可选）",
+      "en": "Note (optional)"
+    },
+    "addRound": {
+      "zh": "添加投稿",
+      "en": "Add round"
+    },
+    "roundsChip": {
+      "zh": "{n} 轮投稿",
+      "en": "{n} rounds"
+    },
+    "roundInvalid": {
+      "zh": "一轮投稿要填刊会与决定。",
+      "en": "A round needs a venue and a decision."
+    },
+    "roundRemoved": {
+      "zh": "已删除该轮投稿，连带移除了 {n} 条修回事项。",
+      "en": "Removed the round and {n} revision items."
+    },
+    "revisions": {
+      "zh": "修回事项",
+      "en": "Revision items"
+    },
+    "revisionsEmpty": {
+      "zh": "还没有修回事项；有反馈时记下改动与证据。",
+      "en": "No revision items yet; when feedback arrives, record the change and evidence."
+    },
+    "revisionRound": {
+      "zh": "对应投稿",
+      "en": "Round"
+    },
+    "revisionFeedback": {
+      "zh": "反馈",
+      "en": "Feedback"
+    },
+    "revisionChange": {
+      "zh": "改动",
+      "en": "Change"
+    },
+    "revisionStatus": {
+      "zh": "状态",
+      "en": "Status"
+    },
+    "revisionTodo": {
+      "zh": "待改",
+      "en": "To do"
+    },
+    "revisionDoing": {
+      "zh": "处理中",
+      "en": "In progress"
+    },
+    "revisionDone": {
+      "zh": "已完成",
+      "en": "Done"
+    },
+    "revisionDeclined": {
+      "zh": "不改",
+      "en": "Declined"
+    },
+    "addRevision": {
+      "zh": "添加修回",
+      "en": "Add revision"
+    },
+    "openRevisionsChip": {
+      "zh": "{n} 项待改",
+      "en": "{n} open"
+    },
+    "revisionInvalid": {
+      "zh": "修回要写反馈，并选一条投稿轮次。",
+      "en": "A revision needs feedback and a submission round."
+    },
+    "roundRequired": {
+      "zh": "先记一轮投稿，再记修回。",
+      "en": "Record a submission round first."
+    },
+    "evidence": {
+      "zh": "证据",
+      "en": "Evidence"
+    },
+    "noEvidence": {
+      "zh": "未附证据",
+      "en": "No evidence"
+    },
+    "changeMissing": {
+      "zh": "未记改动",
+      "en": "No change recorded"
+    },
+    "deepLimit": {
+      "zh": "条目已到上限，先整理删减。",
+      "en": "Reached the item limit; tidy up first."
+    },
+    "unknown": {
+      "zh": "未知",
+      "en": "Unknown"
     },
     "related": {
       "zh": "关联",

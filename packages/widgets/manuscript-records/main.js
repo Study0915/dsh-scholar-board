@@ -72,6 +72,15 @@
     actionPicker: card.querySelector('[data-role="action-picker"]'),
     historySection: card.querySelector('[data-role="history-section"]'),
     history: card.querySelector('[data-role="history"]'),
+    figures: card.querySelector('[data-role="figures"]'),
+    figuresEmpty: card.querySelector('[data-role="figures-empty"]'),
+    addFigure: card.querySelector('[data-action="add-figure"]'),
+    submissions: card.querySelector('[data-role="submissions"]'),
+    submissionsEmpty: card.querySelector('[data-role="submissions-empty"]'),
+    addRound: card.querySelector('[data-action="add-round"]'),
+    revisions: card.querySelector('[data-role="revisions"]'),
+    revisionsEmpty: card.querySelector('[data-role="revisions-empty"]'),
+    addRevision: card.querySelector('[data-action="add-revision"]'),
     materials: card.querySelector('[data-role="materials"]'),
     materialError: card.querySelector('[data-role="material-error"]'),
     materialUrl: card.querySelector('[data-field="material-url"]'),
@@ -98,6 +107,9 @@
     due: card.querySelector('[data-role="label-due"]'),
     related: card.querySelector('[data-role="label-related"]'),
     history: card.querySelector('[data-role="label-history"]'),
+    figures: card.querySelector('[data-role="label-figures"]'),
+    submissions: card.querySelector('[data-role="label-submissions"]'),
+    revisions: card.querySelector('[data-role="label-revisions"]'),
     materials: card.querySelector('[data-role="label-materials"]')
   }
 
@@ -184,7 +196,16 @@
     put(labels.due, t('due'))
     put(labels.related, t('related'))
     put(labels.history, t('history'))
+    put(labels.figures, t('figures'))
+    put(labels.submissions, t('submissions'))
+    put(labels.revisions, t('revisions'))
     put(labels.materials, t('material'))
+    put(nodes.figuresEmpty, t('figuresEmpty'))
+    put(nodes.submissionsEmpty, t('submissionsEmpty'))
+    put(nodes.revisionsEmpty, t('revisionsEmpty'))
+    put(nodes.addFigure, t('addFigure'))
+    put(nodes.addRound, t('addRound'))
+    put(nodes.addRevision, t('addRevision'))
     put(card.querySelector('[data-action="close"]'), t('close'))
     put(card.querySelector('[data-action="add-material"]'), t('addMaterial'))
     put(card.querySelector('[data-action="add-meeting"]'), t('add'))
@@ -317,6 +338,27 @@
     refreshList: function () { refreshList() }
   })
 
+  /** 图表、投稿与修回里的输入：文本走 input，选择走 change，逐项交回编辑器。 */
+  function wireDeep(list, attr, update) {
+    if (list === null) return
+    list.addEventListener('input', function (event) {
+      var target = event.target
+      if (!(target instanceof Element) || target.tagName === 'SELECT') return
+      var row = target.closest('[' + attr + ']')
+      if (row === null) return
+      var field = target.getAttribute('data-field')
+      if (field !== null) update(row.getAttribute(attr), field, target.value)
+    })
+    list.addEventListener('change', function (event) {
+      var target = event.target
+      if (!(target instanceof Element) || target.tagName !== 'SELECT') return
+      var row = target.closest('[' + attr + ']')
+      if (row === null) return
+      var field = target.getAttribute('data-field')
+      if (field !== null) update(row.getAttribute(attr), field, target.value)
+    })
+  }
+
   function renderSample() {
     applyLabels()
     var rows = view.sampleRows()
@@ -411,6 +453,45 @@
       }
       var remove = target.closest('.ms__material-remove')
       if (remove !== null) editor.removeMaterial(remove.getAttribute('data-material'))
+    })
+  }
+  nodes.addFigure.addEventListener('click', function () { editor.addFigure() })
+  nodes.addRound.addEventListener('click', function () { editor.addRound() })
+  nodes.addRevision.addEventListener('click', function () { editor.addRevision() })
+  wireDeep(nodes.figures, 'data-figure', function (id, field, value) { editor.updateFigure(id, field, value) })
+  wireDeep(nodes.submissions, 'data-round', function (id, field, value) { editor.updateRound(id, field, value) })
+  wireDeep(nodes.revisions, 'data-revision', function (id, field, value) { editor.updateRevision(id, field, value) })
+  if (nodes.figures !== null) {
+    nodes.figures.addEventListener('click', function (event) {
+      var target = event.target
+      if (!(target instanceof Element)) return
+      var remove = target.closest('[data-action="remove-figure"]')
+      if (remove !== null) editor.removeFigure(remove.getAttribute('data-figure'))
+    })
+  }
+  if (nodes.submissions !== null) {
+    nodes.submissions.addEventListener('click', function (event) {
+      var target = event.target
+      if (!(target instanceof Element)) return
+      var remove = target.closest('[data-action="remove-round"]')
+      if (remove !== null) editor.removeRound(remove.getAttribute('data-round'))
+    })
+  }
+  if (nodes.revisions !== null) {
+    nodes.revisions.addEventListener('click', function (event) {
+      var target = event.target
+      if (!(target instanceof Element)) return
+      var open = target.closest('.ms__material-open')
+      if (open !== null && typeof open.dataset.url === 'string' && live && typeof widget.open === 'function') {
+        widget.open(open.dataset.url)
+        return
+      }
+      var action = target.closest('[data-action]')
+      if (action === null) return
+      var name = action.getAttribute('data-action')
+      if (name === 'remove-revision') editor.removeRevision(action.getAttribute('data-revision'))
+      else if (name === 'add-revision-material') editor.addRevisionMaterial(action.getAttribute('data-revision'))
+      else if (name === 'remove-revision-material') editor.removeRevisionMaterial(action.getAttribute('data-revision'), action.getAttribute('data-material'))
     })
   }
   nodes.confirm.querySelector('[data-action="confirm-keep"]').addEventListener('click', function () { nodes.confirm.close() })

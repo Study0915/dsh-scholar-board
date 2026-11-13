@@ -30,6 +30,15 @@
     var candidates = { meetings: [], actions: [] }
     /** 关联项的标题缓存，按 id。 */
     var relatedRecords = {}
+    /** 图表、投稿轮次与修回的渲染与增删。 */
+    var deep = root.createManuscriptDeep({
+      app: app,
+      nodes: nodes,
+      t: t,
+      pure: pure,
+      onInput: onInput,
+      setStatus: function (text, tone) { ctx.setStatus(text, tone) }
+    })
 
     function fillStageSelects() {
       var list = nodes.stageSelect
@@ -56,8 +65,12 @@
       if (nodes.stageSelect !== null) nodes.stageSelect.value = pure.isStage(form.stage) ? form.stage : 'idea'
       app.materials = Array.isArray(form.materials) ? form.materials : []
       app.related = Array.isArray(form.related) ? form.related : []
+      app.figures = Array.isArray(form.figures) ? form.figures : []
+      app.submissions = Array.isArray(form.submissions) ? form.submissions : []
+      app.revisions = Array.isArray(form.revisions) ? form.revisions : []
       renderMaterials()
       renderRelated()
+      deep.render()
       renderHistory(app.baseline)
       ctx.setStatus('', 'neutral')
       if (nodes.detailHint !== null) nodes.detailHint.hidden = true
@@ -188,6 +201,8 @@
       if (addAction !== null) addAction.disabled = trashed
       if (nodes.meetingPicker !== null) nodes.meetingPicker.disabled = trashed
       if (nodes.actionPicker !== null) nodes.actionPicker.disabled = trashed
+      var deepControls = ctx.card.querySelectorAll('[data-deep]')
+      for (var at = 0; at < deepControls.length; at += 1) deepControls[at].disabled = trashed
       nodes.saveButton.disabled = trashed
       nodes.saveButton.textContent = t('save')
       if (trashed) {
@@ -207,6 +222,9 @@
       app.saving = false
       app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
       app.related = Array.isArray(record.related) ? record.related.slice() : []
+      app.figures = Array.isArray(record.figures) ? record.figures.slice() : []
+      app.submissions = Array.isArray(record.submissions) ? record.submissions.slice() : []
+      app.revisions = Array.isArray(record.revisions) ? record.revisions.slice() : []
       relatedRecords = {}
       fillForm({
         title: record.title,
@@ -217,7 +235,10 @@
         target: record.target,
         due: dueInputOf(record),
         materials: app.materials,
-        related: app.related
+        related: app.related,
+        figures: app.figures,
+        submissions: app.submissions,
+        revisions: app.revisions
       })
       showDetail(record, true)
       loadRelatedTitles()
@@ -235,8 +256,11 @@
       app.saving = false
       app.materials = []
       app.related = []
+      app.figures = []
+      app.submissions = []
+      app.revisions = []
       relatedRecords = {}
-      fillForm({ title: '', question: '', stage: 'idea', next: '', blockers: '', target: '', due: '', materials: [], related: [] })
+      fillForm({ title: '', question: '', stage: 'idea', next: '', blockers: '', target: '', due: '', materials: [], related: [], figures: [], submissions: [], revisions: [] })
       showDetail(null, true)
       loadCandidates()
       restoreDraft('new').then(function (restored) {
@@ -313,7 +337,10 @@
         target: nodes.target.value,
         due: nodes.dueInput.value,
         materials: app.materials,
-        related: app.related
+        related: app.related,
+        figures: app.figures,
+        submissions: app.submissions,
+        revisions: app.revisions
       }
     }
 
@@ -365,7 +392,10 @@
           target: form.target,
           due: form.due,
           materials: form.materials,
-          related: form.related
+          related: form.related,
+          figures: form.figures,
+          submissions: form.submissions,
+          revisions: form.revisions
         })
         loadRelatedTitles()
         app.dirty = true
@@ -373,6 +403,11 @@
       }, function () {
         return false
       })
+    }
+
+    /** 深一层条目的填写问题；空串表示可以保存。 */
+    function deepProblem() {
+      return deep.problem()
     }
 
     /** 保存：阶段变化时把说明一并交给宿主记进历史。 */
@@ -383,6 +418,11 @@
       if (title === '') {
         ctx.setStatus(t('titleRequired'), 'error')
         nodes.titleInput.focus()
+        return
+      }
+      var problem = deepProblem()
+      if (problem !== '') {
+        ctx.setStatus(problem, 'error')
         return
       }
       var stage = nodes.stageSelect !== null && pure.isStage(nodes.stageSelect.value) ? nodes.stageSelect.value : 'idea'
@@ -397,6 +437,9 @@
         due: nodes.dueInput.value === '' ? null : pure.dateValue(nodes.dueInput.value, pure.zone()),
         materials: app.materials.length === 0 ? null : app.materials,
         related: app.related.length === 0 ? null : app.related,
+        figures: app.figures.length === 0 ? null : app.figures,
+        submissions: app.submissions.length === 0 ? null : app.submissions,
+        revisions: app.revisions.length === 0 ? null : app.revisions,
       }
       if (changedStage && nodes.stageNote.value.trim() !== '') fields.stageNote = nodes.stageNote.value.trim()
       var expected = app.baseline === null ? null : app.baseline.revision
@@ -425,6 +468,9 @@
         ctx.persist({ openId: record.id, draftIds: ui.draftIds })
         app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
         app.related = Array.isArray(record.related) ? record.related.slice() : []
+        app.figures = Array.isArray(record.figures) ? record.figures.slice() : []
+        app.submissions = Array.isArray(record.submissions) ? record.submissions.slice() : []
+        app.revisions = Array.isArray(record.revisions) ? record.revisions.slice() : []
         fillForm({
           title: record.title,
           question: record.question,
@@ -435,7 +481,10 @@
           target: record.target,
           due: dueInputOf(record),
           materials: app.materials,
-          related: app.related
+          related: app.related,
+          figures: app.figures,
+          submissions: app.submissions,
+          revisions: app.revisions
         })
         showDetail(record, false)
         loadRelatedTitles()
@@ -501,6 +550,9 @@
       app.pendingLatest = null
       app.materials = Array.isArray(latest.materials) ? latest.materials.slice() : []
       app.related = Array.isArray(latest.related) ? latest.related.slice() : []
+      app.figures = Array.isArray(latest.figures) ? latest.figures.slice() : []
+      app.submissions = Array.isArray(latest.submissions) ? latest.submissions.slice() : []
+      app.revisions = Array.isArray(latest.revisions) ? latest.revisions.slice() : []
       fillForm({
         title: latest.title,
         question: latest.question,
@@ -511,7 +563,10 @@
         target: latest.target,
         due: dueInputOf(latest),
         materials: app.materials,
-        related: app.related
+        related: app.related,
+        figures: app.figures,
+        submissions: app.submissions,
+        revisions: app.revisions
       })
       app.dirty = false
       showDetail(latest, false)
@@ -603,7 +658,18 @@
       removeMaterial: removeMaterial,
       addRelated: addRelatedFrom,
       removeRelated: removeRelated,
-      reloadLatest: reloadLatest
+      reloadLatest: reloadLatest,
+      addFigure: deep.addFigure,
+      updateFigure: deep.updateFigure,
+      removeFigure: deep.removeFigure,
+      addRound: deep.addRound,
+      updateRound: deep.updateRound,
+      removeRound: deep.removeRound,
+      addRevision: deep.addRevision,
+      updateRevision: deep.updateRevision,
+      removeRevision: deep.removeRevision,
+      addRevisionMaterial: deep.addRevisionMaterial,
+      removeRevisionMaterial: deep.removeRevisionMaterial
     }
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)

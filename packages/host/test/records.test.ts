@@ -224,6 +224,71 @@ describe('记录存储', () => {
     await expect(store.create(research({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
+  it('稿件带图表、投稿轮次与修回，修回要指向存在的一轮', async () => {
+    const { store } = await open()
+    const created = await store.create({
+      kind: 'manuscript',
+      title: '低轨星座干扰分析',
+      stage: 'revision',
+      figures: [
+        { id: 'f1', kind: 'figure', label: '图 1', title: '系统模型', note: '画了三种轨道' },
+        { id: 'f2', kind: 'table', label: '表 1', title: '仿真参数', materials: [{ id: 'fm1', url: 'https://example.com/tab', title: '参数表' }] },
+      ],
+      submissions: [
+        {
+          id: 'r1',
+          venue: 'IEEE TWC',
+          decision: 'major',
+          submittedAt: { kind: 'date', date: '2026-09-01', timeZone: 'Asia/Shanghai' },
+          decidedAt: { kind: 'date', date: '2026-10-20', timeZone: 'Asia/Shanghai' },
+          note: '一审',
+        },
+      ],
+      revisions: [
+        {
+          id: 'v1',
+          roundId: 'r1',
+          feedback: '补一个基线对比',
+          change: '新增 4.2 节',
+          status: 'doing',
+          materials: [{ id: 'vm1', url: 'https://example.com/reply.pdf', title: '回复信' }],
+        },
+      ],
+    }, ACTOR)
+    const record = created.record as ManuscriptRecord
+    expect(record.figures).toHaveLength(2)
+    expect(record.figures?.[1]).toMatchObject({ kind: 'table', label: '表 1', title: '仿真参数' })
+    expect(record.submissions?.[0]).toMatchObject({ venue: 'IEEE TWC', decision: 'major', note: '一审' })
+    expect(record.revisions?.[0]).toMatchObject({ roundId: 'r1', feedback: '补一个基线对比', change: '新增 4.2 节', status: 'doing' })
+    expect(store.view({ kind: 'manuscript' }).records).toHaveLength(1)
+    expect(store.view({ search: '基线对比' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '系统模型' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '回复信' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const second = await store.update(record.id, 1, {
+      submissions: [...(record.submissions ?? []), { id: 'r2', venue: 'IEEE TWC', decision: 'minor' }],
+    }, ACTOR)
+    expect((second.record as ManuscriptRecord).submissions).toHaveLength(2)
+    expect((second.record as ManuscriptRecord).revisions?.[0].roundId).toBe('r1')
+
+    await expect(store.create({ kind: 'manuscript', title: '坏图表', stage: 'idea', figures: [{ id: 'f1', kind: 'photo', label: '图 1', title: '类型不对' }] }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({ kind: 'manuscript', title: '坏轮次', stage: 'idea', submissions: [{ id: 'r1', venue: 'IEEE TWC', decision: 'later' }] }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({
+      kind: 'manuscript',
+      title: '坏修回',
+      stage: 'idea',
+      submissions: [{ id: 'r1', venue: 'IEEE TWC', decision: 'major' }],
+      revisions: [{ id: 'v1', roundId: 'r9', feedback: '没有这一轮', status: 'todo' }],
+    }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({
+      kind: 'manuscript',
+      title: '空反馈',
+      stage: 'idea',
+      submissions: [{ id: 'r1', venue: 'IEEE TWC', decision: 'major' }],
+      revisions: [{ id: 'v1', roundId: 'r1', feedback: '  ', status: 'todo' }],
+    }, ACTOR)).rejects.toMatchObject({ status: 400 })
+  })
+
   it('归档收起、恢复回到活跃', async () => {
     const { store } = await open()
     const { record } = await store.create(meeting(), ACTOR)

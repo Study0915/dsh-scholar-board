@@ -11,6 +11,14 @@
   var LOAD_TIMEOUT = 4000
   var STAGES = ['idea', 'experiment', 'writing', 'internal-review', 'submitted', 'revision', 'accepted', 'archived']
   var ACTIVE_STAGES = ['idea', 'experiment', 'writing', 'internal-review', 'submitted', 'revision']
+  var FIGURE_KINDS = ['figure', 'table']
+  var DECISIONS = ['pending', 'minor', 'major', 'accepted', 'rejected', 'withdrawn', 'transferred']
+  var REVISION_STATUSES = ['todo', 'doing', 'done', 'declined']
+  var MAX_FIGURES = 100
+  var MAX_ROUNDS = 50
+  var MAX_REVISIONS = 200
+  var FIGURE_LABEL_LENGTH = 32
+  var REVISION_TEXT = 2000
 
   /** 阶段读成文案键。 */
   function stageKey(stage) {
@@ -155,6 +163,153 @@
     }
   }
 
+  /** 图表类型读成文案键。 */
+  function figureKey(kind) {
+    return kind === 'table' ? 'figureTable' : 'figureFigure'
+  }
+
+  /** 投稿决定读成文案键。 */
+  function decisionKey(decision) {
+    if (decision === 'minor') return 'decisionMinor'
+    if (decision === 'major') return 'decisionMajor'
+    if (decision === 'accepted') return 'decisionAccepted'
+    if (decision === 'rejected') return 'decisionRejected'
+    if (decision === 'withdrawn') return 'decisionWithdrawn'
+    if (decision === 'transferred') return 'decisionTransferred'
+    return 'decisionPending'
+  }
+
+  /** 修回状态读成文案键。 */
+  function revisionKey(status) {
+    if (status === 'doing') return 'revisionDoing'
+    if (status === 'done') return 'revisionDone'
+    if (status === 'declined') return 'revisionDeclined'
+    return 'revisionTodo'
+  }
+
+  function isFigureKind(value) {
+    return FIGURE_KINDS.indexOf(value) !== -1
+  }
+
+  function isDecision(value) {
+    return DECISIONS.indexOf(value) !== -1
+  }
+
+  function isRevisionStatus(value) {
+    return REVISION_STATUSES.indexOf(value) !== -1
+  }
+
+  /** 一段字：去掉首尾空白；空串是未填。 */
+  function textOf(value) {
+    if (typeof value !== 'string') return ''
+    return value.trim()
+  }
+
+  /** 材料只留能打开的 http/https 地址与说明。 */
+  function cleanMaterials(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var material = list[at]
+      if (material === null || typeof material !== 'object') continue
+      if (typeof material.id !== 'string' || material.id === '') continue
+      if (!materialValid(material.url, material.title)) continue
+      out.push({ id: material.id, url: String(material.url), title: String(material.title).trim() })
+    }
+    return out
+  }
+
+  /** 图表目录：编号、标题与可选的备注；不认识的条目跳过。 */
+  function cleanFigures(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var seen = {}
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var figure = list[at]
+      if (figure === null || typeof figure !== 'object') continue
+      if (typeof figure.id !== 'string' || figure.id === '' || seen[figure.id] === true) continue
+      if (!isFigureKind(figure.kind)) continue
+      var label = textOf(figure.label)
+      var title = textOf(figure.title)
+      if (label === '' || label.length > FIGURE_LABEL_LENGTH || title === '' || title.length > 200) continue
+      seen[figure.id] = true
+      var entry = { id: figure.id, kind: figure.kind, label: label, title: title }
+      var note = textOf(figure.note)
+      if (note !== '') entry.note = note
+      var materials = cleanMaterials(figure.materials)
+      if (materials.length > 0) entry.materials = materials
+      out.push(entry)
+    }
+    return out
+  }
+
+  /** 投稿轮次：刊会、决定与两个日期；不认识的条目跳过。 */
+  function cleanRounds(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var seen = {}
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var round = list[at]
+      if (round === null || typeof round !== 'object') continue
+      if (typeof round.id !== 'string' || round.id === '' || seen[round.id] === true) continue
+      var venue = textOf(round.venue)
+      if (venue === '' || venue.length > 200 || !isDecision(round.decision)) continue
+      seen[round.id] = true
+      var entry = { id: round.id, venue: venue, decision: round.decision }
+      if (round.submittedAt !== null && typeof round.submittedAt === 'object' && round.submittedAt.kind === 'date') entry.submittedAt = round.submittedAt
+      if (round.decidedAt !== null && typeof round.decidedAt === 'object' && round.decidedAt.kind === 'date') entry.decidedAt = round.decidedAt
+      var note = textOf(round.note)
+      if (note !== '') entry.note = note
+      out.push(entry)
+    }
+    return out
+  }
+
+  /** 修回事项：反馈、改动与证据；指向不存在的轮次时丢弃。 */
+  function cleanRevisions(rows, rounds) {
+    var list = Array.isArray(rows) ? rows : []
+    var roundIds = {}
+    for (var index = 0; index < (Array.isArray(rounds) ? rounds : []).length; index += 1) {
+      if (rounds[index] !== null && typeof rounds[index] === 'object' && typeof rounds[index].id === 'string') roundIds[rounds[index].id] = true
+    }
+    var seen = {}
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var revision = list[at]
+      if (revision === null || typeof revision !== 'object') continue
+      if (typeof revision.id !== 'string' || revision.id === '' || seen[revision.id] === true) continue
+      if (typeof revision.roundId !== 'string' || roundIds[revision.roundId] !== true) continue
+      var feedback = textOf(revision.feedback)
+      if (feedback === '' || feedback.length > REVISION_TEXT || !isRevisionStatus(revision.status)) continue
+      seen[revision.id] = true
+      var entry = { id: revision.id, roundId: revision.roundId, feedback: feedback, status: revision.status }
+      var change = textOf(revision.change)
+      if (change !== '' && change.length <= REVISION_TEXT) entry.change = change
+      var materials = cleanMaterials(revision.materials)
+      if (materials.length > 0) entry.materials = materials
+      out.push(entry)
+    }
+    return out
+  }
+
+  /** 待处理（未完成、未拒绝）的修回条数。 */
+  function openRevisionCount(record) {
+    if (record === null || typeof record !== 'object' || !Array.isArray(record.revisions)) return 0
+    var count = 0
+    for (var at = 0; at < record.revisions.length; at += 1) {
+      var status = record.revisions[at] !== null && typeof record.revisions[at] === 'object' ? record.revisions[at].status : null
+      if (status === 'todo' || status === 'doing') count += 1
+    }
+    return count
+  }
+
+  /** 一轮投稿的一行字：刊会与决定。 */
+  function roundLabel(round, text) {
+    if (round === null || typeof round !== 'object') return ''
+    var venue = typeof round.venue === 'string' ? round.venue : ''
+    return text.t(decisionKey(round.decision)) + ' · ' + venue
+  }
+
   /** 日期输入与记录里的 `{ kind: 'date' }` 互转。 */
   function dateValue(text, timeZone) {
     return typeof text === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(text)
@@ -185,14 +340,34 @@
     LOAD_TIMEOUT: LOAD_TIMEOUT,
     STAGES: STAGES,
     ACTIVE_STAGES: ACTIVE_STAGES,
+    FIGURE_KINDS: FIGURE_KINDS,
+    DECISIONS: DECISIONS,
+    REVISION_STATUSES: REVISION_STATUSES,
+    MAX_FIGURES: MAX_FIGURES,
+    MAX_ROUNDS: MAX_ROUNDS,
+    MAX_REVISIONS: MAX_REVISIONS,
+    FIGURE_LABEL_LENGTH: FIGURE_LABEL_LENGTH,
+    REVISION_TEXT: REVISION_TEXT,
     stageKey: stageKey,
     isStage: isStage,
+    figureKey: figureKey,
+    decisionKey: decisionKey,
+    revisionKey: revisionKey,
+    isFigureKind: isFigureKind,
+    isDecision: isDecision,
+    isRevisionStatus: isRevisionStatus,
     dateOf: dateOf,
     dueText: dueText,
     dueTone: dueTone,
     historyOf: historyOf,
     viewRows: viewRows,
     materialValid: materialValid,
+    cleanMaterials: cleanMaterials,
+    cleanFigures: cleanFigures,
+    cleanRounds: cleanRounds,
+    cleanRevisions: cleanRevisions,
+    openRevisionCount: openRevisionCount,
+    roundLabel: roundLabel,
     dateValue: dateValue,
     zone: zone,
     fill: fill
