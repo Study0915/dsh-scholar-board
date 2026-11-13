@@ -43,4 +43,19 @@ async function openLibrary(page) {
   await page.waitForSelector('[data-dsh-scholar-board-library][data-open="true"]', { timeout: 10000 })
 }
 
-module.exports = { openDockAction, openLibrary }
+/**
+ * 关掉组件库浮窗：预览 iframe 随面板一起摘掉，后面的场景不再背着它们。
+ *
+ * 面板已经在收起时先等它从页面上消失；没打开时什么都不做。
+ *
+ * @param page - 宿主页面。
+ */
+async function closeLibrary(page) {
+  const panel = page.locator('[data-dsh-scholar-board-library]')
+  if (await panel.count() === 0) return
+  const open = page.locator('[data-dsh-scholar-board-library][data-open="true"]')
+  if (await open.count() > 0) await open.locator('.dsh-scholar-board__library-close').click()
+  await page.waitForSelector('[data-dsh-scholar-board-library]', { state: 'detached', timeout: 5000 })
+}
+
+module.exports = { closeLibrary, openDockAction, openLibrary }

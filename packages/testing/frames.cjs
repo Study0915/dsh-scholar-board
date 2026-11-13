@@ -18,8 +18,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
  */
 async function frameOf(page, selector) {
   // 卡片可能正在重挂：iframe 存在但文档还没起来的瞬间要等一等。单次等待要短，
-  // 否则一次卡在空白文档上就会把后面的重试全耗掉。
-  for (let attempt = 0; attempt < 40; attempt += 1) {
+  // 否则一次卡在空白文档上就会把后面的重试全耗掉。组件多了以后整页重载会慢一些，
+  // 总等待给到 30 秒，仍然要求文档真的接上。
+  for (let attempt = 0; attempt < 120; attempt += 1) {
     const handle = await page.$(selector)
     if (handle !== null) {
       const frame = await handle.contentFrame()

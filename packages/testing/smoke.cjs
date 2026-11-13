@@ -22,7 +22,7 @@ const { weatherPainted, weatherDiagnostic } = require('./weather.cjs')
 const { columnStep, layoutOf, settled, waitLayout } = require('./geometry.cjs')
 const { alignedGesturesPass, createHandshakeFixture, createMarketFixture, handshakePass, parserHandshakePass, keepOnlyGallery, resetCards, resetLayout, setCardHeight, ensureFree } = require('./board.cjs')
 const { dockPass } = require('./dock.cjs')
-const { openLibrary } = require('./library.cjs')
+const { closeLibrary, openLibrary } = require('./library.cjs')
 const { groupPass } = require('./group.cjs')
 const { editorPass } = require('./editor.cjs')
 const { capabilityPass } = require('./capability.cjs')
@@ -87,6 +87,7 @@ async function ensureTemplates(page) {
     await page.waitForFunction((count) => document.querySelectorAll('[data-instance]').length === count + 1, before, { timeout: 10000 })
     await page.waitForSelector(`iframe.dsh-scholar-board__frame[title="${title}"]`, { timeout: 30000 })
   }
+  await closeLibrary(page)
 }
 
 /**
@@ -696,8 +697,10 @@ start({ home, extras: [join(__dirname, 'fixtures', 'provider'), join(__dirname, 
     await noticePass(opened.page, { check, openBoard })
     await templatePass(opened.page)
     await addRemovePass(opened.page)
+    await closeLibrary(opened.page)
     await groupPass(opened.page, check)
     await editorPass(opened.page, check)
+    await closeLibrary(opened.page)
     await capabilityPass(opened.page, check)
     await lightSwitchPass(opened.page, check)
     await markdownPass(opened.page, check)
