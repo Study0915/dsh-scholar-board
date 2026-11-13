@@ -1,0 +1,584 @@
+/*
+ * 组会记录卡的样式：标题区、范围与搜索一行，下面是列表或详情，二者只出现一个。
+ *
+ * 列表一行是按钮，日期在左、标题与一行反馈在右；详情是同一个滚动区里的表单，底部保存与关闭常驻。
+ * 窄盒子把范围与搜索改成两行，矮盒子收掉反馈摘要，标题与日期仍然读得到。
+ */
+.lt__head-aside {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+}
+
+.lt__count {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lt__primary,
+.lt__ghost {
+  flex: none;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--w-radius-sm, 8px);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  font-weight: 600;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.lt__primary {
+  background: var(--w-color-accent, #2563eb);
+  color: var(--w-color-on-accent, #fff);
+}
+
+.lt__ghost {
+  border-color: color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  background: transparent;
+  color: var(--w-color-muted, #6b7684);
+}
+
+.lt__ghost.lt__danger {
+  color: var(--w-tone-danger, #b42318);
+}
+
+.lt__primary:disabled,
+.lt__ghost:disabled {
+  cursor: default;
+  opacity: 0.56;
+}
+
+.lt__primary:focus-visible,
+.lt__ghost:focus-visible,
+.lt__tab:focus-visible,
+.lt__row:focus-visible,
+.lt__material-open:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+.lt__toolbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.lt__tabs {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--w-radius-sm, 8px);
+  background: color-mix(in srgb, var(--w-color-fg, #0b1016) 6%, transparent);
+}
+
+.lt__tab {
+  padding: 3px 9px;
+  border: 0;
+  border-radius: calc(var(--w-radius-sm, 8px) - 2px);
+  background: transparent;
+  color: var(--w-color-muted, #6b7684);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  font-weight: 600;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.lt__tab[data-active="true"] {
+  background: var(--w-color-surface, #fff);
+  color: var(--w-color-fg, #0b1016);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--w-color-fg, #0b1016) 12%, transparent);
+}
+
+.lt__search {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 9px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 90%, transparent);
+  border-radius: var(--w-radius-sm, 8px);
+  background: var(--w-color-bg, #f7f8fa);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.lt__body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+/* 详情占满卡片：列表、范围与新建都收起，只留标题与表单。 */
+.lt[data-editing="true"] .lt__body,
+.lt[data-editing="true"] .lt__toolbar,
+.lt[data-editing="true"] .lt__head-aside {
+  display: none;
+}
+
+.lt__note-wrap {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--w-space-sm, 8px);
+}
+
+.lt__note {
+  margin: 0;
+}
+
+.lt__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.lt__row {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: var(--w-space-sm, 8px) 0;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 62%, transparent);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lt__row:first-child {
+  border-top: 0;
+}
+
+.lt__row-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.lt__row-date {
+  flex: none;
+  color: var(--w-color-muted, #6b7684);
+  font-family: var(--t-mono);
+  font-size: var(--w-type-caption, 12px);
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+}
+
+.lt__row-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-fg, #0b1016);
+  font-size: var(--w-type-body, 14px);
+  font-weight: 600;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lt__row-sub {
+  display: flex;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+  margin-top: 2px;
+}
+
+.lt__row-snippet {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lt__tags {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+}
+
+.lt__tag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--w-color-fg, #0b1016) 6%, transparent);
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.lt__tag[data-tone="question"] {
+  background: color-mix(in srgb, var(--w-tone-warn, #b45309) 14%, transparent);
+  color: var(--w-tone-warn, #b45309);
+}
+
+.lt__tag[data-tone="trash"] {
+  background: color-mix(in srgb, var(--w-tone-danger, #b42318) 12%, transparent);
+  color: var(--w-tone-danger, #b42318);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lt__row:hover .lt__row-title {
+    color: var(--w-color-accent, #2563eb);
+  }
+  .lt__ghost:hover:not(:disabled) {
+    color: var(--w-color-fg, #0b1016);
+  }
+}
+
+.lt__detail {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--w-space-sm, 8px);
+}
+
+.lt__detail-head {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.lt__back {
+  padding-inline: 8px;
+}
+
+.lt__state {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lt__state[data-tone="ok"] { color: var(--w-tone-ok, #2563eb); }
+.lt__state[data-tone="error"] { color: var(--w-tone-danger, #b42318); }
+
+.lt__spacer {
+  flex: 1;
+}
+
+.lt__detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-sm, 8px);
+}
+
+.lt__hint {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: var(--w-radius-xs, 6px);
+  background: color-mix(in srgb, var(--w-tone-warn, #b45309) 12%, transparent);
+  color: var(--w-tone-warn, #b45309);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.lt__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lt__label {
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.lt__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 90%, transparent);
+  border-radius: var(--w-radius-sm, 8px);
+  background: var(--w-color-bg, #f7f8fa);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-body, 14px);
+  line-height: 20px;
+}
+
+.lt__textarea {
+  min-height: 44px;
+  resize: vertical;
+}
+
+.lt__input:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+.lt__input:disabled {
+  opacity: 0.6;
+}
+
+.lt__materials {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.lt__material-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 var(--w-space-xs, 4px);
+  padding: 0;
+  list-style: none;
+}
+
+.lt__material {
+  display: flex;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.lt__material-open {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--w-color-accent, #2563eb);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--w-color-accent, #2563eb) 40%, transparent);
+  text-underline-offset: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lt__material-remove {
+  padding: 1px 6px;
+}
+
+.lt__material-add {
+  display: flex;
+  gap: var(--w-space-xs, 4px);
+  min-width: 0;
+}
+
+.lt__material-add .lt__input {
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.lt__error {
+  margin: 2px 0 0;
+  color: var(--w-tone-danger, #b42318);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.lt__detail-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex: none;
+  gap: var(--w-space-sm, 8px);
+  margin-top: auto;
+  padding: var(--w-space-xs, 4px) 0;
+  background: var(--w-color-surface, #fff);
+}
+
+.lt__dialog {
+  width: min(92%, 360px);
+  padding: var(--w-space-lg, 16px);
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  border-radius: var(--w-radius-lg, 14px);
+  background: var(--w-color-surface, #fff);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-body, 14px);
+  line-height: 1.5;
+}
+
+.lt__dialog::backdrop {
+  background: color-mix(in srgb, #0b1016 32%, transparent);
+}
+
+.lt__dialog p {
+  margin: 0 0 var(--w-space-md, 12px);
+}
+
+.lt__dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--w-space-sm, 8px);
+}
+
+:root[data-box-width="narrow"] .lt__toolbar {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+:root[data-box-width="narrow"] .lt__tabs {
+  justify-content: space-between;
+}
+
+:root[data-box-height="short"] .lt__row-sub {
+  display: none;
+}
+
+:root[data-box-height="short"] .lt__row {
+  padding-block: var(--w-space-xs, 4px);
+}
+
+:root[data-box-width="narrow"] .lt__head-aside .lt__count {
+  display: none;
+}
+
+/* 缩略画面：范围、搜索、新建与加载提示都收掉，只留标题与样例列表，内边距与间距收一档。 */
+:root[data-size="preview"] .t-data {
+  gap: var(--w-space-xs, 4px);
+  padding: var(--w-space-md, 12px);
+}
+
+:root[data-size="preview"] .lt__toolbar,
+:root[data-size="preview"] .lt__head-aside,
+:root[data-size="preview"] .lt__note-wrap {
+  display: none;
+}
+
+/* 来源、生成的行动项与上次会议遗留：列表只读，行距与正文说明一致。 */
+.lt__source {
+  margin: 0;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.lt__related {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lt__related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lt__related-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.lt__related-state {
+  flex: none;
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.lt__related-state[data-status="doing"] { color: var(--w-color-accent, #2563eb); }
+.lt__related-state[data-status="blocked"] { color: var(--w-tone-warn, #b45309); }
+.lt__related-state[data-status="done"] { color: var(--w-tone-ok, #2563eb); }
+
+.lt__related-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-fg, #0b1016);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lt__outline {
+  min-height: 140px;
+  font-family: var(--t-mono);
+  font-size: 12px;
+  line-height: 18px;
+  resize: vertical;
+}
+
+.lt__dialog .lt__field {
+  margin-bottom: var(--w-space-md, 12px);
+}
+
+:root[data-box-width="narrow"] .lt__detail-head {
+  flex-wrap: wrap;
+}
+
+/* 文献卡多出来的三件：作者、期刊与年份并排；阶段筛选固定在范围右边；阶段标签的两种色调。 */
+.lt__pair {
+  display: flex;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.lt__pair .lt__field {
+  flex: 1;
+  min-width: 0;
+}
+
+.lt__pair .lt__field:last-child {
+  flex: none;
+  width: 88px;
+}
+
+.lt__stage-filter {
+  flex: none;
+  width: auto;
+  max-width: 130px;
+}
+
+.lt__tag[data-tone="reading"] {
+  background: color-mix(in srgb, var(--w-color-accent, #2563eb) 12%, transparent);
+  color: var(--w-color-accent, #2563eb);
+}
+
+.lt__tag[data-tone="ok"] {
+  background: color-mix(in srgb, var(--w-tone-ok, #067647) 12%, transparent);
+  color: var(--w-tone-ok, #067647);
+}
+
+:root[data-box-width="narrow"] .lt__pair {
+  flex-direction: column;
+}
+
+:root[data-box-width="narrow"] .lt__pair .lt__field:last-child {
+  width: auto;
+}

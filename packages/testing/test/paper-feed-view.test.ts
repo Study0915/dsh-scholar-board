@@ -31,6 +31,9 @@ interface PaperFeedApi {
   limitOf(props: unknown): number
   rowsOf(data: unknown, props: unknown): Row[]
   stateOf(state: { data: unknown, failed: boolean, rowCount: number }): string
+  yearOfDate(date: unknown): number | null
+  recordOf(row: unknown): Record<string, unknown> | null
+  alreadyAdded(records: unknown, url: unknown): boolean
 }
 
 const api = (globalThis as unknown as { PaperFeed: PaperFeedApi }).PaperFeed
@@ -137,6 +140,43 @@ describe('卡片状态', () => {
     expect(api.stateOf({ data: { feed: {} }, failed: false, rowCount: 0 })).toBe('empty')
     expect(api.stateOf({ data: { feed: {} }, failed: true, rowCount: 0 })).toBe('empty')
     expect(api.stateOf({ data: { feed: {} }, failed: false, rowCount: 3 })).toBe('ready')
+  })
+})
+
+describe('加入工作台', () => {
+  const row = api.rowsOf({ feed: { entry: [entry()] } }, {})[0]
+
+  it('提交日期里的年份读得出来才留下', () => {
+    expect(api.yearOfDate('2026-11-06')).toBe(2026)
+    expect(api.yearOfDate('')).toBeNull()
+    expect(api.yearOfDate('nope')).toBeNull()
+    expect(api.yearOfDate('0999-01-01')).toBeNull()
+    expect(api.yearOfDate('3001-01-01')).toBeNull()
+    expect(api.yearOfDate(2026)).toBeNull()
+  })
+
+  it('只有能打开的 arXiv 行才转成待读文献，摘要不进入理解', () => {
+    expect(api.recordOf(row)).toEqual({
+      kind: 'literature',
+      title: 'A Paper',
+      url: 'https://arxiv.org/abs/2611.08850v1',
+      venue: 'arXiv',
+      stage: 'queued',
+      authors: 'Alice, Bob',
+      year: 2026,
+    })
+    expect(api.recordOf({ title: 'A Paper', url: 'https://evil.example/x', openable: false })).toBeNull()
+    expect(api.recordOf({ title: '  ', url: 'https://arxiv.org/abs/1' })).toBeNull()
+    expect(api.recordOf(null)).toBeNull()
+  })
+
+  it('同一来源地址的活跃与归档文献算已在工作台，回收站里的不算', () => {
+    const url = 'https://arxiv.org/abs/2611.08850v1'
+    expect(api.alreadyAdded([{ url }], url)).toBe(true)
+    expect(api.alreadyAdded([{ url, archived: true }], url)).toBe(true)
+    expect(api.alreadyAdded([{ url, deletedAt: '2026-11-01T00:00:00.000Z' }], url)).toBe(false)
+    expect(api.alreadyAdded([{ url: 'https://arxiv.org/abs/2' }], url)).toBe(false)
+    expect(api.alreadyAdded(null, url)).toBe(false)
   })
 })
 
