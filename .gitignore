@@ -14,6 +14,7 @@ lib/
 # Local agent state and isolated runtime/cache directories.
 /.codex/
 /.agents/
+/.qoder/
 /.local-guardrails/
 /XDG_STATE_HOME/
 /.dsh/
