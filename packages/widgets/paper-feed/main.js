@@ -134,6 +134,51 @@
     return state.failed === true ? 'failed' : 'loading'
   }
 
+  /** 提交日期里的年份；读不出来时是 null。 */
+  function yearOfDate(date) {
+    if (typeof date !== 'string' || date.length < 4) return null
+    var year = Number(date.slice(0, 4))
+    if (!isFinite(year) || Math.round(year) !== year || year < 1000 || year > 3000) return null
+    return year
+  }
+
+  /**
+   * 订阅条目变成一条文献记录：摘要留在订阅里，阅读阶段从「待读」开始。
+   *
+   * 只有能交给宿主打开的 arXiv 页面才转成记录：来源地址是这条记录唯一的出处。
+   *
+   * @param {unknown} row - `rowsOf` 画出来的一行。
+   * @returns {object | null} 新建记录用的字段。
+   */
+  function recordOf(row) {
+    if (row === null || typeof row !== 'object') return null
+    var title = typeof row.title === 'string' ? row.title.trim() : ''
+    if (title === '' || !openable(row.url)) return null
+    var record = { kind: 'literature', title: title, url: row.url, venue: 'arXiv', stage: 'queued' }
+    if (typeof row.authors === 'string' && row.authors !== '') record.authors = row.authors
+    var year = yearOfDate(row.date)
+    if (year !== null) record.year = year
+    return record
+  }
+
+  /**
+   * 工作台里有没有同一个来源地址的活跃或归档文献。
+   *
+   * 回收站里的不算：那里的一条是用户主动移走的，不能挡住重新加入。
+   *
+   * @param {unknown} records - `records.read` 读回来的记录。
+   * @param {unknown} url - 订阅条目的来源地址。
+   * @returns {boolean} 是否已经在工作台里。
+   */
+  function alreadyAdded(records, url) {
+    if (!Array.isArray(records) || typeof url !== 'string' || url === '') return false
+    for (var index = 0; index < records.length; index += 1) {
+      var record = records[index]
+      if (record !== null && typeof record === 'object' && record.url === url && typeof record.deletedAt !== 'string') return true
+    }
+    return false
+  }
+
   root.PaperFeed = {
     LIMIT: LIMIT,
     WAIT_MS: WAIT_MS,
@@ -146,7 +191,10 @@
     categoryOf: categoryOf,
     limitOf: limitOf,
     rowsOf: rowsOf,
-    stateOf: stateOf
+    stateOf: stateOf,
+    yearOfDate: yearOfDate,
+    recordOf: recordOf,
+    alreadyAdded: alreadyAdded
   }
 
   /* 下面这半要 DOM；单元测试在没有 DOM 的环境里载入这一份文件时停在这里。 */
@@ -156,6 +204,8 @@
   if (card === null) return
 
   var widget = window.widget
+  var READ = 'widget-board:records.read'
+  var WRITE = 'widget-board:records.write'
   var props = {}
   var data = null
   var failed = false
@@ -215,6 +265,17 @@
       node.append(summary)
     }
     wrapper.appendChild(node)
+    if (row.openable) {
+      var actions = document.createElement('div')
+      actions.className = 'paper-feed-card__actions'
+      var add = document.createElement('button')
+      add.type = 'button'
+      add.className = 'paper-feed-card__add'
+      add.dataset.url = row.url
+      add.textContent = label('addToBoard', '加入工作台', 'Add to board')
+      actions.appendChild(add)
+      wrapper.appendChild(actions)
+    }
     return wrapper
   }
 
@@ -237,9 +298,64 @@
     write(el.meta, category + ' · ' + rows.length + (isZh() ? ' 篇' : ' papers'))
   }
 
+  /** 按来源地址找回这一面正在画的那一行。 */
+  function rowByUrl(url) {
+    var rows = rowsOf(data, props)
+    for (var index = 0; index < rows.length; index += 1) {
+      if (rows[index].url === url) return rows[index]
+    }
+    return null
+  }
+
+  function say(button, text, state) {
+    button.textContent = text
+    if (state === '') delete button.dataset.state
+    else button.dataset.state = state
+  }
+
+  /**
+   * 把一行订阅条目加入工作台：先查同一地址的文献，没有才新建。
+   *
+   * 加入之后按钮停在结果上，不再重复提交；失败四下后恢复成「加入工作台」，可以再试。
+   *
+   * @param {string} url - 订阅条目的来源地址。
+   * @param {HTMLButtonElement} button - 这一行的加入按钮。
+   */
+  function addToBoard(url, button) {
+    if (widget === undefined || typeof widget.call !== 'function' || button.disabled) return
+    var record = recordOf(rowByUrl(url))
+    if (record === null) return
+    button.disabled = true
+    button.setAttribute('aria-busy', 'true')
+    widget.call(READ, { kind: 'literature', includeArchived: true }).then(function (view) {
+      var records = view !== null && typeof view === 'object' && Array.isArray(view.records) ? view.records : []
+      if (alreadyAdded(records, url)) {
+        say(button, label('alreadyInBoard', '已在工作台', 'Already on the board'), 'done')
+        return null
+      }
+      return widget.call(WRITE, { op: 'create', record: record }).then(function () {
+        say(button, label('addedToBoard', '已加入', 'Added'), 'done')
+      })
+    }).catch(function () {
+      say(button, label('addFailed', '加入失败', 'Could not add'), 'failed')
+      button.disabled = false
+      window.setTimeout(function () {
+        if (button.dataset.state !== 'failed') return
+        say(button, label('addToBoard', '加入工作台', 'Add to board'), '')
+      }, 4000)
+    }).then(function () {
+      button.removeAttribute('aria-busy')
+    })
+  }
+
   el.rows.addEventListener('click', function (event) {
     var target = event.target
     if (!(target instanceof Element)) return
+    var add = target.closest('.paper-feed-card__add')
+    if (add !== null) {
+      if (typeof add.dataset.url === 'string') addToBoard(add.dataset.url, add)
+      return
+    }
     var open = target.closest('.paper-feed-card__open')
     if (open === null || open.dataset.url === undefined) return
     var url = open.dataset.url

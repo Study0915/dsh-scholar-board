@@ -7,6 +7,7 @@
 import type {
   ActionStatus,
   DomainRecord,
+  LiteratureStage,
   ManuscriptStage,
   MaterialRef,
   RecordKind,
@@ -19,8 +20,8 @@ import { validZone } from '@dsh-scholar-board/model'
 import { isRecord } from '../guards'
 import { Refusal } from '../refusal'
 
-/** 三种记录。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript']
+/** 四种记录。 */
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature']
 
 /** 行动项的五个状态。 */
 export const ACTION_STATUSES: readonly ActionStatus[] = ['todo', 'doing', 'blocked', 'done', 'cancelled']
@@ -28,11 +29,15 @@ export const ACTION_STATUSES: readonly ActionStatus[] = ['todo', 'doing', 'block
 /** 稿件的八个阶段。 */
 export const MANUSCRIPT_STAGES: readonly ManuscriptStage[] = ['idea', 'experiment', 'writing', 'internal-review', 'submitted', 'revision', 'accepted', 'archived']
 
+/** 文献的三个阅读阶段。 */
+export const LITERATURE_STAGES: readonly LiteratureStage[] = ['queued', 'reading', 'understood']
+
 /** 每种记录可写的字段；系统字段与阶段历史不在这张表里。 */
 const WRITABLE: Record<RecordKind, readonly string[]> = {
   meeting: ['title', 'date', 'topics', 'feedback', 'openQuestions', 'related', 'materials', 'derivedFrom'],
   action: ['title', 'status', 'due', 'source', 'related', 'blockedNote', 'doneNote', 'materials'],
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials'],
+  literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'related', 'materials'],
 }
 
 /** 每种记录允许指向的引用类型。 */
@@ -40,10 +45,11 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   meeting: ['manuscript'],
   action: ['meeting', 'manuscript'],
   manuscript: ['meeting', 'action'],
+  literature: ['manuscript'],
 }
 
 /** 搜索和展示时要读的文本字段。 */
-const TEXT_FIELDS = ['title', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote'] as const
+const TEXT_FIELDS = ['title', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions'] as const
 
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const INSTANT_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?Z$/
@@ -195,6 +201,45 @@ function stageOf(value: unknown): ManuscriptStage {
 }
 
 /**
+ * 文献的阅读阶段。
+ *
+ * @param value - 外来值。
+ * @returns 阶段。
+ */
+function literatureStageOf(value: unknown): LiteratureStage {
+  if (typeof value !== 'string' || !LITERATURE_STAGES.includes(value as LiteratureStage)) {
+    fail(`stage 只能是 ${LITERATURE_STAGES.join('、')}`)
+  }
+  return value as LiteratureStage
+}
+
+/**
+ * 出版年份：可留空，填了就要是一个像样的整数。
+ *
+ * @param value - 外来值。
+ * @returns 年份；未填时是 `null`。
+ */
+function yearOf(value: unknown): number | null {
+  if (value === null) return null
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1000 || value > 3000) {
+    fail('year 要是 1000 到 3000 之间的整数')
+  }
+  return value
+}
+
+/**
+ * 来源地址：可留空，填了就要是 http/https 的完整地址（D26）。
+ *
+ * @param value - 外来值。
+ * @returns 地址；未填时是 `null`。
+ */
+function urlOf(value: unknown): string | null {
+  if (value === null) return null
+  if (!isOpenableUrl(value)) fail('url 只收 http/https 的完整地址')
+  return value
+}
+
+/**
  * 一条记录的写入字段：建新与更新共用，更新时允许只给一部分。
  *
  * @param kind - 记录类型。
@@ -220,6 +265,12 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.nextStep !== undefined) out.nextStep = textOf(input.nextStep, 'nextStep')
   if (input.blockers !== undefined) out.blockers = textOf(input.blockers, 'blockers')
   if (input.target !== undefined) out.target = textOf(input.target, 'target')
+  if (input.authors !== undefined) out.authors = textOf(input.authors, 'authors')
+  if (input.venue !== undefined) out.venue = textOf(input.venue, 'venue')
+  if (input.year !== undefined) out.year = yearOf(input.year)
+  if (input.url !== undefined) out.url = urlOf(input.url)
+  if (input.understanding !== undefined) out.understanding = textOf(input.understanding, 'understanding')
+  if (input.questions !== undefined) out.questions = textOf(input.questions, 'questions')
   if (input.blockedNote !== undefined) out.blockedNote = textOf(input.blockedNote, 'blockedNote')
   if (input.doneNote !== undefined) out.doneNote = textOf(input.doneNote, 'doneNote')
   if (input.related !== undefined) out.related = refsOf(input.related, 'related', REFERRABLE[kind])
@@ -239,6 +290,7 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   }
   if (kind === 'action' && (input.status !== undefined || mode === 'create')) out.status = statusOf(input.status)
   if (kind === 'manuscript' && (input.stage !== undefined || mode === 'create')) out.stage = stageOf(input.stage)
+  if (kind === 'literature' && (input.stage !== undefined || mode === 'create')) out.stage = literatureStageOf(input.stage)
   if (out.stage !== undefined && input.stageNote !== undefined) {
     out.stageNote = textOf(input.stageNote, 'stageNote')
   }
@@ -295,6 +347,7 @@ export function storedProblem(value: unknown): string | null {
   if (value.deletedAt !== undefined && (typeof value.deletedAt !== 'string' || Number.isNaN(Date.parse(value.deletedAt)))) return 'deletedAt 不合法'
   if (typeof value.title !== 'string' || value.title.trim() === '') return '缺少 title'
   if (value.kind === 'action' && (typeof value.status !== 'string' || !ACTION_STATUSES.includes(value.status as ActionStatus))) return 'status 不认识'
+  if (value.kind === 'literature' && (typeof value.stage !== 'string' || !LITERATURE_STAGES.includes(value.stage as LiteratureStage))) return 'stage 不认识'
   if (value.kind === 'manuscript') {
     if (typeof value.stage !== 'string' || !MANUSCRIPT_STAGES.includes(value.stage as ManuscriptStage)) return 'stage 不认识'
     if (!Array.isArray(value.stageHistory)) return '缺少 stageHistory'

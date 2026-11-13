@@ -11,7 +11,7 @@ import { t } from './copy'
 /** 宿主回的导入预览。 */
 interface ImportPreview {
   total: number
-  byKind: { meeting: number, action: number, manuscript: number }
+  byKind: { meeting: number, action: number, manuscript: number, literature: number }
   active: number
   archived: number
   trashed: number
@@ -169,6 +169,7 @@ export function RecordsExchange(): ReactNode {
                 meeting: pending.preview.byKind.meeting,
                 action: pending.preview.byKind.action,
                 manuscript: pending.preview.byKind.manuscript,
+                literature: pending.preview.byKind.literature,
                 kb: Math.max(1, Math.round(pending.preview.bytes / 1024)),
                 active: pending.preview.active,
                 archived: pending.preview.archived,

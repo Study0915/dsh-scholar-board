@@ -1,0 +1,122 @@
+<div class="t-data lt" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">文献阅读</h2>
+    </div>
+    <div class="lt__head-aside">
+      <span class="t-data__meta lt__count" data-field="count"></span>
+      <button class="lt__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="lt__toolbar">
+    <div class="lt__tabs" role="tablist" aria-label="记录范围">
+      <button class="lt__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="lt__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="lt__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <select class="lt__search lt__stage-filter" data-role="stage" aria-label="阅读阶段">
+      <option value="">全部阶段</option>
+      <option value="queued">待读</option>
+      <option value="reading">在读</option>
+      <option value="understood">已理解</option>
+    </select>
+    <input class="lt__search" type="search" data-role="search" aria-label="搜索记录" placeholder="搜索标题、作者、理解与问题" />
+  </div>
+
+  <div class="lt__body">
+    <div class="t-data__scroll lt__list" data-role="list" hidden></div>
+    <div class="lt__note-wrap">
+      <p class="t-data__empty lt__note" data-role="note">正在读取记录…</p>
+      <button class="lt__ghost lt__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="lt__detail" data-role="detail" hidden aria-label="记录详情">
+    <div class="lt__detail-head">
+      <button class="lt__ghost lt__back" type="button" data-action="back">返回</button>
+      <span class="lt__state" data-role="detail-state"></span>
+      <span class="lt__spacer"></span>
+      <button class="lt__ghost" type="button" data-action="open-source" hidden>打开来源</button>
+      <button class="lt__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="lt__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="lt__ghost lt__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll lt__detail-body">
+      <p class="lt__hint" data-role="detail-hint" hidden></p>
+      <p class="lt__hint" data-role="understanding-hint">订阅摘要不代表已经读懂；写下你自己的理解与问题。</p>
+      <label class="lt__field">
+        <span class="lt__label" data-role="label-title">标题</span>
+        <input class="lt__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <div class="lt__pair">
+        <label class="lt__field">
+          <span class="lt__label" data-role="label-authors">作者</span>
+          <input class="lt__input" type="text" data-field="authors-input" autocomplete="off" />
+        </label>
+        <label class="lt__field">
+          <span class="lt__label" data-role="label-venue">期刊或会议</span>
+          <input class="lt__input" type="text" data-field="venue-input" autocomplete="off" />
+        </label>
+        <label class="lt__field">
+          <span class="lt__label" data-role="label-year">年份</span>
+          <input class="lt__input" type="number" data-field="year-input" min="1000" max="3000" step="1" inputmode="numeric" />
+        </label>
+      </div>
+      <label class="lt__field">
+        <span class="lt__label" data-role="label-stage">阅读阶段</span>
+        <select class="lt__input" data-field="stage-input">
+          <option value="queued">待读</option>
+          <option value="reading">在读</option>
+          <option value="understood">已理解</option>
+        </select>
+      </label>
+      <label class="lt__field">
+        <span class="lt__label" data-role="label-url">来源地址</span>
+        <input class="lt__input" type="url" data-field="url-input" placeholder="https://…" autocomplete="off" spellcheck="false" />
+      </label>
+      <p class="lt__error" data-role="url-error" role="status"></p>
+      <label class="lt__field">
+        <span class="lt__label" data-role="label-understanding">理解</span>
+        <textarea class="lt__input lt__textarea" rows="3" data-field="understanding"></textarea>
+      </label>
+      <label class="lt__field">
+        <span class="lt__label" data-role="label-questions">问题</span>
+        <textarea class="lt__input lt__textarea" rows="2" data-field="questions"></textarea>
+      </label>
+      <fieldset class="lt__materials">
+        <legend class="lt__label" data-role="label-materials">材料</legend>
+        <ul class="lt__material-list" data-role="materials"></ul>
+        <div class="lt__material-add">
+          <input class="lt__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="lt__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="lt__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="lt__error" data-role="material-error" role="status"></p>
+      </fieldset>
+      <div class="lt__detail-actions">
+        <button class="lt__primary" type="button" data-action="save">保存</button>
+        <button class="lt__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="lt__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="lt__dialog-actions">
+      <button class="lt__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="lt__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="lt__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="lt__dialog-actions">
+      <button class="lt__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="lt__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ActionRecord, DomainRecord, ManuscriptRecord, MeetingRecord } from '@dsh-scholar-board/contracts'
+import type { ActionRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord } from '@dsh-scholar-board/contracts'
 import { openDrafts } from '../src/drafts/store'
 import { exportRecords, importRecords, previewRecords, readRecordsPackage } from '../src/records/exchange'
 import { registerRecords } from '../src/records/access'
@@ -50,6 +50,22 @@ function meeting(title = '第 3 次组会'): Record<string, unknown> {
     openQuestions: '信道模型还算不算静态的',
     related: [{ kind: 'manuscript', id: 'manuscript-1' }],
     materials: [{ id: 'm1', url: 'https://example.com/slides', title: '组会幻灯片' }],
+  }
+}
+
+/** 一条文献的输入。 */
+function literature(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'literature',
+    title: '低轨星座干扰下的多用户检测',
+    authors: 'A. Author, B. Author',
+    venue: 'IEEE TWC',
+    year: 2025,
+    url: 'https://arxiv.org/abs/2611.08850v1',
+    stage: 'queued',
+    understanding: '把干扰建模成非平稳过程',
+    questions: '信道状态更新频率对误码率的影响还没算清',
+    ...overrides,
   }
 }
 
@@ -131,6 +147,30 @@ describe('记录存储', () => {
 
     const again = await store.update(manuscript.id, 3, { stage: 'experiment' }, ACTOR)
     expect((again.record as ManuscriptRecord).stageHistory).toHaveLength(2)
+  })
+
+  it('文献带阅读阶段与自己的理解，年份与来源地址要合法', async () => {
+    const { store } = await open()
+    const created = await store.create(literature(), ACTOR)
+    const record = created.record as LiteratureRecord
+    expect(record).toMatchObject({
+      kind: 'literature',
+      stage: 'queued',
+      authors: 'A. Author, B. Author',
+      venue: 'IEEE TWC',
+      year: 2025,
+    })
+    expect(store.view({ kind: 'literature' }).records).toHaveLength(1)
+    expect(store.view({ search: '非平稳' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const moved = await store.update(record.id, 1, { stage: 'reading', understanding: '读完第二节' }, ACTOR)
+    expect((moved.record as LiteratureRecord).stage).toBe('reading')
+    expect((moved.record as LiteratureRecord).understanding).toBe('读完第二节')
+
+    await expect(store.create(literature({ stage: 'read' }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(literature({ year: 999 }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(literature({ url: 'javascript:alert(1)' }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(literature({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
   it('归档收起、恢复回到活跃', async () => {
@@ -325,6 +365,15 @@ describe('记录存储', () => {
     const preview = previewRecords(exportRecords(store, { includeArchived: true, includeTrashed: true }, now))
     expect(preview).toMatchObject({ total: 3, active: 1, archived: 1, trashed: 1 })
     expect(preview.byKind.meeting).toBe(3)
+  })
+
+  it('导出可以只勾文献，预览按四种记录计数', async () => {
+    const { store } = await open()
+    await store.create(meeting(), ACTOR)
+    await store.create(literature(), ACTOR)
+    const bytes = exportRecords(store, { includeArchived: false, includeTrashed: false, kinds: ['literature'] }, Date.now())
+    expect(readRecordsPackage(bytes).records.map((record) => record.kind)).toEqual(['literature'])
+    expect(previewRecords(bytes).byKind).toMatchObject({ meeting: 0, action: 0, manuscript: 0, literature: 1 })
   })
 
   it('导出再导入重映射 id、保留关联，不覆盖已有记录', async () => {

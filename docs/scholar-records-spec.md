@@ -19,7 +19,7 @@
 - 每条记录一个稳定不透明 id（UUID，与卡片实例同生成方式），永不复用。删除卡片不触碰记录；记录独立于任何卡片存在。
 - 每条记录带自己的 `revision`，每次成功写入加一。更新必须带 `expectedRevision`，宿主在写入队列内再核一次，过期回 `409 { code: 'stale-revision', revision, record }`（沿用 `content/routes.ts:240` 的形状）。创建不带 expectedRevision。
 - `createdAt`、`updatedAt` 由宿主记录，UTC ISO 字符串，组件不可写。`schemaVersion` 标记记录形状版本，首批为 1。
-- 每条记录有 `kind`（meeting、action、manuscript）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
+- 每条记录有 `kind`（meeting、action、manuscript、literature）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
 
 | 状态 | 判据 | 默认列表 |
 |---|---|---|
@@ -87,6 +87,27 @@
 | materials | `MaterialRef[]` | 否 | 正文与代码材料 |
 
 阶段枚举：构思 idea、实验 experiment、写作 writing、内审 internal-review、已投稿 submitted、修回 revision、已接收 accepted、归档 archived。阶段可退回，拒稿、撤稿、转投记入 `stageHistory` 的 note。首批不显示完成百分比；通信研究可选检查模板（问题与假设、系统模型等）作为可选字段留到 S04/S05，不强制填写。
+
+### 文献 literature
+
+S05 补齐。文献记录的是「我读到了什么、读懂了什么」，不是订阅条目本身：
+
+| 字段 | 形状 | 必填 | 说明 |
+|---|---|---|---|
+| title | string ≤200 | 是 | 文献标题 |
+| authors | string | 否 | 作者，一行原样记录 |
+| venue | string | 否 | 期刊或会议 |
+| year | integer 1000–3000 | 否 | 出版年份，未知留空 |
+| url | string | 否 | 来源地址，只收 http/https，经 `isOpenableUrl` 校验（D26） |
+| stage | 枚举 | 是 | 待读 queued、在读 reading、已理解 understood |
+| understanding | string | 否 | 自己的理解，不是订阅摘要 |
+| questions | string | 否 | 仍未想清的问题 |
+| related | `Ref[]` | 否 | 关联稿件；课题留到后续批次 |
+| materials | `MaterialRef[]` | 否 | 笔记、幻灯片或复现代码的链接 |
+
+- 阅读阶段由用户维护；订阅获取、加入工作台与完成阅读是不同事实（领域术语）。从文献追踪卡加入工作台时只带入标题、作者、刊会、年份与来源地址，阶段从待读开始，摘要不写入 `understanding`。
+- 同一来源地址的活跃或归档文献视为已在工作台；回收站里的记录不挡重新加入。
+- `related` 只含 `{ kind: 'manuscript', id }`。理解与问题是短文本，搜索会一并匹配。
 
 ### 材料引用 MaterialRef
 

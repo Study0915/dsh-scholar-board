@@ -91,7 +91,7 @@ const COPY = {
   recordsExportDone: { zh: '已导出 {name}', en: 'Exported {name}' },
   recordsImporting: { zh: '正在导入…', en: 'Importing…' },
   recordsImportDone: { zh: '导入了 {n} 条记录', en: 'Imported {n} records' },
-  recordsImportPreview: { zh: '共 {total} 条（会议 {meeting}、行动项 {action}、小论文 {manuscript}），约 {kb} KB；活跃 {active}、归档 {archived}、回收站 {trashed}。导入会给每条记录分配新 id，保留包内关联，不覆盖已有记录。', en: '{total} records ({meeting} meetings, {action} action items, {manuscript} manuscripts), about {kb} KB; {active} active, {archived} archived, {trashed} in trash. Import gives every record a new id, keeps references inside the package, and does not overwrite existing records.' },
+  recordsImportPreview: { zh: '共 {total} 条（会议 {meeting}、行动项 {action}、小论文 {manuscript}、文献 {literature}），约 {kb} KB；活跃 {active}、归档 {archived}、回收站 {trashed}。导入会给每条记录分配新 id，保留包内关联，不覆盖已有记录。', en: '{total} records ({meeting} meetings, {action} action items, {manuscript} manuscripts, {literature} papers), about {kb} KB; {active} active, {archived} archived, {trashed} in trash. Import gives every record a new id, keeps references inside the package, and does not overwrite existing records.' },
   recordsImportConfirm: { zh: '确认导入', en: 'Import' },
   recordsImportInvalid: { zh: '这不是可读的记录包：{reason}', en: 'This is not a readable record package: {reason}' },
   recordsFileError: { zh: '读不了这个文件', en: 'Could not read the file' },

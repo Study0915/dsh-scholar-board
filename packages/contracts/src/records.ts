@@ -30,8 +30,11 @@ export const RECORDS_LIMITS = {
   searchLength: 200,
 } as const
 
-/** 三种领域记录。 */
-export type RecordKind = 'meeting' | 'action' | 'manuscript'
+/** 领域记录的四种类型。 */
+export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature'
+
+/** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
+export type LiteratureStage = 'queued' | 'reading' | 'understood'
 
 /** 行动项状态；取消与删除是两件事。 */
 export type ActionStatus = 'todo' | 'doing' | 'blocked' | 'done' | 'cancelled'
@@ -114,8 +117,23 @@ export interface ManuscriptRecord extends RecordBase {
   materials?: MaterialRef[]
 }
 
+/** 文献阅读。 */
+export interface LiteratureRecord extends RecordBase {
+  kind: 'literature'
+  title: string
+  authors?: string
+  venue?: string
+  year?: number
+  url?: string
+  stage: LiteratureStage
+  understanding?: string
+  questions?: string
+  related?: RecordRef[]
+  materials?: MaterialRef[]
+}
+
 /** 一条领域记录。 */
-export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord
+export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord
 
 /** 工作区当前的用量；到九成时 `warning` 为真，到顶阻止新建。 */
 export interface RecordsQuota {

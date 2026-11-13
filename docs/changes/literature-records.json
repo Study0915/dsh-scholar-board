@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 1,
+  "at": "2026-11-13",
+  "external": true,
+  "zh": "新增「文献阅读」卡：按待读、在读与已理解整理标题、作者、刊会、年份、来源地址、自己的理解与问题，列表可搜索、按阶段筛选、归档与移入回收站，详情支持草稿与修订冲突；文献追踪卡每行新增「加入工作台」，订阅条目由你点选才变成待读文献，摘要不写入理解，同一来源地址不会重复加入。记录类型、检索、导出导入与配额一并支持文献。",
+  "en": "Adds the Literature card: organise papers by to read, reading and understood with title, authors, venue, year, source link, your own understanding and questions; the list searches, filters by stage, archives and trashes, and the detail supports drafts and revision conflicts. Each paper-feed row now has Add to board, so a feed entry becomes a paper to read only when you choose it; the abstract never becomes your notes and the same source link is not added twice. Records, search, export/import and quota now cover literature too."
+}
