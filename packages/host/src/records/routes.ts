@@ -28,7 +28,7 @@ export const IMPORT_PACKAGE_LIMIT = 32 * 1024 * 1024
 function scopeOf(value: unknown): ExportScope {
   const body = isRecord(value) ? value : {}
   const kinds = Array.isArray(body.kinds)
-    ? body.kinds.filter((kind): kind is 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' => kind === 'meeting' || kind === 'action' || kind === 'manuscript' || kind === 'literature' || kind === 'research' || kind === 'thesis' || kind === 'project')
+    ? body.kinds.filter((kind): kind is 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore' => kind === 'meeting' || kind === 'action' || kind === 'manuscript' || kind === 'literature' || kind === 'research' || kind === 'thesis' || kind === 'project' || kind === 'course' || kind === 'chore')
     : undefined
   return {
     includeArchived: body.includeArchived === true,

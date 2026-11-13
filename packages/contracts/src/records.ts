@@ -40,11 +40,14 @@ export const RECORDS_LIMITS = {
   projectItems: 100,
   projectMilestones: 50,
   versionLength: 32,
+  courseWork: 100,
+  termLabelLength: 40,
+  categoryLength: 40,
   searchLength: 200,
 } as const
 
-/** 领域记录的七种类型。 */
-export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project'
+/** 领域记录的九种类型。 */
+export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore'
 
 /** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
 export type LiteratureStage = 'queued' | 'reading' | 'understood'
@@ -329,8 +332,60 @@ export interface ProjectRecord extends RecordBase {
   materials?: MaterialRef[]
 }
 
+/** 一门课的作业或考试；补交由用户显式标记，不按时间推断。 */
+export type CourseWorkKind = 'assignment' | 'exam'
+
+/** 作业与考试的状态。 */
+export type CourseWorkStatus = 'todo' | 'doing' | 'done'
+
+export interface CourseWork {
+  id: string
+  kind: CourseWorkKind
+  title: string
+  status: CourseWorkStatus
+  due?: Due
+  late?: boolean
+  note?: string
+  materials?: MaterialRef[]
+}
+
+/** 学期：名称必填，起止日期可留空；跨学期由名称与日期一起区分。 */
+export interface CourseTerm {
+  label: string
+  start?: Due
+  end?: Due
+}
+
+/** 研究生课程：学期、作业考试、学习笔记与资料。 */
+export interface CourseRecord extends RecordBase {
+  kind: 'course'
+  title: string
+  term: CourseTerm
+  code?: string
+  teacher?: string
+  schedule?: string
+  notes?: string
+  work?: CourseWork[]
+  related?: RecordRef[]
+  materials?: MaterialRef[]
+}
+
+/** 其他事务的状态；取消与完成分开。 */
+export type ChoreStatus = 'todo' | 'doing' | 'done' | 'cancelled'
+
+/** 其他事务：自定义类别、可选期限与说明，完成后可归档。 */
+export interface ChoreRecord extends RecordBase {
+  kind: 'chore'
+  title: string
+  category: string
+  status: ChoreStatus
+  due?: Due
+  note?: string
+  materials?: MaterialRef[]
+}
+
 /** 一条领域记录。 */
-export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord
+export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord | CourseRecord | ChoreRecord
 
 /** 工作区当前的用量；到九成时 `warning` 为真，到顶阻止新建。 */
 export interface RecordsQuota {

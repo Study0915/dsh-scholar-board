@@ -1,0 +1,114 @@
+<div class="t-data ch" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">其他事务</h2>
+    </div>
+    <div class="ch__head-aside">
+      <span class="t-data__meta ch__count" data-field="count"></span>
+      <button class="ch__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="ch__toolbar">
+    <div class="ch__tabs" role="tablist" aria-label="记录范围">
+      <button class="ch__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="ch__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="ch__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <input class="ch__search" type="search" data-role="search" aria-label="搜索记录" placeholder="搜索标题、类别与说明" />
+  </div>
+
+  <div class="ch__filters">
+    <div class="ch__chips" role="group" aria-label="期限">
+      <button class="ch__chip" type="button" data-filter="all" data-active="true">全部</button>
+      <button class="ch__chip" type="button" data-filter="overdue" data-active="false">逾期</button>
+      <button class="ch__chip" type="button" data-filter="soon" data-active="false">七天内</button>
+      <button class="ch__chip" type="button" data-filter="none" data-active="false">无期限</button>
+    </div>
+    <select class="ch__select" data-role="category-filter" aria-label="类别"></select>
+  </div>
+
+  <div class="ch__body">
+    <div class="t-data__scroll ch__list" data-role="list" hidden></div>
+    <div class="ch__note-wrap">
+      <p class="t-data__empty ch__note" data-role="note">正在读取记录…</p>
+      <button class="ch__ghost ch__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="ch__detail" data-role="detail" hidden aria-label="记录详情">
+    <div class="ch__detail-head">
+      <button class="ch__ghost ch__back" type="button" data-action="back">返回</button>
+      <span class="ch__state" data-role="detail-state"></span>
+      <span class="ch__spacer"></span>
+      <button class="ch__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="ch__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="ch__ghost ch__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll ch__detail-body">
+      <p class="ch__hint" data-role="detail-hint" hidden></p>
+      <label class="ch__field">
+        <span class="ch__label" data-role="label-title">事项</span>
+        <input class="ch__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <label class="ch__field">
+        <span class="ch__label" data-role="label-category">类别</span>
+        <input class="ch__input" type="text" data-field="category" maxlength="40" placeholder="如报账、体检、证件" autocomplete="off" />
+      </label>
+      <div class="ch__pair">
+        <label class="ch__field">
+          <span class="ch__label" data-role="label-status">状态</span>
+          <select class="ch__input" data-field="status">
+            <option value="todo">待办</option>
+            <option value="doing">进行中</option>
+            <option value="done">完成</option>
+            <option value="cancelled">已取消</option>
+          </select>
+        </label>
+        <label class="ch__field">
+          <span class="ch__label" data-role="label-due">期限</span>
+          <input class="ch__input" type="date" data-field="due" />
+        </label>
+      </div>
+      <label class="ch__field">
+        <span class="ch__label" data-role="label-note">说明</span>
+        <textarea class="ch__input ch__textarea" rows="3" data-field="note"></textarea>
+      </label>
+
+      <fieldset class="ch__group">
+        <legend class="ch__label" data-role="label-materials">事务材料</legend>
+        <ul class="ch__material-list" data-role="materials"></ul>
+        <div class="ch__material-add">
+          <input class="ch__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="ch__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="ch__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="ch__error" data-role="material-error" role="status"></p>
+      </fieldset>
+
+      <div class="ch__detail-actions">
+        <button class="ch__primary" type="button" data-action="save">保存</button>
+        <button class="ch__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="ch__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="ch__dialog-actions">
+      <button class="ch__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="ch__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="ch__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="ch__dialog-actions">
+      <button class="ch__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="ch__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

@@ -111,7 +111,7 @@ export function readRecordsPackage(bytes: Buffer): RecordsPackage {
  */
 export function previewRecords(bytes: Buffer): ImportPreview {
   const pkg = readRecordsPackage(bytes)
-  const byKind: Record<RecordKind, number> = { meeting: 0, action: 0, manuscript: 0, literature: 0, research: 0, thesis: 0, project: 0 }
+  const byKind: Record<RecordKind, number> = { meeting: 0, action: 0, manuscript: 0, literature: 0, research: 0, thesis: 0, project: 0, course: 0, chore: 0 }
   let active = 0
   let archived = 0
   let trashed = 0

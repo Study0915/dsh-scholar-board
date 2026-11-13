@@ -171,7 +171,7 @@ describe('第一次启动的看板', () => {
     const builtin = [...records.values()].filter((record) => record.source === 'builtin').map((record) => record.manifest.id)
     expect(widgetsOf(gallery).sort()).toEqual([...builtin].sort())
     expect(widgetsOf(gallery)).toEqual([
-      'stat', 'gauge', 'progress', 'chart', 'heatmap', 'session-usage', 'table', 'kv', 'list', 'timeline', 'image', 'markdown', 'json', 'diff', 'dsh-balance', 'github-issues', 'paper-feed', 'meeting-records', 'action-items', 'manuscript-records', 'literature-records', 'research-records', 'thesis-records', 'project-records', 'research-overview',
+      'stat', 'gauge', 'progress', 'chart', 'heatmap', 'session-usage', 'table', 'kv', 'list', 'timeline', 'image', 'markdown', 'json', 'diff', 'dsh-balance', 'github-issues', 'paper-feed', 'meeting-records', 'action-items', 'manuscript-records', 'literature-records', 'research-records', 'thesis-records', 'project-records', 'course-records', 'chore-records', 'research-overview',
       'board-hero', 'clock', 'calendar', 'fortune', 'year-progress', 'weather', 'pomodoro', 'todo', 'links', 'countdown', 'light-switch',
       'flip-card', 'holographic-card', 'magnetic-card', 'campus', 'system-metrics',
     ])
