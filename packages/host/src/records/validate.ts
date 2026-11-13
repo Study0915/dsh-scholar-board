@@ -21,15 +21,18 @@ import type {
   StageEntry,
   SubmissionDecision,
   SubmissionRound,
+  ThesisChapter,
+  ThesisExperiment,
+  ThesisMilestone,
+  ThesisResult,
 } from '@dsh-scholar-board/contracts'
-import type { Due } from '@dsh-scholar-board/contracts/campus'
 import { RECORDS_FORMAT, RECORDS_LIMITS, isOpenableUrl } from '@dsh-scholar-board/contracts'
-import { validZone } from '@dsh-scholar-board/model'
 import { isRecord } from '../guards'
-import { Refusal } from '../refusal'
+import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
+import { chaptersOf, experimentsOf, thesisArraysProblem, thesisMilestonesOf, thesisResultsOf } from './thesis-validate'
 
-/** 五种记录。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research']
+/** 六种记录。 */
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis']
 
 /** 行动项的五个状态。 */
 export const ACTION_STATUSES: readonly ActionStatus[] = ['todo', 'doing', 'blocked', 'done', 'cancelled']
@@ -59,6 +62,7 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials', 'figures', 'submissions', 'revisions'],
   literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'related', 'materials'],
   research: ['title', 'method', 'question', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials'],
+  thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
 }
 
 /** 每种记录允许指向的引用类型。 */
@@ -68,83 +72,11 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   manuscript: ['meeting', 'action'],
   literature: ['manuscript'],
   research: ['manuscript'],
+  thesis: ['action'],
 }
 
 /** 搜索和展示时要读的文本字段。 */
 const TEXT_FIELDS = ['title', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion'] as const
-
-const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
-const INSTANT_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?Z$/
-
-/**
- * 一条拒绝：字段名与原因写在一起，卡片直接显示这一句。
- *
- * @param message - 读得懂的说法。
- * @throws {Refusal} 总是抛出，400。
- */
-function fail(message: string): never {
-  throw new Refusal(400, message)
-}
-
-/**
- * 一段必填标题：去空白后非空，按 Unicode 码点计不超过上限。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @returns 去空白之后的标题。
- */
-function titleOf(value: unknown, field: string): string {
-  if (typeof value !== 'string') fail(`${field} 要是文字`)
-  const wanted = value.trim()
-  if (wanted === '') fail(`${field} 不能是空的`)
-  if ([...wanted].length > RECORDS_LIMITS.titleLength) fail(`${field} 最多 ${String(RECORDS_LIMITS.titleLength)} 个字符`)
-  return wanted
-}
-
-/**
- * 一段可选文字：空串与 `null` 都表示未填。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @returns 去空白之后的文字；未填时是 `null`。
- */
-function textOf(value: unknown, field: string): string | null {
-  if (value === null) return null
-  if (typeof value !== 'string') fail(`${field} 要是文字`)
-  const wanted = value.trim()
-  return wanted === '' ? null : wanted
-}
-
-/**
- * 一个可选日期或时刻；时区必须是有效的 IANA 名。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @returns 校验过的日期；未填时是 `null`。
- */
-function dueOf(value: unknown, field: string): Due | null {
-  if (value === null) return null
-  if (!isRecord(value)) fail(`${field} 要写成 { kind, date 或 at, timeZone }`)
-  const zone = value.timeZone
-  if (typeof zone !== 'string' || zone.length > 64 || !validZone(zone)) fail(`${field} 的时区不是有效的 IANA 名`)
-  if (value.kind === 'date') {
-    const match = typeof value.date === 'string' ? DATE_PATTERN.exec(value.date) : null
-    if (match === null) fail(`${field} 的日期要写成 YYYY-MM-DD`)
-    const [, year, month, day] = match.map(Number)
-    const calendar = new Date(Date.UTC(year as number, (month as number) - 1, day as number))
-    if (calendar.getUTCFullYear() !== year || calendar.getUTCMonth() !== (month as number) - 1 || calendar.getUTCDate() !== day) {
-      fail(`${field} 的日期不存在`)
-    }
-    return { kind: 'date', date: value.date as string, timeZone: zone }
-  }
-  if (value.kind === 'instant') {
-    if (typeof value.at !== 'string' || !INSTANT_PATTERN.test(value.at) || Number.isNaN(Date.parse(value.at))) {
-      fail(`${field} 的时刻要写成以 Z 结尾的 UTC ISO 字符串`)
-    }
-    return { kind: 'instant', at: value.at, timeZone: zone }
-  }
-  fail(`${field}.kind 只能是 date 或 instant`)
-}
 
 /**
  * 一组指向前向记录的引用。
@@ -169,30 +101,6 @@ function refsOf(value: unknown, field: string, allowed: readonly RecordKind[]): 
     if (seen.has(key)) fail(`${field} 里有重复的引用`)
     seen.add(key)
     return { kind: entry.kind as RecordKind, id: entry.id }
-  })
-}
-
-/**
- * 一组材料引用：地址只收 http/https，记录内局部键不重复。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @returns 材料表；未填时是 `null`。
- */
-function materialsOf(value: unknown, field: string): MaterialRef[] | null {
-  if (value === null) return null
-  if (!Array.isArray(value)) fail(`${field} 要是数组`)
-  if (value.length > RECORDS_LIMITS.materials) fail(`${field} 最多 ${String(RECORDS_LIMITS.materials)} 项`)
-  const seen = new Set<string>()
-  return value.map((entry, index) => {
-    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { id, url, title }`)
-    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
-    if (seen.has(entry.id)) fail(`${field} 里的材料 id 重复`)
-    seen.add(entry.id)
-    if (!isOpenableUrl(entry.url)) fail(`${field}[${String(index)}].url 只收 http/https 的完整地址`)
-    const title = titleOf(entry.title, `${field}[${String(index)}].title`)
-    const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
-    return { id: entry.id, url: entry.url, title, ...(note === null ? {} : { note }) }
   })
 }
 
@@ -485,6 +393,10 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.figures !== undefined) out.figures = figuresOf(input.figures, 'figures')
   if (input.submissions !== undefined) out.submissions = submissionsOf(input.submissions, 'submissions')
   if (input.revisions !== undefined) out.revisions = revisionsOf(input.revisions, 'revisions')
+  if (input.chapters !== undefined) out.chapters = chaptersOf(input.chapters, 'chapters')
+  if (input.results !== undefined) out.results = thesisResultsOf(input.results, 'results')
+  if (input.experiments !== undefined) out.experiments = experimentsOf(input.experiments, 'experiments')
+  if (input.milestones !== undefined) out.milestones = thesisMilestonesOf(input.milestones, 'milestones')
   if (input.derivedFrom !== undefined) {
     if (input.derivedFrom === null) out.derivedFrom = null
     else if (typeof input.derivedFrom !== 'string' || input.derivedFrom === '' || input.derivedFrom.length > 64) fail('derivedFrom 不合法')
@@ -628,6 +540,10 @@ export function storedProblem(value: unknown): string | null {
     const arraysProblem = manuscriptArraysProblem(value)
     if (arraysProblem !== null) return arraysProblem
   }
+  if (value.kind === 'thesis') {
+    const arraysProblem = thesisArraysProblem(value)
+    if (arraysProblem !== null) return arraysProblem
+  }
   return null
 }
 
@@ -677,6 +593,25 @@ export function searchTextOf(record: DomainRecord): string {
     for (const material of Array.isArray(revision?.materials) ? revision.materials : []) {
       if (typeof material?.title === 'string') parts.push(material.title)
     }
+  }
+  for (const chapter of (Array.isArray(entry.chapters) ? entry.chapters : []) as ThesisChapter[]) {
+    if (typeof chapter?.title === 'string') parts.push(chapter.title)
+    if (typeof chapter?.question === 'string') parts.push(chapter.question)
+    if (typeof chapter?.note === 'string') parts.push(chapter.note)
+  }
+  for (const result of (Array.isArray(entry.results) ? entry.results : []) as ThesisResult[]) {
+    if (typeof result?.note === 'string') parts.push(result.note)
+    for (const material of Array.isArray(result?.materials) ? result.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const experiment of (Array.isArray(entry.experiments) ? entry.experiments : []) as ThesisExperiment[]) {
+    if (typeof experiment?.title === 'string') parts.push(experiment.title)
+    if (typeof experiment?.note === 'string') parts.push(experiment.note)
+  }
+  for (const milestone of (Array.isArray(entry.milestones) ? entry.milestones : []) as ThesisMilestone[]) {
+    if (typeof milestone?.label === 'string') parts.push(milestone.label)
+    if (typeof milestone?.note === 'string') parts.push(milestone.note)
   }
   return parts.join('\n').toLowerCase()
 }

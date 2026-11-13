@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ActionRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ResearchRecord } from '@dsh-scholar-board/contracts'
+import type { ActionRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ResearchRecord, ThesisRecord } from '@dsh-scholar-board/contracts'
 import { openDrafts } from '../src/drafts/store'
 import { exportRecords, importRecords, previewRecords, readRecordsPackage } from '../src/records/exchange'
 import { registerRecords } from '../src/records/access'
@@ -87,6 +87,34 @@ function research(overrides: Record<string, unknown> = {}): Record<string, unkno
       { name: 'runtime', value: '820', unit: 's' },
     ],
     conclusion: '种子只影响小样本段的抖动，趋势一致',
+    ...overrides,
+  }
+}
+
+/** 一条毕业论文的输入。 */
+function thesis(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'thesis',
+    title: '低轨星座干扰下的多用户检测',
+    question: '把干扰对齐用到低轨星座时，闭式解还成立吗',
+    chapters: [
+      { id: 'c1', title: '绪论', status: 'done' },
+      { id: 'c2', title: '干扰对齐推导', status: 'revising' },
+    ],
+    results: [
+      { id: 'x1', kind: 'manuscript', recordId: 'manuscript-1', note: '第二、三章的主体' },
+      { id: 'x2', kind: 'research', recordId: 'research-1' },
+    ],
+    experiments: [
+      { id: 'e1', title: '补一个基线对比', status: 'doing' },
+      { id: 'e2', title: '扩展到多小区场景', status: 'todo' },
+    ],
+    milestones: [
+      { id: 'm1', label: '预答辩', status: 'todo', due: { kind: 'date', date: '2027-03-15', timeZone: 'Asia/Shanghai' } },
+      { id: 'm2', label: '送审', status: 'todo' },
+    ],
+    related: [{ kind: 'action', id: 'action-1' }],
+    materials: [{ id: 'tm1', url: 'https://example.com/outline.pdf', title: '论文提纲' }],
     ...overrides,
   }
 }
@@ -222,6 +250,52 @@ describe('记录存储', () => {
     await expect(store.create(research({ parameters: [{ name: 'snr' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(research({ metrics: [{ name: 'ber', value: '1e-3', unit: 'x'.repeat(33) }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(research({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('毕业论文带章节、成果来源、待补实验与可配置的学位节点，搜索也看章节与节点', async () => {
+    const { store } = await open()
+    const created = await store.create(thesis(), ACTOR)
+    const record = created.record as ThesisRecord
+    expect(record).toMatchObject({
+      kind: 'thesis',
+      title: '低轨星座干扰下的多用户检测',
+      question: '把干扰对齐用到低轨星座时，闭式解还成立吗',
+    })
+    expect(record.chapters).toEqual([
+      { id: 'c1', title: '绪论', status: 'done' },
+      { id: 'c2', title: '干扰对齐推导', status: 'revising' },
+    ])
+    expect(record.results).toEqual([
+      { id: 'x1', kind: 'manuscript', recordId: 'manuscript-1', note: '第二、三章的主体' },
+      { id: 'x2', kind: 'research', recordId: 'research-1' },
+    ])
+    expect(record.experiments?.[0]).toMatchObject({ title: '补一个基线对比', status: 'doing' })
+    expect(record.milestones?.[0]).toMatchObject({ label: '预答辩', status: 'todo' })
+    expect(record.milestones?.[0].due).toMatchObject({ kind: 'date', date: '2027-03-15' })
+    expect(record.related).toEqual([{ kind: 'action', id: 'action-1' }])
+    expect(store.view({ kind: 'thesis' }).records).toHaveLength(1)
+    expect(store.view({ search: '第二、三章' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '干扰对齐推导' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '基线对比' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '预答辩' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const moved = await store.update(record.id, 1, {
+      milestones: [
+        { id: 'm1', label: '预答辩', status: 'done' },
+        { id: 'm2', label: '送审', status: 'doing' },
+      ],
+    }, ACTOR)
+    expect((moved.record as ThesisRecord).milestones?.[0].status).toBe('done')
+
+    // 成果只存来源记录的 id；来源还没建好时也允许保存，读的时候显示来源缺失。
+    const forward = await store.create(thesis({ title: '来源未建好', results: [{ id: 'x1', kind: 'research', recordId: 'research-later' }] }), ACTOR)
+    expect((forward.record as ThesisRecord).results?.[0]).toMatchObject({ kind: 'research', recordId: 'research-later' })
+
+    await expect(store.create(thesis({ chapters: [{ id: 'c1', title: '绪论', status: 'blocked' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(thesis({ results: [{ id: 'x1', kind: 'meeting', recordId: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(thesis({ experiments: [{ id: 'e1', title: '补基线', status: 'blocked' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(thesis({ milestones: [{ id: 'm1', label: 'x'.repeat(61), status: 'todo' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(thesis({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
   it('稿件带图表、投稿轮次与修回，修回要指向存在的一轮', async () => {

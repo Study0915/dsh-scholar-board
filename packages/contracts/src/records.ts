@@ -34,11 +34,14 @@ export const RECORDS_LIMITS = {
   revisions: 200,
   figureLabelLength: 32,
   revisionText: 2000,
+  thesisItems: 100,
+  thesisMilestones: 50,
+  milestoneLabelLength: 60,
   searchLength: 200,
 } as const
 
-/** 领域记录的五种类型。 */
-export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research'
+/** 领域记录的六种类型。 */
+export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis'
 
 /** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
 export type LiteratureStage = 'queued' | 'reading' | 'understood'
@@ -203,8 +206,62 @@ export interface ResearchRecord extends RecordBase {
   materials?: MaterialRef[]
 }
 
+/** 毕业论文的一章；状态由用户推进，不按页数或百分比推断。 */
+export type ThesisChapterStatus = 'planned' | 'drafting' | 'revising' | 'done'
+
+export interface ThesisChapter {
+  id: string
+  title: string
+  status: ThesisChapterStatus
+  question?: string
+  note?: string
+}
+
+/** 已有成果：指向一条小论文或研究记录，标题由宿主现取。 */
+export type ThesisResultKind = 'manuscript' | 'research'
+
+export interface ThesisResult {
+  id: string
+  kind: ThesisResultKind
+  recordId: string
+  note?: string
+  materials?: MaterialRef[]
+}
+
+/** 待补实验：做完与否由用户填，不执行实验程序。 */
+export type ThesisItemStatus = 'todo' | 'doing' | 'done'
+
+export interface ThesisExperiment {
+  id: string
+  title: string
+  status: ThesisItemStatus
+  note?: string
+}
+
+/** 学位节点：名称与日期都由用户维护，不预设学校规则。 */
+export interface ThesisMilestone {
+  id: string
+  label: string
+  status: ThesisItemStatus
+  due?: Due
+  note?: string
+}
+
+/** 毕业论文：章节、成果来源、待补实验与可自定义的学位节点。 */
+export interface ThesisRecord extends RecordBase {
+  kind: 'thesis'
+  title: string
+  question?: string
+  chapters?: ThesisChapter[]
+  results?: ThesisResult[]
+  experiments?: ThesisExperiment[]
+  milestones?: ThesisMilestone[]
+  related?: RecordRef[]
+  materials?: MaterialRef[]
+}
+
 /** 一条领域记录。 */
-export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord
+export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord
 
 /** 工作区当前的用量；到九成时 `warning` 为真，到顶阻止新建。 */
 export interface RecordsQuota {
