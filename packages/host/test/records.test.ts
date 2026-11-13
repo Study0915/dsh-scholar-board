@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ActionRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ResearchRecord, ThesisRecord } from '@dsh-scholar-board/contracts'
+import type { ActionRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ProjectRecord, ResearchRecord, ThesisRecord } from '@dsh-scholar-board/contracts'
 import { openDrafts } from '../src/drafts/store'
 import { exportRecords, importRecords, previewRecords, readRecordsPackage } from '../src/records/exchange'
 import { registerRecords } from '../src/records/access'
@@ -115,6 +115,35 @@ function thesis(overrides: Record<string, unknown> = {}): Record<string, unknown
     ],
     related: [{ kind: 'action', id: 'action-1' }],
     materials: [{ id: 'tm1', url: 'https://example.com/outline.pdf', title: '论文提纲' }],
+    ...overrides,
+  }
+}
+
+/** 一条横向项目的输入。 */
+function project(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'project',
+    title: '低轨星座干扰抑制模块合作',
+    summary: '为合作方整理干扰抑制模块的可复现实验与阶段交付。',
+    tasks: [
+      { id: 'p1', title: '搭建链路级仿真', status: 'doing', due: { kind: 'date', date: '2026-11-20', timeZone: 'Asia/Shanghai' } },
+      { id: 'p2', title: '整理月度进展', status: 'todo' },
+    ],
+    deliverables: [
+      { id: 'd1', name: '仿真代码包', version: 'v0.3', status: 'delivered', materials: [{ id: 'dm1', url: 'https://example.com/pkg', title: '代码包' }] },
+      { id: 'd2', name: '阶段报告', version: '草案 1', status: 'draft' },
+    ],
+    communications: [
+      { id: 'n1', summary: '确认本月只做单小区场景', at: { kind: 'date', date: '2026-11-05', timeZone: 'Asia/Shanghai' } },
+    ],
+    milestones: [
+      { id: 'm1', label: '第一次阶段评审', status: 'todo', due: { kind: 'date', date: '2026-12-01', timeZone: 'Asia/Shanghai' } },
+    ],
+    issues: [
+      { id: 'i1', title: '测试数据的使用范围待确认', status: 'open' },
+    ],
+    related: [{ kind: 'meeting', id: 'meeting-1' }, { kind: 'action', id: 'action-1' }],
+    materials: [{ id: 'pm1', url: 'https://example.com/brief', title: '需求摘要' }],
     ...overrides,
   }
 }
@@ -296,6 +325,46 @@ describe('记录存储', () => {
     await expect(store.create(thesis({ experiments: [{ id: 'e1', title: '补基线', status: 'blocked' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(thesis({ milestones: [{ id: 'm1', label: 'x'.repeat(61), status: 'todo' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(thesis({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('横向项目带需求摘要、负责事项、交付物版本、沟通结论、验收节点与问题，搜索也看这些内容', async () => {
+    const { store } = await open()
+    const created = await store.create(project(), ACTOR)
+    const record = created.record as ProjectRecord
+    expect(record).toMatchObject({
+      kind: 'project',
+      title: '低轨星座干扰抑制模块合作',
+      summary: '为合作方整理干扰抑制模块的可复现实验与阶段交付。',
+    })
+    expect(record.tasks?.[0]).toMatchObject({ title: '搭建链路级仿真', status: 'doing' })
+    expect(record.deliverables?.[0]).toMatchObject({ name: '仿真代码包', version: 'v0.3', status: 'delivered' })
+    expect(record.communications?.[0]).toMatchObject({ summary: '确认本月只做单小区场景' })
+    expect(record.milestones?.[0]).toMatchObject({ label: '第一次阶段评审', status: 'todo' })
+    expect(record.issues?.[0]).toMatchObject({ title: '测试数据的使用范围待确认', status: 'open' })
+    expect(record.related).toEqual([{ kind: 'meeting', id: 'meeting-1' }, { kind: 'action', id: 'action-1' }])
+    expect(store.view({ kind: 'project' }).records).toHaveLength(1)
+    expect(store.view({ search: '单小区' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '阶段评审' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '仿真代码包' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const moved = await store.update(record.id, 1, {
+      tasks: [{ id: 'p1', title: '搭建链路级仿真', status: 'done' }],
+      issues: [{ id: 'i1', title: '测试数据的使用范围待确认', status: 'resolved' }],
+    }, ACTOR)
+    expect((moved.record as ProjectRecord).tasks?.[0].status).toBe('done')
+    expect((moved.record as ProjectRecord).issues?.[0].status).toBe('resolved')
+
+    // 引用只存 id；来源还没建好时也允许保存，读的时候显示来源缺失。
+    const forward = await store.create(project({ title: '来源未建好', related: [{ kind: 'meeting', id: 'meeting-later' }] }), ACTOR)
+    expect((forward.record as ProjectRecord).related).toEqual([{ kind: 'meeting', id: 'meeting-later' }])
+
+    await expect(store.create(project({ tasks: [{ id: 'p1', title: '搭建仿真', status: 'cancelled' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ deliverables: [{ id: 'd1', name: '代码包', version: 'v1'.padEnd(33, '0'), status: 'draft' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ deliverables: [{ id: 'd1', name: '代码包', status: 'draft' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ issues: [{ id: 'i1', title: '范围待确认', status: 'closed' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ milestones: [{ id: 'm1', label: 'x'.repeat(61), status: 'todo' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ related: [{ kind: 'research', id: 'research-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ amount: '100000' }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
   it('稿件带图表、投稿轮次与修回，修回要指向存在的一轮', async () => {

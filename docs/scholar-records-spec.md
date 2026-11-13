@@ -19,7 +19,7 @@
 - 每条记录一个稳定不透明 id（UUID，与卡片实例同生成方式），永不复用。删除卡片不触碰记录；记录独立于任何卡片存在。
 - 每条记录带自己的 `revision`，每次成功写入加一。更新必须带 `expectedRevision`，宿主在写入队列内再核一次，过期回 `409 { code: 'stale-revision', revision, record }`（沿用 `content/routes.ts:240` 的形状）。创建不带 expectedRevision。
 - `createdAt`、`updatedAt` 由宿主记录，UTC ISO 字符串，组件不可写。`schemaVersion` 标记记录形状版本，首批为 1。
-- 每条记录有 `kind`（meeting、action、manuscript、literature、research）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
+- 每条记录有 `kind`（meeting、action、manuscript、literature、research、thesis、project）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
 
 | 状态 | 判据 | 默认列表 |
 |---|---|---|
@@ -166,6 +166,31 @@ S06 补齐。毕业论文记录的是「写到哪、还差什么、材料在哪�
 - 搜索匹配章节标题、问题与说明，成果来源的说明，待补实验与学位节点的标题、说明，以及论文问题与关联行动项。列表行显示章节进度、未完成实验数与最近的学位节点；没有节点时写「未定节点」。
 - 材料只是链接，不复制文件、不下载；一个节点或实验是否算完成由用户勾选，界面不按日期推断。
 
+### 横向项目 project
+
+S07 补齐。横向项目记录的是「我负责什么、交付到哪、和谁沟通过、还差什么」，不是合同台账：
+
+| 字段 | 形状 | 必填 | 说明 |
+|---|---|---|---|
+| title | string ≤200 | 是 | 项目名称 |
+| summary | string | 否 | 需求摘要，一段短文本 |
+| tasks | `ProjectTask[]` | 否 | 个人负责的事项 |
+| deliverables | `ProjectDeliverable[]` | 否 | 交付物及其版本 |
+| communications | `ProjectCommunication[]` | 否 | 沟通结论，来源会议走 `related` |
+| milestones | `ProjectMilestone[]` | 否 | 验收节点，由用户自行维护 |
+| issues | `ProjectIssue[]` | 否 | 待确认问题 |
+| related | `Ref[]` | 否 | 关联会议、行动项与稿件 |
+| materials | `MaterialRef[]` | 否 | 需求摘要、方案与交付材料的链接 |
+
+- `ProjectTask` 为 `{ id, title ≤200, status, due?, note?, materials? }`。`status` 只能是待办 todo、进行中 doing、受阻 blocked、完成 done。
+- `ProjectDeliverable` 为 `{ id, name ≤200, version ≤32, status, due?, note?, materials? }`。`status` 只能是草稿 draft、评审中 review、已交付 delivered、已验收 accepted；版本按文字原样保存（如 `v0.3`、`草案 1`），宿主不解析也不排序。
+- `ProjectCommunication` 为 `{ id, summary ≤200, at?, note? }`。`summary` 是一句话结论；沟通来源的会议通过 `related` 指向会议记录，不复制会议正文。
+- `ProjectMilestone` 为 `{ id, label ≤60, status, due?, note? }`，`status` 只能是待办 todo、进行中 doing、完成 done。节点名称、日期与状态都由用户维护，不预设合同规则，也不判断合同履约。
+- `ProjectIssue` 为 `{ id, title ≤200, status, note? }`，`status` 只能是待确认 open、沟通中 doing、已解决 resolved。
+- 默认模板不收合同金额、报价、付款节点与其他敏感业务详情；多人审批与经费管理另行决定。事项、交付物、节点与问题是否完成都由用户维护，界面不按日期推断。
+- 搜索匹配需求摘要、事项标题与说明、交付物名称与版本、沟通结论与说明、节点名称、问题标题与说明，以及材料和关联记录。
+- 列表行显示事项进度、未解决问题数与最近的验收节点，以及第一件交付物及其版本；没有节点时写「没有未完成的验收节点」。
+
 ### 材料引用 MaterialRef
 
 材料引用是内嵌在记录里的对象，首批不作为独立存储记录：
@@ -191,6 +216,7 @@ S06 补齐。毕业论文记录的是「写到哪、还差什么、材料在哪�
 | 单条 revisions | 200 |
 | 单条 stageHistory | 200 |
 | 单条 chapters / results / experiments | 各 100 |
+| 单条 tasks / deliverables / communications / issues | 各 100 |
 | 单条 milestones | 50 |
 | 单条序列化字节 | 64 KiB |
 | 工作区记录条数 | 10000 |

@@ -1,0 +1,127 @@
+<div class="t-data pj" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">横向项目</h2>
+    </div>
+    <div class="pj__head-aside">
+      <span class="t-data__meta pj__count" data-field="count"></span>
+      <button class="pj__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="pj__toolbar">
+    <div class="pj__tabs" role="tablist" aria-label="记录范围">
+      <button class="pj__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="pj__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="pj__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <input class="pj__search" type="search" data-role="search" aria-label="搜索记录" placeholder="搜索标题、事项、交付物与沟通" />
+  </div>
+
+  <div class="pj__body">
+    <div class="t-data__scroll pj__list" data-role="list" hidden></div>
+    <div class="pj__note-wrap">
+      <p class="t-data__empty pj__note" data-role="note">正在读取记录…</p>
+      <button class="pj__ghost pj__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="pj__detail" data-role="detail" hidden aria-label="记录详情">
+    <div class="pj__detail-head">
+      <button class="pj__ghost pj__back" type="button" data-action="back">返回</button>
+      <span class="pj__state" data-role="detail-state"></span>
+      <span class="pj__spacer"></span>
+      <button class="pj__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="pj__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="pj__ghost pj__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll pj__detail-body">
+      <p class="pj__hint" data-role="detail-hint" hidden></p>
+      <label class="pj__field">
+        <span class="pj__label" data-role="label-title">标题</span>
+        <input class="pj__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <label class="pj__field">
+        <span class="pj__label" data-role="label-summary">需求摘要</span>
+        <textarea class="pj__input pj__textarea" rows="2" data-field="summary"></textarea>
+      </label>
+
+      <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-tasks">负责事项</legend>
+        <ul class="pj__line-list" data-role="tasks"></ul>
+        <button class="pj__ghost" type="button" data-action="add-task">添加事项</button>
+      </fieldset>
+
+      <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-deliverables">交付物</legend>
+        <ul class="pj__line-list" data-role="deliverables"></ul>
+        <button class="pj__ghost" type="button" data-action="add-deliverable">添加交付物</button>
+      </fieldset>
+
+      <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-communications">沟通结论</legend>
+        <ul class="pj__line-list" data-role="communications"></ul>
+        <button class="pj__ghost" type="button" data-action="add-communication">添加沟通</button>
+      </fieldset>
+
+      <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-milestones">验收节点</legend>
+        <ul class="pj__line-list" data-role="milestones"></ul>
+        <button class="pj__ghost" type="button" data-action="add-milestone">添加验收节点</button>
+        <p class="pj__note-line" data-role="milestone-hint"></p>
+      </fieldset>
+
+      <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-issues">待确认问题</legend>
+        <ul class="pj__line-list" data-role="issues"></ul>
+        <button class="pj__ghost" type="button" data-action="add-issue">添加问题</button>
+      </fieldset>
+
+      <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-related">关联记录</legend>
+        <ul class="pj__related-list" data-role="related"></ul>
+        <div class="pj__related-add">
+          <select class="pj__input" data-role="related-select" aria-label="关联记录"></select>
+          <button class="pj__ghost" type="button" data-action="add-related">关联</button>
+        </div>
+      </fieldset>
+
+      <p class="pj__error" data-role="rows-error" role="status"></p>
+
+      <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-materials">项目材料</legend>
+        <ul class="pj__material-list" data-role="materials"></ul>
+        <div class="pj__material-add">
+          <input class="pj__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="pj__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="pj__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="pj__error" data-role="material-error" role="status"></p>
+      </fieldset>
+
+      <div class="pj__detail-actions">
+        <button class="pj__primary" type="button" data-action="save">保存</button>
+        <button class="pj__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="pj__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="pj__dialog-actions">
+      <button class="pj__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="pj__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="pj__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="pj__dialog-actions">
+      <button class="pj__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="pj__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

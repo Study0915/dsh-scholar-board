@@ -37,11 +37,14 @@ export const RECORDS_LIMITS = {
   thesisItems: 100,
   thesisMilestones: 50,
   milestoneLabelLength: 60,
+  projectItems: 100,
+  projectMilestones: 50,
+  versionLength: 32,
   searchLength: 200,
 } as const
 
-/** 领域记录的六种类型。 */
-export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis'
+/** 领域记录的七种类型。 */
+export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project'
 
 /** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
 export type LiteratureStage = 'queued' | 'reading' | 'understood'
@@ -260,8 +263,74 @@ export interface ThesisRecord extends RecordBase {
   materials?: MaterialRef[]
 }
 
+/** 横向项目里个人负责的一项事项；是否受阻由用户填。 */
+export type ProjectItemStatus = 'todo' | 'doing' | 'blocked' | 'done'
+
+export interface ProjectTask {
+  id: string
+  title: string
+  status: ProjectItemStatus
+  due?: Due
+  note?: string
+  materials?: MaterialRef[]
+}
+
+/** 交付物状态：草稿、评审中、已交付与已验收。 */
+export type ProjectDeliverableStatus = 'draft' | 'review' | 'delivered' | 'accepted'
+
+export interface ProjectDeliverable {
+  id: string
+  name: string
+  version: string
+  status: ProjectDeliverableStatus
+  due?: Due
+  note?: string
+  materials?: MaterialRef[]
+}
+
+/** 一次沟通的结论：一句话与可选日期；来源会议走 related。 */
+export interface ProjectCommunication {
+  id: string
+  summary: string
+  at?: Due
+  note?: string
+}
+
+/** 验收节点：名称与日期由用户维护，不预设合同规则。 */
+export interface ProjectMilestone {
+  id: string
+  label: string
+  status: 'todo' | 'doing' | 'done'
+  due?: Due
+  note?: string
+}
+
+/** 待确认问题：未解决与否由用户填。 */
+export type ProjectIssueStatus = 'open' | 'doing' | 'resolved'
+
+export interface ProjectIssue {
+  id: string
+  title: string
+  status: ProjectIssueStatus
+  note?: string
+}
+
+/** 横向项目：需求摘要、个人负责事项、交付物版本、沟通结论、验收节点与问题。 */
+export interface ProjectRecord extends RecordBase {
+  kind: 'project'
+  title: string
+  summary?: string
+  tasks?: ProjectTask[]
+  deliverables?: ProjectDeliverable[]
+  communications?: ProjectCommunication[]
+  milestones?: ProjectMilestone[]
+  issues?: ProjectIssue[]
+  related?: RecordRef[]
+  materials?: MaterialRef[]
+}
+
 /** 一条领域记录。 */
-export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord
+export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord
 
 /** 工作区当前的用量；到九成时 `warning` 为真，到顶阻止新建。 */
 export interface RecordsQuota {

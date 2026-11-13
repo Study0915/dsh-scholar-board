@@ -106,3 +106,116 @@ export function materialsOf(value: unknown, field: string): MaterialRef[] | null
     return { id: entry.id, url: entry.url, title, ...(note === null ? {} : { note }) }
   })
 }
+
+/**
+ * 一组带稳定 id 的条目：数组、容量与 id 唯一由这里统一把关。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @param limit - 条数上限。
+ * @param shape - 条目该写成的样子，用在出错提示里。
+ * @returns 条目数组；未填时是 `null`。
+ */
+export function idItemsOf(value: unknown, field: string, limit: number, shape: string): Record<string, unknown>[] | null {
+  if (value === null) return null
+  if (!Array.isArray(value)) fail(`${field} 要是数组`)
+  if (value.length > limit) fail(`${field} 最多 ${String(limit)} 项`)
+  const seen = new Set<string>()
+  return value.map((entry, index) => {
+    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 ${shape}`)
+    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
+    if (seen.has(entry.id)) fail(`${field} 里的 id 重复`)
+    seen.add(entry.id)
+    return entry
+  })
+}
+
+/**
+ * 一组条目共有的可选内容：日期、说明与材料，缺省时不写进结果。
+ *
+ * 项目事项、交付物与后续同类条目都读这一份，免得每处各写一遍三样判断。
+ *
+ * @param entry - 一条已通过 id 校验的条目。
+ * @param field - 出错时指人。
+ * @returns 只含有值的那几项。
+ */
+export function extrasOf(entry: Record<string, unknown>, field: string): { due?: Due, note?: string, materials?: MaterialRef[] } {
+  const due = entry.due === undefined ? null : dueOf(entry.due, `${field}.due`)
+  const note = entry.note === undefined ? null : textOf(entry.note, `${field}.note`)
+  const materials = entry.materials === undefined ? null : materialsOf(entry.materials, `${field}.materials`)
+  return {
+    ...(due === null ? {} : { due }),
+    ...(note === null ? {} : { note }),
+    ...(materials === null ? {} : { materials }),
+  }
+}
+
+/** 标题与状态都过关的一行，章节、待补实验与项目事项共用。 */
+export interface TitledRow {
+  entry: Record<string, unknown>
+  index: number
+  title: string
+}
+
+/** 带标题与状态的一组条目：标题必填，状态只认给定的一组。 */
+export function titledRowsOf(value: unknown, field: string, limit: number, statuses: readonly string[]): TitledRow[] | null {
+  const rows = idItemsOf(value, field, limit, '对象')
+  if (rows === null) return null
+  return rows.map((entry, index) => {
+    const title = titleOf(entry.title, `${field}[${String(index)}].title`)
+    if (typeof entry.status !== 'string' || !statuses.includes(entry.status)) {
+      fail(`${field}[${String(index)}].status 只能是 ${statuses.join('、')}`)
+    }
+    return { entry, index, title }
+  })
+}
+
+/** 标题、状态与可选说明都过关的一行，待补实验与待确认问题共用。 */
+export interface TitledNoteRow {
+  id: string
+  title: string
+  status: string
+  note?: string
+}
+
+/** 只有标题、状态与一句可选说明的一组条目。 */
+export function titledNoteRowsOf(value: unknown, field: string, limit: number, statuses: readonly string[]): TitledNoteRow[] | null {
+  const rows = titledRowsOf(value, field, limit, statuses)
+  if (rows === null) return null
+  return rows.map(({ entry, index, title }) => {
+    const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
+    return { id: entry.id as string, title, status: entry.status as string, ...(note === null ? {} : { note }) }
+  })
+}
+
+/** 名称、状态与可选日期都过关的一行，学位节点与验收节点共用。 */
+export interface LabeledMilestoneRow {
+  id: string
+  label: string
+  status: string
+  due?: Due
+  note?: string
+}
+
+/** 名称必填、日期与说明可留空的一组节点；状态由调用方给。 */
+export function labeledMilestonesOf(value: unknown, field: string, limit: number, statuses: readonly string[]): LabeledMilestoneRow[] | null {
+  const rows = idItemsOf(value, field, limit, '对象')
+  if (rows === null) return null
+  return rows.map((entry, index) => {
+    if (typeof entry.label !== 'string' || entry.label.trim() === '') fail(`${field}[${String(index)}].label 不能是空的`)
+    const label = entry.label.trim()
+    if ([...label].length > RECORDS_LIMITS.milestoneLabelLength) fail(`${field}[${String(index)}].label 最多 ${String(RECORDS_LIMITS.milestoneLabelLength)} 个字符`)
+    if (typeof entry.status !== 'string' || !statuses.includes(entry.status)) {
+      fail(`${field}[${String(index)}].status 只能是 ${statuses.join('、')}`)
+    }
+    const due = entry.due === undefined ? null : dueOf(entry.due, `${field}[${String(index)}].due`)
+    const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
+    return {
+      id: entry.id as string,
+      label,
+      status: entry.status,
+      ...(due === null ? {} : { due }),
+      ...(note === null ? {} : { note }),
+    }
+  })
+}

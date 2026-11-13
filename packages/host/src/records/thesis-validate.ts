@@ -14,7 +14,7 @@ import type {
 } from '@dsh-scholar-board/contracts'
 import { RECORDS_LIMITS } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
-import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
+import { fail, idItemsOf, labeledMilestonesOf, materialsOf, textOf, titledNoteRowsOf, titledRowsOf } from './fields'
 
 /** 毕业论文章节的四种状态。 */
 export const THESIS_CHAPTER_STATUSES: readonly ThesisChapterStatus[] = ['planned', 'drafting', 'revising', 'done']
@@ -25,41 +25,6 @@ export const THESIS_ITEM_STATUSES: readonly ThesisItemStatus[] = ['todo', 'doing
 /** 已有成果能指向的两种记录。 */
 export const THESIS_RESULT_KINDS: readonly ThesisResultKind[] = ['manuscript', 'research']
 
-/** 标题与状态都过关的一行，章节与待补实验共用。 */
-interface TitledRow {
-  entry: Record<string, unknown>
-  index: number
-  title: string
-}
-
-/** 一组带稳定 id 的条目：数组、容量与 id 唯一由这里统一把关。 */
-function thesisItems(value: unknown, field: string, limit: number): Record<string, unknown>[] | null {
-  if (value === null) return null
-  if (!Array.isArray(value)) fail(`${field} 要是数组`)
-  if (value.length > limit) fail(`${field} 最多 ${String(limit)} 项`)
-  const seen = new Set<string>()
-  return value.map((entry, index) => {
-    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成对象`)
-    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
-    if (seen.has(entry.id)) fail(`${field} 里的 id 重复`)
-    seen.add(entry.id)
-    return entry
-  })
-}
-
-/** 章节与待补实验共同的开头：标题必填，状态只认给定的一组。 */
-function titledRows(value: unknown, field: string, statuses: readonly string[]): TitledRow[] | null {
-  const rows = thesisItems(value, field, RECORDS_LIMITS.thesisItems)
-  if (rows === null) return null
-  return rows.map((entry, index) => {
-    const title = titleOf(entry.title, `${field}[${String(index)}].title`)
-    if (typeof entry.status !== 'string' || !statuses.includes(entry.status)) {
-      fail(`${field}[${String(index)}].status 只能是 ${statuses.join('、')}`)
-    }
-    return { entry, index, title }
-  })
-}
-
 /**
  * 章节：标题必填，状态只认四种，问题与说明可留空。
  *
@@ -68,7 +33,7 @@ function titledRows(value: unknown, field: string, statuses: readonly string[]):
  * @returns 章节表；未填时是 `null`。
  */
 export function chaptersOf(value: unknown, field: string): ThesisChapter[] | null {
-  const rows = titledRows(value, field, THESIS_CHAPTER_STATUSES)
+  const rows = titledRowsOf(value, field, RECORDS_LIMITS.thesisItems, THESIS_CHAPTER_STATUSES)
   if (rows === null) return null
   return rows.map(({ entry, index, title }) => {
     const question = entry.question === undefined ? null : textOf(entry.question, `${field}[${String(index)}].question`)
@@ -91,7 +56,7 @@ export function chaptersOf(value: unknown, field: string): ThesisChapter[] | nul
  * @returns 成果表；未填时是 `null`。
  */
 export function thesisResultsOf(value: unknown, field: string): ThesisResult[] | null {
-  const rows = thesisItems(value, field, RECORDS_LIMITS.thesisItems)
+  const rows = idItemsOf(value, field, RECORDS_LIMITS.thesisItems, '对象')
   if (rows === null) return null
   return rows.map((entry, index) => {
     if (typeof entry.kind !== 'string' || !THESIS_RESULT_KINDS.includes(entry.kind as ThesisResultKind)) {
@@ -118,17 +83,14 @@ export function thesisResultsOf(value: unknown, field: string): ThesisResult[] |
  * @returns 实验表；未填时是 `null`。
  */
 export function experimentsOf(value: unknown, field: string): ThesisExperiment[] | null {
-  const rows = titledRows(value, field, THESIS_ITEM_STATUSES)
+  const rows = titledNoteRowsOf(value, field, RECORDS_LIMITS.thesisItems, THESIS_ITEM_STATUSES)
   if (rows === null) return null
-  return rows.map(({ entry, index, title }) => {
-    const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
-    return {
-      id: entry.id as string,
-      title,
-      status: entry.status as ThesisItemStatus,
-      ...(note === null ? {} : { note }),
-    }
-  })
+  return rows.map(({ id, title, status, note }) => ({
+    id,
+    title,
+    status: status as ThesisItemStatus,
+    ...(note === undefined ? {} : { note }),
+  }))
 }
 
 /**
@@ -139,25 +101,15 @@ export function experimentsOf(value: unknown, field: string): ThesisExperiment[]
  * @returns 节点表；未填时是 `null`。
  */
 export function thesisMilestonesOf(value: unknown, field: string): ThesisMilestone[] | null {
-  const rows = thesisItems(value, field, RECORDS_LIMITS.thesisMilestones)
+  const rows = labeledMilestonesOf(value, field, RECORDS_LIMITS.thesisMilestones, THESIS_ITEM_STATUSES)
   if (rows === null) return null
-  return rows.map((entry, index) => {
-    if (typeof entry.label !== 'string' || entry.label.trim() === '') fail(`${field}[${String(index)}].label 不能是空的`)
-    const label = entry.label.trim()
-    if ([...label].length > RECORDS_LIMITS.milestoneLabelLength) fail(`${field}[${String(index)}].label 最多 ${String(RECORDS_LIMITS.milestoneLabelLength)} 个字符`)
-    if (typeof entry.status !== 'string' || !THESIS_ITEM_STATUSES.includes(entry.status as ThesisItemStatus)) {
-      fail(`${field}[${String(index)}].status 只能是 ${THESIS_ITEM_STATUSES.join('、')}`)
-    }
-    const due = entry.due === undefined ? null : dueOf(entry.due, `${field}[${String(index)}].due`)
-    const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
-    return {
-      id: entry.id as string,
-      label,
-      status: entry.status as ThesisItemStatus,
-      ...(due === null ? {} : { due }),
-      ...(note === null ? {} : { note }),
-    }
-  })
+  return rows.map(({ id, label, status, due, note }) => ({
+    id,
+    label,
+    status: status as ThesisItemStatus,
+    ...(due === undefined ? {} : { due }),
+    ...(note === undefined ? {} : { note }),
+  }))
 }
 
 /**
