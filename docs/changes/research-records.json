@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 1,
+  "at": "2026-11-13",
+  "external": true,
+  "zh": "新增「研究记录」卡：按推导、仿真与实验记下研究问题、环境、随机种子、参数与指标（名称、数值与可选单位）、结论和结果材料；列表可按做法筛选、搜索、归档与移入回收站，详情支持草稿与修订冲突。缺失的环境、种子、参数与指标显示「未知」，参数与材料只是记录，不执行实验程序。记录类型、检索、导出导入、配额与内置组件画廊一并支持研究记录。",
+  "en": "Adds the Research notes card: record a derivation, simulation or experiment with the research question, environment, seeds, parameters and metrics (name, value and optional unit), conclusion and result materials; the list filters by method, searches, archives and trashes, and the detail supports drafts and revision conflicts. Missing environment, seeds, parameters and metrics show as unknown, and parameters and materials are recorded only, never executed. Records, search, export/import, quota and the built-in gallery now cover research notes too."
+}

@@ -265,8 +265,8 @@ export async function openRecords(file: string, options: { now?: () => number, l
     },
     async create(input, actor) {
       return await mutate(() => {
-        if (!isRecord(input) || typeof input.kind !== 'string' || !['meeting', 'action', 'manuscript', 'literature'].includes(input.kind)) {
-          throw new Refusal(400, '新记录要写明 kind：meeting、action、manuscript 或 literature')
+        if (!isRecord(input) || typeof input.kind !== 'string' || !['meeting', 'action', 'manuscript', 'literature', 'research'].includes(input.kind)) {
+          throw new Refusal(400, '新记录要写明 kind：meeting、action、manuscript、literature 或 research')
         }
         const kind = input.kind as RecordKind
         const { kind: _ignored, ...fieldsInput } = input

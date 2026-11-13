@@ -1,0 +1,125 @@
+<div class="t-data rs" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">研究记录</h2>
+    </div>
+    <div class="rs__head-aside">
+      <span class="t-data__meta rs__count" data-field="count"></span>
+      <button class="rs__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="rs__toolbar">
+    <div class="rs__tabs" role="tablist" aria-label="记录范围">
+      <button class="rs__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="rs__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="rs__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <select class="rs__search rs__method-filter" data-role="method" aria-label="做法">
+      <option value="">全部做法</option>
+      <option value="derivation">推导</option>
+      <option value="simulation">仿真</option>
+      <option value="experiment">实验</option>
+    </select>
+    <input class="rs__search" type="search" data-role="search" aria-label="搜索记录" placeholder="搜索标题、问题、环境与结论" />
+  </div>
+
+  <div class="rs__body">
+    <div class="t-data__scroll rs__list" data-role="list" hidden></div>
+    <div class="rs__note-wrap">
+      <p class="t-data__empty rs__note" data-role="note">正在读取记录…</p>
+      <button class="rs__ghost rs__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="rs__detail" data-role="detail" hidden aria-label="记录详情">
+    <div class="rs__detail-head">
+      <button class="rs__ghost rs__back" type="button" data-action="back">返回</button>
+      <span class="rs__state" data-role="detail-state"></span>
+      <span class="rs__spacer"></span>
+      <button class="rs__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="rs__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="rs__ghost rs__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll rs__detail-body">
+      <p class="rs__hint" data-role="detail-hint" hidden></p>
+      <label class="rs__field">
+        <span class="rs__label" data-role="label-title">标题</span>
+        <input class="rs__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <div class="rs__pair">
+        <label class="rs__field">
+          <span class="rs__label" data-role="label-method">做法</span>
+          <select class="rs__input" data-field="method-input">
+            <option value="derivation">推导</option>
+            <option value="simulation">仿真</option>
+            <option value="experiment">实验</option>
+          </select>
+        </label>
+        <label class="rs__field">
+          <span class="rs__label" data-role="label-seed">随机种子</span>
+          <input class="rs__input" type="text" data-field="seed-input" autocomplete="off" />
+        </label>
+      </div>
+      <label class="rs__field">
+        <span class="rs__label" data-role="label-question">研究问题</span>
+        <textarea class="rs__input rs__textarea" rows="2" data-field="question"></textarea>
+      </label>
+      <label class="rs__field">
+        <span class="rs__label" data-role="label-environment">环境</span>
+        <input class="rs__input" type="text" data-field="environment-input" autocomplete="off" />
+      </label>
+      <p class="rs__note-line" data-role="environment-hint"></p>
+      <p class="rs__note-line" data-role="seed-hint"></p>
+      <fieldset class="rs__entries">
+        <legend class="rs__label" data-role="label-parameters">参数</legend>
+        <ul class="rs__entry-list" data-role="parameters"></ul>
+        <button class="rs__ghost" type="button" data-action="add-parameter">添加参数</button>
+      </fieldset>
+      <fieldset class="rs__entries">
+        <legend class="rs__label" data-role="label-metrics">指标</legend>
+        <ul class="rs__entry-list" data-role="metrics"></ul>
+        <button class="rs__ghost" type="button" data-action="add-metric">添加指标</button>
+      </fieldset>
+      <p class="rs__error" data-role="entry-error" role="status"></p>
+      <label class="rs__field">
+        <span class="rs__label" data-role="label-conclusion">结论</span>
+        <textarea class="rs__input rs__textarea" rows="3" data-field="conclusion"></textarea>
+      </label>
+      <p class="rs__note-line" data-role="conclusion-hint"></p>
+      <fieldset class="rs__materials">
+        <legend class="rs__label" data-role="label-materials">结果材料</legend>
+        <ul class="rs__material-list" data-role="materials"></ul>
+        <div class="rs__material-add">
+          <input class="rs__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="rs__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="rs__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="rs__error" data-role="material-error" role="status"></p>
+      </fieldset>
+      <div class="rs__detail-actions">
+        <button class="rs__primary" type="button" data-action="save">保存</button>
+        <button class="rs__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="rs__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="rs__dialog-actions">
+      <button class="rs__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="rs__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="rs__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="rs__dialog-actions">
+      <button class="rs__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="rs__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

@@ -32,7 +32,7 @@ const READ_INPUT = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    kind: { enum: ['meeting', 'action', 'manuscript', 'literature'] },
+    kind: { enum: ['meeting', 'action', 'manuscript', 'literature', 'research'] },
     ids: { type: 'array', maxItems: 200, items: { type: 'string', minLength: 1, maxLength: 64 } },
     includeArchived: { type: 'boolean' },
     includeTrashed: { type: 'boolean' },
@@ -80,12 +80,13 @@ const WIDGET_KINDS: Record<string, RecordKind> = {
   'action-items': 'action',
   'manuscript-records': 'manuscript',
   'literature-records': 'literature',
+  'research-records': 'research',
 }
 
 /** 数据源能认的记录类型：props.kind 优先，内置记录组件按 id 取类型。 */
 function kindOf(instance: InstanceFace): RecordKind | undefined {
   const kind = instance.props.kind
-  if (kind === 'meeting' || kind === 'action' || kind === 'manuscript' || kind === 'literature') return kind
+  if (kind === 'meeting' || kind === 'action' || kind === 'manuscript' || kind === 'literature' || kind === 'research') return kind
   return WIDGET_KINDS[instance.widget]
 }
 

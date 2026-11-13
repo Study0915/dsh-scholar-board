@@ -1,0 +1,657 @@
+/*
+ * 研究记录卡的样式：标题区、范围与搜索一行，下面是列表或详情，二者只出现一个。
+ *
+ * 列表一行是做法标签、标题与环境 / 结论；详情是同一个滚动区里的表单，参数与指标各成一组可增删的行，
+ * 底部保存与关闭常驻。窄盒子把范围与搜索改成两行，矮盒子收掉摘要，标题与做法仍然读得到。
+ */
+.rs__head-aside {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+}
+
+.rs__count {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rs__primary,
+.rs__ghost {
+  flex: none;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--w-radius-sm, 8px);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  font-weight: 600;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.rs__primary {
+  background: var(--w-color-accent, #2563eb);
+  color: var(--w-color-on-accent, #fff);
+}
+
+.rs__ghost {
+  border-color: color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  background: transparent;
+  color: var(--w-color-muted, #6b7684);
+}
+
+.rs__ghost.rs__danger {
+  color: var(--w-tone-danger, #b42318);
+}
+
+.rs__primary:disabled,
+.rs__ghost:disabled {
+  cursor: default;
+  opacity: 0.56;
+}
+
+.rs__primary:focus-visible,
+.rs__ghost:focus-visible,
+.rs__tab:focus-visible,
+.rs__row:focus-visible,
+.rs__material-open:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+.rs__toolbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.rs__tabs {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--w-radius-sm, 8px);
+  background: color-mix(in srgb, var(--w-color-fg, #0b1016) 6%, transparent);
+}
+
+.rs__tab {
+  padding: 3px 9px;
+  border: 0;
+  border-radius: calc(var(--w-radius-sm, 8px) - 2px);
+  background: transparent;
+  color: var(--w-color-muted, #6b7684);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  font-weight: 600;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.rs__tab[data-active="true"] {
+  background: var(--w-color-surface, #fff);
+  color: var(--w-color-fg, #0b1016);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--w-color-fg, #0b1016) 12%, transparent);
+}
+
+.rs__search {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 9px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 90%, transparent);
+  border-radius: var(--w-radius-sm, 8px);
+  background: var(--w-color-bg, #f7f8fa);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.rs__body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+/* 详情占满卡片：列表、范围与新建都收起，只留标题与表单。 */
+.rs[data-editing="true"] .rs__body,
+.rs[data-editing="true"] .rs__toolbar,
+.rs[data-editing="true"] .rs__head-aside {
+  display: none;
+}
+
+.rs__note-wrap {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--w-space-sm, 8px);
+}
+
+.rs__note {
+  margin: 0;
+}
+
+.rs__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.rs__row {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: var(--w-space-sm, 8px) 0;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 62%, transparent);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rs__row:first-child {
+  border-top: 0;
+}
+
+.rs__row-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.rs__row-date {
+  flex: none;
+  color: var(--w-color-muted, #6b7684);
+  font-family: var(--t-mono);
+  font-size: var(--w-type-caption, 12px);
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+}
+
+.rs__row-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-fg, #0b1016);
+  font-size: var(--w-type-body, 14px);
+  font-weight: 600;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rs__row-sub {
+  display: flex;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+  margin-top: 2px;
+}
+
+.rs__row-snippet {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rs__tags {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+}
+
+.rs__tag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--w-color-fg, #0b1016) 6%, transparent);
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.rs__tag[data-tone="question"] {
+  background: color-mix(in srgb, var(--w-tone-warn, #b45309) 14%, transparent);
+  color: var(--w-tone-warn, #b45309);
+}
+
+.rs__tag[data-tone="trash"] {
+  background: color-mix(in srgb, var(--w-tone-danger, #b42318) 12%, transparent);
+  color: var(--w-tone-danger, #b42318);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rs__row:hover .rs__row-title {
+    color: var(--w-color-accent, #2563eb);
+  }
+  .rs__ghost:hover:not(:disabled) {
+    color: var(--w-color-fg, #0b1016);
+  }
+}
+
+.rs__detail {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--w-space-sm, 8px);
+}
+
+.rs__detail-head {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.rs__back {
+  padding-inline: 8px;
+}
+
+.rs__state {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rs__state[data-tone="ok"] { color: var(--w-tone-ok, #2563eb); }
+.rs__state[data-tone="error"] { color: var(--w-tone-danger, #b42318); }
+
+.rs__spacer {
+  flex: 1;
+}
+
+.rs__detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-sm, 8px);
+}
+
+.rs__hint {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: var(--w-radius-xs, 6px);
+  background: color-mix(in srgb, var(--w-tone-warn, #b45309) 12%, transparent);
+  color: var(--w-tone-warn, #b45309);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.rs__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rs__label {
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.rs__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 90%, transparent);
+  border-radius: var(--w-radius-sm, 8px);
+  background: var(--w-color-bg, #f7f8fa);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-body, 14px);
+  line-height: 20px;
+}
+
+.rs__textarea {
+  min-height: 44px;
+  resize: vertical;
+}
+
+.rs__input:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+.rs__input:disabled {
+  opacity: 0.6;
+}
+
+.rs__materials {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rs__material-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 var(--w-space-xs, 4px);
+  padding: 0;
+  list-style: none;
+}
+
+.rs__material {
+  display: flex;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.rs__material-open {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--w-color-accent, #2563eb);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--w-color-accent, #2563eb) 40%, transparent);
+  text-underline-offset: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.rs__material-remove {
+  padding: 1px 6px;
+}
+
+.rs__material-add {
+  display: flex;
+  gap: var(--w-space-xs, 4px);
+  min-width: 0;
+}
+
+.rs__material-add .rs__input {
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.rs__error {
+  margin: 2px 0 0;
+  color: var(--w-tone-danger, #b42318);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.rs__detail-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex: none;
+  gap: var(--w-space-sm, 8px);
+  margin-top: auto;
+  padding: var(--w-space-xs, 4px) 0;
+  background: var(--w-color-surface, #fff);
+}
+
+.rs__dialog {
+  width: min(92%, 360px);
+  padding: var(--w-space-lg, 16px);
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  border-radius: var(--w-radius-lg, 14px);
+  background: var(--w-color-surface, #fff);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-body, 14px);
+  line-height: 1.5;
+}
+
+.rs__dialog::backdrop {
+  background: color-mix(in srgb, #0b1016 32%, transparent);
+}
+
+.rs__dialog p {
+  margin: 0 0 var(--w-space-md, 12px);
+}
+
+.rs__dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--w-space-sm, 8px);
+}
+
+:root[data-box-width="narrow"] .rs__toolbar {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+:root[data-box-width="narrow"] .rs__tabs {
+  justify-content: space-between;
+}
+
+:root[data-box-height="short"] .rs__row-sub {
+  display: none;
+}
+
+:root[data-box-height="short"] .rs__row {
+  padding-block: var(--w-space-xs, 4px);
+}
+
+:root[data-box-width="narrow"] .rs__head-aside .rs__count {
+  display: none;
+}
+
+/* 缩略画面：范围、搜索、新建与加载提示都收掉，只留标题与样例列表，内边距与间距收一档。 */
+:root[data-size="preview"] .t-data {
+  gap: var(--w-space-xs, 4px);
+  padding: var(--w-space-md, 12px);
+}
+
+:root[data-size="preview"] .rs__toolbar,
+:root[data-size="preview"] .rs__head-aside,
+:root[data-size="preview"] .rs__note-wrap {
+  display: none;
+}
+
+/* 来源、生成的行动项与上次会议遗留：列表只读，行距与正文说明一致。 */
+.rs__source {
+  margin: 0;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.rs__related {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rs__related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rs__related-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.rs__related-state {
+  flex: none;
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.rs__related-state[data-status="doing"] { color: var(--w-color-accent, #2563eb); }
+.rs__related-state[data-status="blocked"] { color: var(--w-tone-warn, #b45309); }
+.rs__related-state[data-status="done"] { color: var(--w-tone-ok, #2563eb); }
+
+.rs__related-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--w-color-fg, #0b1016);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rs__outline {
+  min-height: 140px;
+  font-family: var(--t-mono);
+  font-size: 12px;
+  line-height: 18px;
+  resize: vertical;
+}
+
+.rs__dialog .rs__field {
+  margin-bottom: var(--w-space-md, 12px);
+}
+
+:root[data-box-width="narrow"] .rs__detail-head {
+  flex-wrap: wrap;
+}
+
+/* 研究记录卡多出来的几件：做法与种子并排；做法筛选固定在范围右边；做法标签的两种色调；可增删的条目行。 */
+.rs__pair {
+  display: flex;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.rs__pair .rs__field {
+  flex: 1;
+  min-width: 0;
+}
+
+.rs__pair .rs__field:last-child {
+  flex: none;
+  width: 88px;
+}
+
+.rs__stage-filter {
+  flex: none;
+  width: auto;
+  max-width: 130px;
+}
+
+.rs__tag[data-tone="reading"] {
+  background: color-mix(in srgb, var(--w-color-accent, #2563eb) 12%, transparent);
+  color: var(--w-color-accent, #2563eb);
+}
+
+.rs__tag[data-tone="ok"] {
+  background: color-mix(in srgb, var(--w-tone-ok, #067647) 12%, transparent);
+  color: var(--w-tone-ok, #067647);
+}
+
+:root[data-box-width="narrow"] .rs__pair {
+  flex-direction: column;
+}
+
+:root[data-box-width="narrow"] .rs__pair .rs__field:last-child {
+  width: auto;
+}
+
+/* 研究记录卡的两组条目：做法窄、种子宽；参数与指标各一行名称 / 数值 / 单位，右侧移除。 */
+.rs__pair .rs__field:first-child {
+  flex: none;
+  width: 104px;
+}
+
+.rs__pair .rs__field:last-child {
+  flex: 1;
+  width: auto;
+}
+
+:root[data-box-width="narrow"] .rs__pair .rs__field:first-child {
+  width: auto;
+}
+
+.rs__entries {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rs__entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-xs, 4px);
+  margin: 0 0 var(--w-space-xs, 4px);
+  padding: 0;
+  list-style: none;
+}
+
+.rs__entry {
+  display: flex;
+  align-items: center;
+  gap: var(--w-space-xs, 4px);
+  min-width: 0;
+}
+
+.rs__entry .rs__input {
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.rs__entry-name {
+  flex: 1.2;
+  min-width: 0;
+}
+
+.rs__entry-value {
+  flex: 1;
+  min-width: 0;
+}
+
+.rs__entry-unit {
+  flex: 0 0 72px;
+  min-width: 0;
+}
+
+.rs__entry-remove {
+  padding: 1px 6px;
+}
+
+.rs__note-line {
+  margin: 0;
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+:root[data-box-width="narrow"] .rs__entry-unit {
+  flex-basis: 56px;
+}

@@ -1,5 +1,5 @@
 /**
- * 领域记录（D36）：组会、行动项与小论文的共享存储形状。
+ * 领域记录（D36）：组会、行动项、小论文、文献与研究记录的共享存储形状。
  *
  * 记录由宿主独占读写，卡片经能力与数据源访问；这里只写盘上与线上的形状。字段、状态转换与容量的
  * 完整规格在 `docs/scholar-records-spec.md`。
@@ -26,15 +26,20 @@ export const RECORDS_LIMITS = {
   titleLength: 200,
   related: 100,
   materials: 64,
+  entries: 64,
+  unitLength: 32,
   stageHistory: 200,
   searchLength: 200,
 } as const
 
-/** 领域记录的四种类型。 */
-export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature'
+/** 领域记录的五种类型。 */
+export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research'
 
 /** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
 export type LiteratureStage = 'queued' | 'reading' | 'understood'
+
+/** 研究记录的三种做法：推导、仿真与实验。 */
+export type ResearchMethod = 'derivation' | 'simulation' | 'experiment'
 
 /** 行动项状态；取消与删除是两件事。 */
 export type ActionStatus = 'todo' | 'doing' | 'blocked' | 'done' | 'cancelled'
@@ -61,6 +66,13 @@ export interface MaterialRef {
   url: string
   title: string
   note?: string
+}
+
+/** 研究记录里的一行参数或指标：名称、数值与可选单位。 */
+export interface ResearchEntry {
+  name: string
+  value: string
+  unit?: string
 }
 
 /** 每条记录都有的系统字段；组件不可写。 */
@@ -132,8 +144,23 @@ export interface LiteratureRecord extends RecordBase {
   materials?: MaterialRef[]
 }
 
+/** 研究记录：推导、仿真或实验的做法与可复现信息。 */
+export interface ResearchRecord extends RecordBase {
+  kind: 'research'
+  title: string
+  method: ResearchMethod
+  question?: string
+  environment?: string
+  seed?: string
+  parameters?: ResearchEntry[]
+  metrics?: ResearchEntry[]
+  conclusion?: string
+  related?: RecordRef[]
+  materials?: MaterialRef[]
+}
+
 /** 一条领域记录。 */
-export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord
+export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord
 
 /** 工作区当前的用量；到九成时 `warning` 为真，到顶阻止新建。 */
 export interface RecordsQuota {
