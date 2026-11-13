@@ -6,6 +6,8 @@
  */
 import type {
   ActionStatus,
+  ChoreStatus,
+  CourseWork,
   DomainRecord,
   FigureKind,
   LiteratureStage,
@@ -43,9 +45,10 @@ import {
   projectMilestonesOf,
   projectTasksOf,
 } from './project-validate'
+import { CHORE_STATUSES, categoryOf, choreStatusOf, courseArraysProblem, courseTermOf, courseWorkOf } from './study-validate'
 
-/** 七种记录。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project']
+/** 九种记录。 */
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore']
 
 /** 行动项的五个状态。 */
 export const ACTION_STATUSES: readonly ActionStatus[] = ['todo', 'doing', 'blocked', 'done', 'cancelled']
@@ -77,6 +80,8 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   research: ['title', 'method', 'question', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials'],
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
   project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
+  course: ['title', 'term', 'code', 'teacher', 'schedule', 'notes', 'work', 'related', 'materials'],
+  chore: ['title', 'category', 'status', 'due', 'note', 'materials'],
 }
 
 /** 每种记录允许指向的引用类型。 */
@@ -88,10 +93,12 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   research: ['manuscript'],
   thesis: ['action'],
   project: ['meeting', 'action', 'manuscript'],
+  course: ['meeting', 'action', 'manuscript'],
+  chore: [],
 }
 
 /** 搜索和展示时要读的文本字段。 */
-const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion'] as const
+const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion', 'code', 'teacher', 'schedule', 'notes', 'note', 'category'] as const
 
 /**
  * 一组指向前向记录的引用。
@@ -417,6 +424,14 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.deliverables !== undefined) out.deliverables = projectDeliverablesOf(input.deliverables, 'deliverables')
   if (input.communications !== undefined) out.communications = projectCommunicationsOf(input.communications, 'communications')
   if (input.issues !== undefined) out.issues = projectIssuesOf(input.issues, 'issues')
+  if (input.term !== undefined || (kind === 'course' && mode === 'create')) out.term = courseTermOf(input.term, 'term')
+  if (input.work !== undefined) out.work = courseWorkOf(input.work, 'work')
+  if (input.code !== undefined) out.code = textOf(input.code, 'code')
+  if (input.teacher !== undefined) out.teacher = textOf(input.teacher, 'teacher')
+  if (input.schedule !== undefined) out.schedule = textOf(input.schedule, 'schedule')
+  if (input.notes !== undefined) out.notes = textOf(input.notes, 'notes')
+  if (input.note !== undefined) out.note = textOf(input.note, 'note')
+  if (input.category !== undefined || (kind === 'chore' && mode === 'create')) out.category = categoryOf(input.category)
   if (input.derivedFrom !== undefined) {
     if (input.derivedFrom === null) out.derivedFrom = null
     else if (typeof input.derivedFrom !== 'string' || input.derivedFrom === '' || input.derivedFrom.length > 64) fail('derivedFrom 不合法')
@@ -434,6 +449,7 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (kind === 'manuscript' && (input.stage !== undefined || mode === 'create')) out.stage = stageOf(input.stage)
   if (kind === 'literature' && (input.stage !== undefined || mode === 'create')) out.stage = literatureStageOf(input.stage)
   if (kind === 'research' && (input.method !== undefined || mode === 'create')) out.method = researchMethodOf(input.method)
+  if (kind === 'chore' && (input.status !== undefined || mode === 'create')) out.status = choreStatusOf(input.status)
   if (out.stage !== undefined && input.stageNote !== undefined) {
     out.stageNote = textOf(input.stageNote, 'stageNote')
   }
@@ -568,6 +584,12 @@ export function storedProblem(value: unknown): string | null {
     const arraysProblem = projectArraysProblem(value)
     if (arraysProblem !== null) return arraysProblem
   }
+  if (value.kind === 'course') {
+    if (!isRecord(value.term) || typeof value.term.label !== 'string' || value.term.label === '') return '缺少学期'
+    const arraysProblem = courseArraysProblem(value)
+    if (arraysProblem !== null) return arraysProblem
+  }
+  if (value.kind === 'chore' && (typeof value.status !== 'string' || !CHORE_STATUSES.includes(value.status as ChoreStatus))) return 'status 不认识'
   return null
 }
 
@@ -659,6 +681,13 @@ export function searchTextOf(record: DomainRecord): string {
   for (const issue of (Array.isArray(entry.issues) ? entry.issues : []) as ProjectIssue[]) {
     if (typeof issue?.title === 'string') parts.push(issue.title)
     if (typeof issue?.note === 'string') parts.push(issue.note)
+  }
+  for (const work of (Array.isArray(entry.work) ? entry.work : []) as CourseWork[]) {
+    if (typeof work?.title === 'string') parts.push(work.title)
+    if (typeof work?.note === 'string') parts.push(work.note)
+    for (const material of Array.isArray(work?.materials) ? work.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
   }
   return parts.join('\n').toLowerCase()
 }

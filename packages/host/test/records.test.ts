@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ActionRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ProjectRecord, ResearchRecord, ThesisRecord } from '@dsh-scholar-board/contracts'
+import type { ActionRecord, ChoreRecord, CourseRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ProjectRecord, ResearchRecord, ThesisRecord } from '@dsh-scholar-board/contracts'
 import { openDrafts } from '../src/drafts/store'
 import { exportRecords, importRecords, previewRecords, readRecordsPackage } from '../src/records/exchange'
 import { registerRecords } from '../src/records/access'
@@ -144,6 +144,44 @@ function project(overrides: Record<string, unknown> = {}): Record<string, unknow
     ],
     related: [{ kind: 'meeting', id: 'meeting-1' }, { kind: 'action', id: 'action-1' }],
     materials: [{ id: 'pm1', url: 'https://example.com/brief', title: '需求摘要' }],
+    ...overrides,
+  }
+}
+
+/** 一门课程的输入。 */
+function course(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'course',
+    title: '低轨星座干扰抑制',
+    term: {
+      label: '2026 秋',
+      start: { kind: 'date', date: '2026-09-01', timeZone: 'Asia/Shanghai' },
+      end: { kind: 'date', date: '2027-01-15', timeZone: 'Asia/Shanghai' },
+    },
+    code: 'EE 501',
+    teacher: '王老师',
+    schedule: '周三 3-4 节',
+    notes: '重点在第 4 章',
+    work: [
+      { id: 'w1', kind: 'assignment', title: '第一次作业', status: 'todo', due: { kind: 'date', date: '2026-11-20', timeZone: 'Asia/Shanghai' }, note: '第 1–3 章' },
+      { id: 'w2', kind: 'exam', title: '期中考试', status: 'doing', late: true },
+    ],
+    related: [{ kind: 'meeting', id: 'meeting-1' }],
+    materials: [{ id: 'cm1', url: 'https://example.com/slides', title: '课件' }],
+    ...overrides,
+  }
+}
+
+/** 一条其他事务的输入。 */
+function chore(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'chore',
+    title: '报销差旅',
+    category: '行政',
+    status: 'todo',
+    due: { kind: 'date', date: '2026-11-12', timeZone: 'Asia/Shanghai' },
+    note: '把发票交给财务',
+    materials: [{ id: 'hm1', url: 'https://example.com/receipt', title: '发票' }],
     ...overrides,
   }
 }
@@ -365,6 +403,94 @@ describe('记录存储', () => {
     await expect(store.create(project({ milestones: [{ id: 'm1', label: 'x'.repeat(61), status: 'todo' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(project({ related: [{ kind: 'research', id: 'research-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(project({ amount: '100000' }), ACTOR)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('课程带学期、课程信息、作业考试与补交标记，搜索也看笔记、作业与材料', async () => {
+    const { store } = await open()
+    const created = await store.create(course(), ACTOR)
+    const record = created.record as CourseRecord
+    expect(record).toMatchObject({
+      kind: 'course',
+      title: '低轨星座干扰抑制',
+      code: 'EE 501',
+      teacher: '王老师',
+      schedule: '周三 3-4 节',
+    })
+    expect(record.term).toMatchObject({ label: '2026 秋' })
+    expect(record.term.start).toMatchObject({ kind: 'date', date: '2026-09-01' })
+    expect(record.work?.[0]).toMatchObject({ kind: 'assignment', title: '第一次作业', status: 'todo' })
+    expect(record.work?.[1]).toMatchObject({ kind: 'exam', title: '期中考试', status: 'doing', late: true })
+    expect(record.related).toEqual([{ kind: 'meeting', id: 'meeting-1' }])
+    expect(store.view({ kind: 'course' }).records).toHaveLength(1)
+    expect(store.view({ search: '期中考试' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '第 4 章' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '课件' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const moved = await store.update(record.id, 1, {
+      work: [{ id: 'w1', kind: 'assignment', title: '第一次作业', status: 'done' }],
+    }, ACTOR)
+    expect((moved.record as CourseRecord).work?.[0].status).toBe('done')
+
+    // 引用只存 id；来源还没建好时也允许保存，读的时候显示来源缺失。
+    const forward = await store.create(course({ title: '关联未建好', related: [{ kind: 'meeting', id: 'meeting-later' }] }), ACTOR)
+    expect((forward.record as CourseRecord).related).toEqual([{ kind: 'meeting', id: 'meeting-later' }])
+
+    // 不同学期的课程各存各的，修改一门不会动到另一门的学期。
+    const spring = await store.create(course({
+      title: '检测与估计',
+      term: { label: '2026 春', start: { kind: 'date', date: '2026-02-20', timeZone: 'Asia/Shanghai' } },
+    }), ACTOR)
+    expect((moved.record as CourseRecord).term).toMatchObject({ label: '2026 秋' })
+    expect((spring.record as CourseRecord).term).toMatchObject({ label: '2026 春' })
+    expect(store.view({ kind: 'course' }).records.map((entry) => (entry as CourseRecord).term.label).sort()).toEqual(['2026 春', '2026 秋', '2026 秋'])
+
+    await expect(store.create(course({ term: undefined }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(course({ term: { label: ' ' } }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(course({ term: { label: '2026 秋', start: { kind: 'instant', at: '2026-09-01T00:00:00.000Z', timeZone: 'UTC' } } }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(course({ work: [{ id: 'w1', kind: 'quiz', title: '小测', status: 'todo' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(course({ work: [{ id: 'w1', kind: 'exam', title: '期末', status: 'blocked' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(course({ work: [{ id: 'w1', kind: 'exam', title: ' ', status: 'todo' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(course({ work: [{ id: 'w1', kind: 'exam', title: '期末', status: 'todo', due: { kind: 'date', date: '2026-11-31', timeZone: 'Asia/Shanghai' } }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(course({ related: [{ kind: 'research', id: 'research-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(course({ credits: 3 }), ACTOR)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('其他事务带自定义类别、状态与期限，完成后可以归档，搜索也看说明与材料', async () => {
+    const { store } = await open()
+    const created = await store.create(chore(), ACTOR)
+    const record = created.record as ChoreRecord
+    expect(record).toMatchObject({
+      kind: 'chore',
+      title: '报销差旅',
+      category: '行政',
+      status: 'todo',
+    })
+    expect(record.due).toMatchObject({ kind: 'date', date: '2026-11-12' })
+    expect(store.view({ kind: 'chore' }).records).toHaveLength(1)
+    expect(store.view({ search: '差旅' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '财务' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '发票' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    // 完成与取消是两种状态；状态变化不影响自定义类别。
+    const done = await store.update(record.id, 1, { status: 'done' }, ACTOR)
+    expect((done.record as ChoreRecord)).toMatchObject({ status: 'done', category: '行政' })
+    const archived = await store.archive(record.id, 2, ACTOR)
+    expect(archived.record.archived).toBe(true)
+    expect(store.view({ kind: 'chore' }).records).toHaveLength(0)
+    expect(store.view({ kind: 'chore', includeArchived: true }).records).toHaveLength(1)
+
+    const cancelled = await store.create(chore({ title: '更新借书证', category: '生活', status: 'cancelled' }), ACTOR)
+    expect((cancelled.record as ChoreRecord)).toMatchObject({ status: 'cancelled', category: '生活' })
+    expect(store.view({ search: '行政', includeArchived: true }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    await expect(store.create(chore({ category: undefined }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(chore({ category: ' ' }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(chore({ category: 'x'.repeat(41) }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(chore({ status: undefined }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(chore({ status: 'closed' }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(chore({ due: { kind: 'date', date: '2026-11-31', timeZone: 'Asia/Shanghai' } }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(chore({ note: 42 }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(chore({ materials: [{ id: 'hm1', url: 'file:///etc/passwd', title: '发票' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
   it('稿件带图表、投稿轮次与修回，修回要指向存在的一轮', async () => {

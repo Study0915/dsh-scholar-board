@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 6,
+  "at": "2026-11-13",
+  "external": true,
+  "zh": "新增「其他事务」卡：自定义类别、状态、期限、说明与材料，按期限从早到晚查看，可筛选逾期、七天内与无期限；今天同时算进逾期与七天内，没期限的排在后面。完成与取消是两种状态，完成后可以归档。记录类型、检索、导出导入、配额与内置组件画廊一并支持其他事务。",
+  "en": "Adds the Other tasks card: custom categories, status, due date, notes and materials, ordered by due date with filters for overdue, next seven days and no due date; today counts in both overdue and next seven days, and undated items sort last. Done and cancelled are separate states, and a done errand can be archived. Records, search, export/import, quota and the built-in gallery now cover these errands too."
+}

@@ -19,7 +19,7 @@
 - 每条记录一个稳定不透明 id（UUID，与卡片实例同生成方式），永不复用。删除卡片不触碰记录；记录独立于任何卡片存在。
 - 每条记录带自己的 `revision`，每次成功写入加一。更新必须带 `expectedRevision`，宿主在写入队列内再核一次，过期回 `409 { code: 'stale-revision', revision, record }`（沿用 `content/routes.ts:240` 的形状）。创建不带 expectedRevision。
 - `createdAt`、`updatedAt` 由宿主记录，UTC ISO 字符串，组件不可写。`schemaVersion` 标记记录形状版本，首批为 1。
-- 每条记录有 `kind`（meeting、action、manuscript、literature、research、thesis、project）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
+- 每条记录有 `kind`（meeting、action、manuscript、literature、research、thesis、project、course、chore）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
 
 | 状态 | 判据 | 默认列表 |
 |---|---|---|
@@ -191,6 +191,48 @@ S07 补齐。横向项目记录的是「我负责什么、交付到哪、和谁�
 - 搜索匹配需求摘要、事项标题与说明、交付物名称与版本、沟通结论与说明、节点名称、问题标题与说明，以及材料和关联记录。
 - 列表行显示事项进度、未解决问题数与最近的验收节点，以及第一件交付物及其版本；没有节点时写「没有未完成的验收节点」。
 
+### 课程 course
+
+S08 补齐。课程记录的是「这一门课在哪个学期、上到哪、还有哪些作业考试」，不是培养方案，也不算学分：
+
+| 字段 | 形状 | 必填 | 说明 |
+|---|---|---|---|
+| title | string ≤200 | 是 | 课程名称 |
+| term | `CourseTerm` | 是 | 学期与起止日期 |
+| code | string | 否 | 课程号 |
+| teacher | string | 否 | 任课教师 |
+| schedule | string | 否 | 上课时间 |
+| notes | string | 否 | 学习笔记 |
+| work | `CourseWork[]` | 否 | 作业与考试 |
+| related | `Ref[]` | 否 | 关联会议、行动项与稿件 |
+| materials | `MaterialRef[]` | 否 | 课件、作业要求与资料链接 |
+
+- `CourseTerm` 为 `{ label ≤40, start?, end? }`。`label` 是用户给学期起的名字（如「2026 秋」），起止只收日期形状，不收时刻；起止可以留空。学期由用户维护，宿主不按日期自动归档课程。
+- `CourseWork` 为 `{ id, kind, title ≤200, status, due?, late?, note?, materials? }`。`kind` 只能是作业 assignment 或考试 exam；`status` 只能是待办 todo、进行中 doing、完成 done。`late` 只在用户显式勾选时为 `true`，宿主不按日期推断补交。
+- 课程不计学分、不校验先修或培养规则，也不判断是否满足毕业要求。
+- 列表按学期分组：有起止日期的学期按开始日期从新到旧排在前面，只有名称的排在后面并按名称排；组内按最近一个未完成作业考试的日期从早到晚。活跃视图顶部另有「近期事项」，把各门课的未完成、有日期的作业与考试按日期排在一起，点击进入对应课程。
+- 搜索匹配课程名、课程号、教师、上课时间、学习笔记、作业考试标题与说明、材料标题以及关联记录；学期名不进入搜索，避免与跨学期同名课程混淆。
+- 已有校园事务卡（campus）继续按自己的每卡 state 工作；两者不自动迁移，要不要把旧事项搬进课程或事务卡由用户选择。
+
+### 其他事务 chore
+
+S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查看：
+
+| 字段 | 形状 | 必填 | 说明 |
+|---|---|---|---|
+| title | string ≤200 | 是 | 事务名称 |
+| category | string ≤40 | 是 | 自定义类别，如「行政」「生活」 |
+| status | string | 是 | 待办 todo、进行中 doing、完成 done、已取消 cancelled |
+| due | `Due` | 否 | 期限，未知留空 |
+| note | string | 否 | 说明 |
+| materials | `MaterialRef[]` | 否 | 票据、通知与办理材料的链接 |
+
+- `category` 由用户输入，已有类别在表单里作为候选；宿主不预置固定类别表，也不据此推断业务。
+- 期限只用于排序与筛选：逾期、七天内、无期限三个快捷筛选，今天同时算进逾期与七天内；列表按期限从早到晚，没期限的排在后面，同一天按最近更新从新到旧。期限不参与判断事务是否办完。
+- 完成 done 与取消 cancelled 是两种状态；完成后可以归档，归档不收进回收站，恢复后回到活跃列表。
+- 搜索匹配事务名、类别、说明与材料标题。
+- 校园事务卡继续可用；迁移由用户选择，不自动导入。
+
 ### 材料引用 MaterialRef
 
 材料引用是内嵌在记录里的对象，首批不作为独立存储记录：
@@ -217,6 +259,7 @@ S07 补齐。横向项目记录的是「我负责什么、交付到哪、和谁�
 | 单条 stageHistory | 200 |
 | 单条 chapters / results / experiments | 各 100 |
 | 单条 tasks / deliverables / communications / issues | 各 100 |
+| 单条 work（课程作业与考试） | 100 |
 | 单条 milestones | 50 |
 | 单条序列化字节 | 64 KiB |
 | 工作区记录条数 | 10000 |
@@ -306,6 +349,8 @@ S07 补齐。横向项目记录的是「我负责什么、交付到哪、和谁�
 - 稿件 stage：idea→experiment→writing→internal-review→submitted→revision→accepted→archived；允许回退（如 submitted→writing），每次变更追加 stageHistory；archived 可恢复。
 - 稿件投稿轮次与修回：轮次只增不覆盖旧轮；修回必须指向同稿件的一轮，删除该轮时连带移除其修回；修回状态 todo→doing→done，或 todo/doing→declined，已完成但缺改动或证据时界面显式留空。
 - 论文章节与学位节点：章节 planned→drafting→revising→done，可回退；待补实验与学位节点 todo→doing→done，可回退；成果来源允许先写 id 后建记录，来源缺失时界面显示「来源缺失」，恢复来源后自动复原；学位要求与毕业资格不由宿主推断。
+- 课程作业考试：todo→doing→done，可回退；补交标记只由用户勾选，不按日期推断；学期由用户维护，跨学期不自动合并，同名课程按学期分组显示。
+- 其他事务：todo→doing→done，任意→cancelled；done 后可归档，恢复回到活跃；取消与归档是两件事，期限只参与排序与筛选。
 - 生命周期：活跃→归档→恢复活跃；活跃/归档→回收站→恢复先前状态；回收站→永久删除（仅界面）或 30 天自动清除。
 - 引用：删除来源记录后引用方保留 id 并显示来源缺失；恢复来源后引用复原；移除卡片不影响记录。
 - 冲突：两页面并发更新同一记录，后到者带旧 expectedRevision 收 409 与当前记录；草稿保留。

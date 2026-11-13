@@ -1,0 +1,137 @@
+<div class="t-data cs" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">课程</h2>
+    </div>
+    <div class="cs__head-aside">
+      <span class="t-data__meta cs__count" data-field="count"></span>
+      <button class="cs__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="cs__toolbar">
+    <div class="cs__tabs" role="tablist" aria-label="记录范围">
+      <button class="cs__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="cs__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="cs__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <input class="cs__search" type="search" data-role="search" aria-label="搜索记录" placeholder="搜索课程、学期、笔记与事项" />
+  </div>
+
+  <div class="cs__body">
+    <section class="cs__recent" data-role="recent" hidden aria-label="近期事项">
+      <div class="cs__recent-head">
+        <span class="cs__recent-title" data-role="recent-label">近期事项</span>
+        <span class="cs__recent-more" data-role="recent-more"></span>
+      </div>
+      <ul class="cs__recent-list" data-role="recent-list"></ul>
+    </section>
+    <div class="t-data__scroll cs__list" data-role="list" hidden></div>
+    <div class="cs__note-wrap">
+      <p class="t-data__empty cs__note" data-role="note">正在读取记录…</p>
+      <button class="cs__ghost cs__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="cs__detail" data-role="detail" hidden aria-label="记录详情">
+    <div class="cs__detail-head">
+      <button class="cs__ghost cs__back" type="button" data-action="back">返回</button>
+      <span class="cs__state" data-role="detail-state"></span>
+      <span class="cs__spacer"></span>
+      <button class="cs__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="cs__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="cs__ghost cs__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll cs__detail-body">
+      <p class="cs__hint" data-role="detail-hint" hidden></p>
+      <label class="cs__field">
+        <span class="cs__label" data-role="label-title">课程名称</span>
+        <input class="cs__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <label class="cs__field">
+        <span class="cs__label" data-role="label-term">学期</span>
+        <input class="cs__input" type="text" data-field="term-label" maxlength="40" placeholder="2026 秋" autocomplete="off" />
+      </label>
+      <div class="cs__pair">
+        <label class="cs__field">
+          <span class="cs__label" data-role="label-term-start">开始</span>
+          <input class="cs__input" type="date" data-field="term-start" />
+        </label>
+        <label class="cs__field">
+          <span class="cs__label" data-role="label-term-end">结束</span>
+          <input class="cs__input" type="date" data-field="term-end" />
+        </label>
+      </div>
+      <div class="cs__pair">
+        <label class="cs__field">
+          <span class="cs__label" data-role="label-code">课程号</span>
+          <input class="cs__input" type="text" data-field="code" maxlength="200" autocomplete="off" />
+        </label>
+        <label class="cs__field">
+          <span class="cs__label" data-role="label-teacher">教师</span>
+          <input class="cs__input" type="text" data-field="teacher" maxlength="200" autocomplete="off" />
+        </label>
+      </div>
+      <label class="cs__field">
+        <span class="cs__label" data-role="label-schedule">上课时间</span>
+        <input class="cs__input" type="text" data-field="schedule" maxlength="200" autocomplete="off" />
+      </label>
+      <label class="cs__field">
+        <span class="cs__label" data-role="label-notes">学习笔记</span>
+        <textarea class="cs__input cs__textarea" rows="3" data-field="notes"></textarea>
+      </label>
+
+      <fieldset class="cs__group">
+        <legend class="cs__label" data-role="label-work">作业与考试</legend>
+        <ul class="cs__line-list" data-role="work"></ul>
+        <button class="cs__ghost" type="button" data-action="add-work">添加作业或考试</button>
+      </fieldset>
+
+      <fieldset class="cs__group">
+        <legend class="cs__label" data-role="label-related">关联记录</legend>
+        <ul class="cs__related-list" data-role="related"></ul>
+        <div class="cs__related-add">
+          <select class="cs__input" data-role="related-select" aria-label="关联记录"></select>
+          <button class="cs__ghost" type="button" data-action="add-related">关联</button>
+        </div>
+      </fieldset>
+
+      <p class="cs__error" data-role="rows-error" role="status"></p>
+
+      <fieldset class="cs__group">
+        <legend class="cs__label" data-role="label-materials">课程材料</legend>
+        <ul class="cs__material-list" data-role="materials"></ul>
+        <div class="cs__material-add">
+          <input class="cs__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="cs__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="cs__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="cs__error" data-role="material-error" role="status"></p>
+      </fieldset>
+
+      <div class="cs__detail-actions">
+        <button class="cs__primary" type="button" data-action="save">保存</button>
+        <button class="cs__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="cs__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="cs__dialog-actions">
+      <button class="cs__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="cs__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="cs__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="cs__dialog-actions">
+      <button class="cs__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="cs__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

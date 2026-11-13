@@ -1,0 +1,392 @@
+{
+  "id": "course-records",
+  "title": {
+    "zh": "课程",
+    "en": "Courses"
+  },
+  "description": {
+    "zh": "整理研究生课程：学期与起止日期、课程号、教师、上课时间、学习笔记、作业与考试（含补交标记）、关联会议 / 行动项 / 稿件与课程材料。列表按学期分组，近期事项把各门课未完成的作业与考试按日期排在一起。课程不算学分，不校验培养规则。",
+    "en": "Organises graduate courses: term with dates, course code, teacher, schedule, study notes, assignments and exams (including a late flag), linked meetings / actions / manuscripts and course materials. The list groups by term and a coming-up section lines up open work across courses by date. Credits and programme rules are not computed."
+  },
+  "author": "dsh-scholar-board",
+  "version": "0.1.0",
+  "sizes": [
+    "m",
+    "l"
+  ],
+  "source": "widget-board:records",
+  "capabilities": [
+    "widget-board:records.read",
+    "widget-board:records.write",
+    "widget-board:records.draft"
+  ],
+  "defaultBox": {
+    "w": 2,
+    "h": 30
+  },
+  "minBox": {
+    "w": 1,
+    "h": 16
+  },
+  "scripts": [
+    "course-model.js",
+    "copy.js",
+    "view.js",
+    "rows.js",
+    "editor.js"
+  ],
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string",
+        "maxLength": 80
+      },
+      "kicker": {
+        "type": "string",
+        "maxLength": 40
+      }
+    }
+  },
+  "data": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "records": {
+        "type": "array",
+        "maxItems": 200,
+        "items": {
+          "type": "object"
+        }
+      },
+      "quota": {
+        "type": "object"
+      },
+      "total": {
+        "type": "number"
+      },
+      "truncated": {
+        "type": "boolean"
+      }
+    }
+  },
+  "text": {
+    "title": {
+      "zh": "课程",
+      "en": "Courses"
+    },
+    "kicker": {
+      "zh": "学期、作业考试与学习笔记",
+      "en": "Terms, assignments and notes"
+    },
+    "new": {
+      "zh": "新建",
+      "en": "New"
+    },
+    "search": {
+      "zh": "搜索课程、学期、笔记与事项",
+      "en": "Search courses, terms, notes and work"
+    },
+    "active": {
+      "zh": "活跃",
+      "en": "Active"
+    },
+    "archived": {
+      "zh": "归档",
+      "en": "Archived"
+    },
+    "trash": {
+      "zh": "回收站",
+      "en": "Trash"
+    },
+    "loading": {
+      "zh": "正在读取记录…",
+      "en": "Reading records…"
+    },
+    "failed": {
+      "zh": "读取失败",
+      "en": "Records unavailable"
+    },
+    "retry": {
+      "zh": "重试",
+      "en": "Retry"
+    },
+    "emptyActive": {
+      "zh": "还没有课程；点「新建」记下本学期课程、作业考试与笔记。",
+      "en": "No course yet; use New to record this term’s course, work and notes."
+    },
+    "emptyArchived": {
+      "zh": "没有归档的课程。",
+      "en": "No archived courses."
+    },
+    "emptyTrash": {
+      "zh": "回收站是空的。移入回收站的记录三十天后自动清除。",
+      "en": "The trash is empty. Trashed records are cleared after thirty days."
+    },
+    "emptySearch": {
+      "zh": "没有匹配的记录。",
+      "en": "No matching records."
+    },
+    "truncated": {
+      "zh": "只列出最近 {n} 条，共 {total} 条；用搜索找更早的记录。",
+      "en": "Showing the latest {n} of {total}; search for older records."
+    },
+    "quotaWarning": {
+      "zh": "记录已用到 {percent}%，先整理归档或回收站。",
+      "en": "Records use {percent}% of the limit; tidy the archive or trash."
+    },
+    "unknown": {
+      "zh": "未知",
+      "en": "Unknown"
+    },
+    "materials": {
+      "zh": "{n} 份材料",
+      "en": "{n} materials"
+    },
+    "material": {
+      "zh": "课程材料",
+      "en": "Course materials"
+    },
+    "materialUrl": {
+      "zh": "https://…",
+      "en": "https://…"
+    },
+    "materialTitle": {
+      "zh": "链接说明",
+      "en": "Link title"
+    },
+    "addMaterial": {
+      "zh": "添加",
+      "en": "Add"
+    },
+    "removeMaterial": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "materialInvalid": {
+      "zh": "材料地址只收 http/https 的完整地址，说明不能为空。",
+      "en": "Material links must be complete http/https addresses with a title."
+    },
+    "fieldTitle": {
+      "zh": "课程名称",
+      "en": "Course title"
+    },
+    "term": {
+      "zh": "学期",
+      "en": "Term"
+    },
+    "termLabel": {
+      "zh": "学期名称",
+      "en": "Term name"
+    },
+    "termStart": {
+      "zh": "开始",
+      "en": "Start"
+    },
+    "termEnd": {
+      "zh": "结束",
+      "en": "End"
+    },
+    "termRequired": {
+      "zh": "学期名称不能是空的。",
+      "en": "The term name is required."
+    },
+    "code": {
+      "zh": "课程号",
+      "en": "Course code"
+    },
+    "teacher": {
+      "zh": "教师",
+      "en": "Teacher"
+    },
+    "schedule": {
+      "zh": "上课时间",
+      "en": "Schedule"
+    },
+    "notes": {
+      "zh": "学习笔记",
+      "en": "Study notes"
+    },
+    "work": {
+      "zh": "作业与考试",
+      "en": "Assignments and exams"
+    },
+    "workTitle": {
+      "zh": "题目",
+      "en": "Title"
+    },
+    "workKind": {
+      "zh": "类型",
+      "en": "Kind"
+    },
+    "workAssignment": {
+      "zh": "作业",
+      "en": "Assignment"
+    },
+    "workExam": {
+      "zh": "考试",
+      "en": "Exam"
+    },
+    "workStatus": {
+      "zh": "状态",
+      "en": "Status"
+    },
+    "workTodo": {
+      "zh": "待办",
+      "en": "To do"
+    },
+    "workDoing": {
+      "zh": "进行中",
+      "en": "Doing"
+    },
+    "workDone": {
+      "zh": "完成",
+      "en": "Done"
+    },
+    "workDue": {
+      "zh": "截止日期",
+      "en": "Due"
+    },
+    "workLate": {
+      "zh": "补交",
+      "en": "Late"
+    },
+    "addWork": {
+      "zh": "添加作业或考试",
+      "en": "Add assignment or exam"
+    },
+    "noWork": {
+      "zh": "没有未完成的作业或考试",
+      "en": "No open assignments or exams"
+    },
+    "workCount": {
+      "zh": "作业与考试 {done}/{total}",
+      "en": "Work {done}/{total}"
+    },
+    "recent": {
+      "zh": "近期事项",
+      "en": "Coming up"
+    },
+    "recentMore": {
+      "zh": "另有 {n} 项",
+      "en": "{n} more"
+    },
+    "related": {
+      "zh": "关联记录",
+      "en": "Linked records"
+    },
+    "addRelated": {
+      "zh": "关联",
+      "en": "Link"
+    },
+    "relatedPlaceholder": {
+      "zh": "选择会议、行动项或稿件",
+      "en": "Choose a meeting, action or manuscript"
+    },
+    "noRelated": {
+      "zh": "没有关联的记录。",
+      "en": "No linked records."
+    },
+    "relatedMissing": {
+      "zh": "记录已不在",
+      "en": "Record missing"
+    },
+    "relatedMeeting": {
+      "zh": "会议",
+      "en": "Meeting"
+    },
+    "relatedAction": {
+      "zh": "行动项",
+      "en": "Action"
+    },
+    "relatedManuscript": {
+      "zh": "稿件",
+      "en": "Manuscript"
+    },
+    "removeRow": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "invalidRows": {
+      "zh": "作业与考试要填类型、题目与状态；题目不能是空的，学期名称不超过 40 字。",
+      "en": "Assignments and exams need a kind, a title and a status; titles cannot be empty, and term names stay within 40 characters."
+    },
+    "close": {
+      "zh": "关闭",
+      "en": "Close"
+    },
+    "save": {
+      "zh": "保存",
+      "en": "Save"
+    },
+    "saving": {
+      "zh": "保存中…",
+      "en": "Saving…"
+    },
+    "saved": {
+      "zh": "已保存",
+      "en": "Saved"
+    },
+    "saveFailed": {
+      "zh": "保存失败",
+      "en": "Save failed"
+    },
+    "draftSaved": {
+      "zh": "草稿已存",
+      "en": "Draft kept"
+    },
+    "draftRestored": {
+      "zh": "已恢复上次未保存的内容。",
+      "en": "Restored the unsaved draft."
+    },
+    "archive": {
+      "zh": "归档",
+      "en": "Archive"
+    },
+    "restore": {
+      "zh": "恢复",
+      "en": "Restore"
+    },
+    "trashAction": {
+      "zh": "移入回收站",
+      "en": "Move to trash"
+    },
+    "deletedIn": {
+      "zh": "{n} 天后自动清除",
+      "en": "Cleared in {n} days"
+    },
+    "unsavedClose": {
+      "zh": "还有没保存的修改；关闭后草稿会保留。",
+      "en": "There are unsaved changes; closing keeps the draft."
+    },
+    "keepEditing": {
+      "zh": "继续编辑",
+      "en": "Keep editing"
+    },
+    "closeKeepDraft": {
+      "zh": "关闭并保留草稿",
+      "en": "Close and keep draft"
+    },
+    "conflict": {
+      "zh": "这条记录在别处更新过，保存被拒绝。可以载入最新的内容，或继续用你的编辑。",
+      "en": "This record changed elsewhere and the save was rejected. Load the latest content, or continue with your edits."
+    },
+    "loadLatest": {
+      "zh": "载入最新（放弃本地修改）",
+      "en": "Load latest (discard local edits)"
+    },
+    "recordMissing": {
+      "zh": "这条记录已经不在了。",
+      "en": "This record no longer exists."
+    },
+    "trashRestoreHint": {
+      "zh": "回收站里的记录三十天后自动清除；先恢复再编辑。",
+      "en": "Trashed records are cleared after thirty days; restore before editing."
+    },
+    "titleRequired": {
+      "zh": "课程名称不能是空的。",
+      "en": "The course title is required."
+    }
+  }
+}

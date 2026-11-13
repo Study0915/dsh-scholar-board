@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 5,
+  "at": "2026-11-13",
+  "external": true,
+  "zh": "新增「课程」卡：学期与起止日期、课程号、教师、上课时间、学习笔记、作业与考试（含补交勾选）、关联会议 / 行动项 / 稿件与材料。列表按学期分组，有起止的学期按开始日期从新到旧，活跃视图顶部的「近期事项」把各门课未完成、有日期的作业考试按日期排在一起；课程不计学分、不校验培养规则，补交只按勾选记录、不按日期推断。记录类型、检索、导出导入、配额与内置组件画廊一并支持课程。",
+  "en": "Adds the Courses card: term with dates, course code, teacher, schedule, study notes, assignments and exams with a late flag, links to meetings, action items and manuscripts, and materials. The list groups by term with dated terms first, and a coming-up section lines up open, dated work across courses; credits and programme rules are not computed, and a late flag is recorded only when you tick it rather than inferred from dates. Records, search, export/import, quota and the built-in gallery now cover courses too."
+}
