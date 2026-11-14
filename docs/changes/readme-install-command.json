@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 22,
+  "at": "2026-11-14",
+  "external": false,
+  "zh": "README 的安装命令补上 --profile：dsh plugin add 不带 profile 会直接报缺少必需参数。演示链接改指本仓库的在线页面。",
+  "en": "The README install command now carries --profile, since dsh plugin add without a profile fails on the missing required option; the demo link points at this repository's live page."
+}
