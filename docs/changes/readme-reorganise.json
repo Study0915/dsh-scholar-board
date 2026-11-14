@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 2,
+  "at": "2026-11-14",
+  "external": false,
+  "zh": "README 重排为功能表、记录机制、看板能力与安装入口，组件编写细节移到 docs/widgets.md。",
+  "en": "The README is reorganised into a feature table, how records work, board capabilities and install entries; widget authoring details moved to docs/widgets.md."
+}

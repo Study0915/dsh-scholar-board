@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 3,
+  "at": "2026-11-14",
+  "external": false,
+  "zh": "package.json 补上 repository 与 homepage；根目录增加 screenshots.json，供市场展示与 README 一致的截图。",
+  "en": "package.json declares its repository and homepage; a root screenshots.json lists the same screenshots used by the README for storefront display."
+}

@@ -1,206 +1,90 @@
 # dsh-scholar-board
 
-[中文](README.md)
+[中文](README.md) · [Live demo](https://study0915.github.io/dsh-scholar-board/)
 
-> This project is a derivative of [Nwflower/dsh-widget-board](https://github.com/Nwflower/dsh-widget-board) (MIT, Copyright (c) 2026 Nwflower), independently maintained by Study0915 and not affiliated with upstream. The fork point is upstream master plus the stacked changes of upstream PRs #11–#14 (snapshot of 2026-11-04); the original copyright and license notice are kept intact in [LICENSE](LICENSE).
-
-Local images: choose the image template in Create card, upload a static PNG/JPEG/WebP up to 10MiB, then set alt text, caption and focal point. The host removes metadata and converts the image to bounded WebP. Images are stored as instance-owned references. A widget declaring `widget-board:media.read` can obtain a Blob with `await widget.readMedia('background', { signal })`; it must revoke object URLs when paused, replaced or unloaded.
-
-The format2 `.dshboard` is gzip-compressed JSON containing referenced images, instance/group identifiers and arrangement metadata. Select “Include data” to retain content and state. Import validates resources before creating the complete board; format1 remains readable. `.dshw` still contains only widget source and type resources. A manual `POST api/widget-board/media/collect` removes resources older than 24 hours that have no instance or valid upload-ticket reference.
-
-A scholar board for DeepSeek Harness: a page of cards you drag and resize, each card a small widget. You or the agent in a session write a widget as three files, and other plugins can provide widgets too. The project focuses on personal research and study records for graduate students in communications, preserving the existing card and motion style.
-
-The current version provides a composed Scholar board, paper feeds, literature reading, group-meeting records, action items, manuscripts, research notes, theses, industry-sponsored projects and a research overview. The meeting card is the first slice of shared records: the list searches and switches between active, archived and trash, the detail edits in place and keeps a draft while you type, a failed save keeps your input, and a revision conflict offers the latest record. Meeting feedback can create an action item that keeps its source; a new meeting can be prepared from the last one, reusing open questions and listing unfinished items without copying them into new tasks; the outline copies as Markdown. The action items card filters by due, overdue, no due date and blocked, and completed items stay in history. The manuscripts card tracks the research question, stage and stage history, next step, blockers, target venue and submission date, and links to meetings, action items and materials; a figure and table list, submission rounds and revision items let feedback trace to the change and evidence, while a missing change or evidence shows as such rather than being invented, and no made-up completion percentage is shown. The literature card organises papers by to read, reading and understood, keeping authors, venue, year, source link and your own understanding; a feed entry becomes a paper only when you choose Add to board, and the abstract never becomes your notes. The research notes card records a derivation, simulation or experiment with the research question, environment, seeds, parameters and metrics with units, conclusion and result materials; missing content shows as unknown, and parameters and materials are recorded only, never executed. The thesis card puts chapter progress, existing result sources, experiments still to run and user-maintained degree milestones on one card: results keep only the source record id and a missing source is marked, and the card neither assumes school rules nor judges graduation eligibility. The course card groups courses by term with assignments, exams and study notes, and a coming-up section lines up open work across courses by date; a late flag is yours to tick and the card neither infers it from dates nor computes credits. The other tasks card collects errands outside courses and papers under custom categories, ordered by due date with filters for overdue, next seven days and no due date, and a done errand can be archived. The research overview gathers recent action items, the latest meetings and active manuscripts on one card: complete an action item in place, read its source meeting without leaving the card, or quickly record a new action item. When the weather card fails to read, it keeps the last data and the status line states the reason or a stale warning, with a retry in place. Records are stored by the host, removing a card keeps them, and trashed records are cleared after thirty days. Short notes live in the workbench and link to externally maintained documents and materials. See the [product plan (Chinese)](docs/scholar-product.md) and [implementation plan (Chinese)](docs/PLAN-scholar.md). General layout, editing and performance improvements will be prepared separately as upstream contribution candidates.
-
-**[Upstream demo](https://nwflower.github.io/dsh-widget-board/)** · [Install](#install) · [Write a widget](#write-a-widget) · [For plugin providers](#for-plugin-providers)
+A scholar board plugin for DeepSeek Harness. A page of draggable, resizable widget cards, plus a set of research record cards for graduate students in communications: group meetings, action items, manuscripts, literature, research notes, the thesis, projects, courses and errands live on one page. Cards reference each other, and the host stores every record.
 
 <p align="center">
   <img src="docs/images/scholar-light.png" alt="The Scholar board in light mode: group-meeting briefs, submission countdown, calendar, academic links, to-dos, milestones and the paper feed" width="49%">
   <img src="docs/images/scholar-dark.png" alt="The Scholar board in dark mode" width="49%">
 </p>
 
-<p align="center">
-  <img src="docs/images/paper-feed.png" alt="The paper feed card: new arXiv submissions by category, one paper per row" width="88%">
-</p>
+## What it records
 
-The first two shots are the Scholar board a fresh install lays out: a flip-group card for group-meeting briefs, a submission countdown, a calendar, academic navigation links, to-dos, project milestones, a reading list, and the paper feed at the bottom that follows an arXiv category. The third shows the paper feed on its own — one paper per row with title, authors, submission date and a one-line abstract; clicking a row opens its abs page in a new tab, and Add to board on each row turns it into a paper to read.
-
-Add the meeting card from the gallery; it is not laid out on the default board. It keeps a title, date, brief, discussion feedback, open questions and material links. Materials accept http/https only and store the address and note with the record; files are not copied. Feedback can create an action item that points back to the meeting; a new meeting can be prepared from the last one, reusing open questions and listing unfinished items without copying them; the outline copies as Markdown. The action items card filters by status, overdue, no due date and blocked, keeps completed items in history, and its detail also supports drafts and revision conflicts. The manuscripts card filters by stage; the detail advances or rolls back the stage with an optional note and the host records every change in the stage history; links to meetings and action items keep forward references only, and missing sources are marked. A manuscript also keeps a figure and table list, submission rounds and revision items: each revision points at a specific round and records feedback, the change and evidence; removing a round also removes its revisions, and an empty change or evidence is never filled in with a conclusion. The literature card is added from the gallery too: title, authors, venue, year, source link, reading stage, your own understanding and questions, plus material links; the list filters by to read, reading and understood, and a feed abstract never becomes your notes. The research notes card is also added from the gallery: method (derivation, simulation or experiment), research question, environment, seeds, parameters and metrics, conclusion and result materials; parameters and metrics are kept per row with a name, value and optional unit, the list filters by method, search also matches environment, seeds and conclusion, and empty fields show as unknown. The thesis card is added from the gallery too: chapters with their own progress, result sources, experiments still to run, and degree milestones you maintain; results keep only the source record id, a missing source is marked, and no school rules or graduation judgement are assumed. The project card is added from the gallery as well: a requirement summary, your own tasks, deliverables with versions, communication conclusions, acceptance milestones and open issues, linked to meetings, action items, manuscripts and materials; the default template keeps no contract amounts, quotes or payment milestones, you maintain the item and milestone statuses, and the card does not judge contract fulfilment. The course card is added from the gallery too: course name, code, teacher, schedule, study notes, assignments and exams with a late flag, links to meetings, action items and manuscripts, and materials; the list groups by term and a coming-up section lines up open work across courses by date. The other tasks card collects errands with custom categories, status, due date, notes and materials, ordered by due date with filters for overdue, next seven days and no due date, and an errand can be archived once done. The research overview lists recent action items, the latest meetings and active manuscripts; an action item's Source button expands the source meeting's feedback and open questions in place. Record backup in the settings page exports a `.dshrecords` file and previews the count before importing; every imported record gets a new id, references inside the package are kept, and existing records are left untouched.
-
-The gallery is the third board: one card per built-in widget, grouped into data, tools and motion templates.
-
-<p align="center">
-  <img src="docs/images/board-light.png" alt="The widget gallery in light mode" width="49%">
-  <img src="docs/images/board-dark.png" alt="The widget gallery in dark mode" width="49%">
-</p>
-
-<hr>
-
-## Record cards
-
-This batch of record cards is added from the gallery and is not laid out on the default board. Records are stored by the host: the list searches and switches between active, archived and trash, the detail edits in place and keeps a draft while you type, a failed save keeps your input, and a revision conflict offers the latest record; removing a card keeps its records, and trashed records are cleared after thirty days.
-
-The six research-side cards:
-
-<p align="center">
-  <img src="docs/images/records-light.png" alt="The research records board in light mode: group meetings, literature, action items, manuscripts, research notes and the research overview" width="49%">
-  <img src="docs/images/records-dark.png" alt="The research records board in dark mode: group meetings, literature, action items, manuscripts, research notes and the research overview" width="49%">
-</p>
-
-- **Group meetings**: title, date, brief, discussion feedback, open questions and materials; feedback can create an action item that keeps its source, a new meeting can be prepared from the last one, and the outline copies as Markdown.
-- **Action items**: filters by status, overdue, no due date and blocked, with completed items kept in history.
-- **Manuscripts**: research question, stage and stage history, next step, blockers, target venue and submission date; a figure and table list, submission rounds and revision items let feedback trace to the change and evidence, and a missing change or evidence shows as such.
-- **Literature**: organises papers by to read, reading and understood, keeping authors, venue, year, source link and your own understanding; a feed abstract never becomes your notes.
-- **Research notes**: records a derivation, simulation or experiment with the research question, environment, seeds, parameters and metrics with units, conclusion and result materials; missing content shows as unknown, and parameters and materials are recorded only, never executed.
-- **Research overview**: recent action items, the latest meetings and active manuscripts on one card; complete an action item in place, read its source meeting without leaving the card, or quickly record a new action item.
-
-The four study-and-project cards:
-
-<p align="center">
-  <img src="docs/images/records-study-light.png" alt="The study and projects board in light mode: thesis, industry projects, courses and other tasks" width="49%">
-  <img src="docs/images/records-study-dark.png" alt="The study and projects board in dark mode: thesis, industry projects, courses and other tasks" width="49%">
-</p>
-
-- **Thesis**: chapter progress, result sources, experiments still to run and degree milestones; results keep only the source record id, a missing source is marked, and the card neither assumes school rules nor judges graduation eligibility.
-- **Industry projects**: requirement summary, your own tasks, deliverables with versions, communication conclusions, acceptance milestones and open issues; the default template keeps no contract amounts, quotes or payment milestones.
-- **Courses**: groups courses by term with assignments, exams and study notes, and a coming-up section lines up open work across courses by date.
-- **Other tasks**: collects errands outside courses and papers under custom categories, ordered by due date with filters for overdue, next seven days and no due date, and a done errand can be archived.
-
-Record backup in the settings page exports a `.dshrecords` file and previews the count before importing; every imported record gets a new id, references inside the package are kept, and existing records are left untouched.
-
-<hr>
-
-## Three files
-
-`widget.json` names and sizes the widget; next to it sit `index.html` and `style.css`, and `main.js` when it needs a script. Built-in widgets, your own and agent-written ones share this one format. Once the files are written, the card appears in the library.
-
-<hr>
-
-## One sandbox
-
-Every widget runs in its own sandboxed iframe: a strict CSP, no network and no cookies, talking to the host only over a MessagePort bridge. A grant is bound to the hash of the widget's content, so changing one byte asks a person to allow it again.
-
-<hr>
-
-## A few doors
-
-| Board in the sidebar | Switch board tabs, drag and tidy cards; the default board is filled on first launch |
-| More button on a tab | Rename or delete that board; right-clicking the tab opens the same menu without switching boards |
+| Card | What it holds |
 |---|---|
-| Plus menu | Add, tidy, refresh; Add opens the library as a full-height panel that rises from the bottom |
-| Card gear | Change the widget's props, fill in credentials, review and grant data sources and permissions |
-| Edit widget source | Load CodeMirror on demand; save a separate user type and apply it to the current card; updating all instances requires an explicit choice and a version check |
-| Source drafts and preview | Save, restore and delete drafts; preview uses the real sandbox without performing formal actions, capability calls or notifications |
-| Session tools | The agent lists, writes, places widgets and pushes data; `widget_show` draws one in the answer. Only `widget_catalog` starts out visible; the rest appear after being named in its `expose` field |
-| `widgetBoard` service | Other plugins register widgets, data sources, actions, host capabilities and markets |
+| Group meeting | Brief, discussion feedback, open questions and materials. Feedback creates an action item that keeps its source; a new meeting can be prepared from the last one; the outline copies as Markdown |
+| Action items | Status, optional due date, blockers and completion note; filters for upcoming, overdue, no due date and blocked; completed items stay in history |
+| Manuscript | Research question, stage and stage history, next step, blockers, target venue and submission date; a figure and table list, submission rounds and revision items trace feedback to the change and evidence |
+| Literature | To read, reading and understood, with authors, venue, year, source link and your own understanding; a feed abstract never becomes your notes |
+| Research notes | Derivation, simulation or experiment with the research question, environment, seeds, parameters and metrics with units, conclusion and result materials |
+| Thesis | Chapter progress, result sources, experiments still to run and degree milestones; results keep only the source record id and a missing source is marked |
+| Project | Requirement summary, your own tasks, deliverable versions, communication conclusions, acceptance milestones and open issues; the default template keeps no contract amounts, quotes or payment milestones |
+| Course | Courses grouped by term with assignments, exams and study notes; a coming-up section lines up open dated work across courses |
+| Other tasks | Errands outside courses and papers under custom categories, ordered by due date with filters for overdue, next seven days and no due date, archivable when done |
+| Research overview | Recent action items, the latest meetings and active manuscripts on one page; complete an action item in place and expand its source meeting |
 
-<hr>
+There is also a **paper feed** card: new arXiv submissions by category, one paper per row with title, authors, submission date and a one-line abstract. A row opens its abs page; Add to board turns it into a literature item to read.
+
+## How records work
+
+- The host stores records and shares them. One record can appear on several cards and views; removing a card keeps the record.
+- Lists search and switch between active, archived and trash; trashed records are cleared after thirty days.
+- Details edit in place and keep a draft while you type; a failed save keeps your input, and a revision conflict offers the latest record.
+- Cross-card links keep forward references only, and a missing source is marked rather than filled in.
+- Record backup in the settings page exports `.dshrecords`; importing previews the count, gives every record a new id, keeps references inside the package and leaves existing records untouched.
+
+<p align="center">
+  <img src="docs/images/records-light.png" alt="The research record board in light mode: group meetings, literature, action items, manuscripts, research notes and the research overview" width="49%">
+  <img src="docs/images/records-study-light.png" alt="The study and project board in light mode: thesis, project, courses and other tasks" width="49%">
+</p>
+
+## The board itself
+
+- Several board tabs with free dragging, resizing and arranging. A fresh install lays out the Scholar board: a flip-group card for group-meeting briefs, a submission countdown, a calendar, academic links, to-dos, project milestones, a reading list, and a paper feed that follows an arXiv category.
+- The widget library slides up from the bottom. Built-in widgets and the ones you write share one format: `widget.json`, `index.html`, `style.css`, plus `main.js` when a widget needs a script.
+- Each widget runs in its own sandboxed iframe: strict CSP, no network or cookies, and a MessagePort bridge to the host. Permission is bound to the content hash, so changing one byte asks again.
+- The source editor loads CodeMirror on demand and offers drafts and a real sandbox preview. Replacing every instance requires an explicit choice and a version check.
+- The agent in a session can list widgets, write widgets, place cards and push data; `widget_show` draws one in the answer. Only `widget_catalog` is exposed by default, and the other tools appear when it names them in `expose`.
+- Other plugins can register widgets, data sources, actions, host capabilities and markets.
+
+Details: [writing a widget](docs/widgets.md) and [the provider API](docs/provider.md).
+
+<p align="center">
+  <img src="docs/images/board-light.png" alt="The widget gallery in light mode" width="88%">
+</p>
 
 ## Install
 
+Node 22 or newer and dsh 0.2.1-rc.1 or newer.
+
 ```sh
-dsh plugin add github:Study0915/dsh-scholar-board
+dsh plugin --profile web add github:Study0915/dsh-scholar-board
 ```
 
-If pnpm blocks the build script, approve the `allowBuilds` line it prints and retry. The repository carries no `lib/`, so installing from GitHub has the package build itself once at install time.
+Replace `web` with the profile you boot. If pnpm blocks the dependency build script, approve the `allowBuilds` line it prints and retry. The repository carries no `lib/`, so installing from GitHub builds the package once at install time.
 
 From a checkout:
 
 ```sh
 npm install
 npm run build
-dsh plugin add <path to this repository>
+dsh plugin --profile web add .
 ```
 
-<hr>
+## Development
 
-## Write a widget
-
-Create a directory under `$DSH_HOME/widget-board/widgets/<id>/`:
-
-```text
-widget.json     name, sizes, props, data sources, credentials
-index.html      the picture
-style.css       styles, using only the runtime tokens
-main.js         optional
-samples.json    optional, one sample per size family
-scripts         optional, extra scripts inlined before main.js
-vendor/         optional, third-party libraries shipped with the widget (their licences kept as they are)
+```sh
+npm install
+npm run verify   # lint, ADR and CHANGELOG checks, types and build, unit tests, real-host smoke, size matrix
 ```
 
-Save it and the host re-reads the library; cards on open pages switch to the new version.
-
-<hr>
-
-### Box
-
-The board sizes the card. The runtime sorts the content box on two axes: `data-box-width` is `narrow`, `regular` or `wide`, `data-box-height` is `short`, `regular` or `tall`, and it exposes `--w-w`, `--w-h` and `--w-cols`. `defaultBox` is the box a new card gets; `minBox` is its lower bound.
-
-### Look
-
-Spacing and type sizes come from `--w-space-*` and `--w-type-*`; status colors from `--w-tone-ok`, `--w-tone-warn`, `--w-tone-danger` and `--w-tone-idle`, paired with a `.w-sr` line for screen readers. The layout primitives are `.w-frame`, `.w-actions` and `.w-scroll`; hide by size with `.w-hide-short` and `.w-hide-narrow`.
-
-### Motion
-
-The runtime suite owns pointer and keyboard behaviour for flip, magnetic and holographic; the widget only draws. For a flip, put `.t-flip-card` and `data-t-flip` on the outer element, `.t-flip-card__inner` inside, one `.t-flip-card__face` per side and `.t-flip-card__back` on the back; magnetic uses `.t-magnetic` with `data-t-magnetic`, holographic `.t-holo` with `data-t-holo`. The built-in `flip-card`, `magnetic-card` and `holographic-card` are copyable examples.
-
-### Data and calls
-
-A `source` of `provider:name` names a data source a plugin registered; a source that declares `subscribe` pushes data while the card is visible, and the others are read per the manifest's `refresh`. To read one more source on demand, list it in `sources` and call the `widget-board:data.read` capability; the value it returns does not rewrite the card. `credentials` adds key fields to the settings modal; the value goes to the host's credential service and the widget cannot read it. Declare a capability in the manifest and call it with `widget.call(id, args)`; arguments and results are checked against JSON Schema, and the arguments may be omitted entirely when the capability declares none. The handshake also carries `widget.capabilityMetadata`: each capability's title, description, argument and result schemas, permission, and whether it is available right now. The built-in "Rest today" widget gets its account this way: add a `GITHUB_TOKEN` under Credentials and the card lists the open issues on the repositories you maintain, with no username to fill in, and a click on a row opens it in a new tab.
-
-For data from the web, write `source: "http"` and give the address in `request`; `{name}` placeholders become the card's props (or the props schema defaults) on every read, and the host must be listed in `permissions.hosts`. JSON comes back to the widget as it is. With `request.format` set to `"atom"` the host reads an Atom endpoint instead: it parses the XML into an object whose attributes carry an `@_` prefix and whose `entry`, `author`, `link` and `category` are always arrays; the root element must be an Atom `feed` in the Atom namespace, documents with a `DOCTYPE` are refused, and leaving `format` out keeps the JSON path. The built-in "Paper feed" card subscribes to an arXiv category this way: the category and count go in the card settings, one paper per row, and a click on a row opens its abs page.
-
-The built-in "Recent token usage" card binds the `widget-board:session.usage` source a plugin registers: while the card is visible the source pushes a current snapshot, then one more per usage-carrying session event plus a 10 second tick; the card stops receiving once it leaves the viewport and keeps no timer itself. Changing its `scope` unsubscribes and resubscribes for the new window. Its "today" and "all" windows merge the history dsh-usage recorded with the events since this plugin starts, and the card marks that source as "dsh-usage history" next to the date. When dsh-usage is not installed the live reading and its empty state stay and the source reads "History not installed"; when it is installed but cannot be read the source reads "History unavailable" instead, and neither case ever shows a fake zero. A selected session never merges history and reads "Realtime only". The history supplies the totals and the four parts for today and all; the latest call and the trend always come from live events, so a window with history but no live call still shows its totals and hides the latest call.
-
-A widget cannot navigate or open popups itself. To send a link out, call `widget.open(url)` from inside a click handler and the page wrapping the widget opens it; only `http` and `https` addresses are accepted.
-
-<hr>
-
-## For plugin providers
-
-The host half and the browser half each publish the cordis service `widgetBoard`. Both report a version and a feature list: `service.apiVersion` is the major version, `service.supportedApiVersions` is what the older entry points accept (2 and 3), and `service.features` with `service.supports(name)` says whether this side has a given feature.
-
-A new provider calls `registerProvider({ apiVersion: 3, provider, features })` and gets a handle; widget directories, data sources, actions, capabilities and the market all hang off it:
-
-| Host-side handle | What it does |
-|---|---|
-| `registerWidgets({ directory })` | Mounts a widget directory and reads it once |
-| `registerDataSource()` | Mounts a data source a card binds to |
-| `registerAction()` | Mounts an action |
-| `registerCapability()` | Mounts a host capability a widget calls with `widget.call` |
-| `registerMarketProvider()` | Mounts a market and its listing and package functions |
-| `dispose()` | Withdraws every registration this provider left behind, in one call |
-
-The browser-side handle carries `registerNativeWidget({ id, component })`, which registers a React component that renders a library widget of the same id. Child registrations omit the version and the provider name: the handle supplies both.
-
-Existing providers keep using `registerWidgetType`, `registerDataSource`, `registerAction`, `registerCapability` and `registerMarketProvider`, passing version 2 or 3. One provider name has one active handle per side, the two kinds of entry point cannot be mixed, and a provider can register again after `dispose`.
-
-`features` declares intended use and does not change what the side provides: `capabilityMetadata`, `eventData`, `marketProvider` and `pushData` are answered per side, and a missing one degrades that feature alone.
-
-Widget directories mounted by the new handle, market widgets and native components use ids of the form `<author>.<name>`; local widgets and the older entry points keep flat ids, and widgets already installed are not renamed.
-
-A read, an action or a capability call waits at most 15 seconds (a capability may declare 1 to 25 seconds), each provider runs 8 calls at a time, and a full set of slots fails at once instead of queueing. The host records registrations, failures, timeouts and current availability per provider, the board section of the settings page lists that table, and a card shows the reason for its own failure.
-
-Across packages, take the type:
-
-```ts
-import type { WidgetBoardClientService } from 'dsh-scholar-board/service'
-```
-
-`dsh-scholar-board/provider` is a value-only SDK that builds and validates registration arguments. Runtime goes through the service: no value import of this plugin, no `dsh.client.external`. When a provider is disabled or unloaded, its widgets, data sources, actions, capabilities, market and grants are withdrawn; its cards stay and show unavailable, and come back with the provider.
-
-The full rules are in [docs/provider.md](docs/provider.md).
-
-<hr>
+Product scope is in the [product plan (Chinese)](docs/scholar-product.md), tasks and acceptance in the [implementation plan (Chinese)](docs/PLAN-scholar.md), structure and cross-module invariants in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Status
 
-Campus cards support in-board reminders. New cards default to 24-hour advance and due-time reminders; alternatives are due-time only, 1 or 72 hours, or disabled. All-day items notify at 09:00 in their time zone. Checks run every minute while the board and card are active, pause offscreen and catch up on resume; closing DSH stops them. Deduplication records are saved before combined notifications. Persistence failures remain visible and stop that round. Separate windows may notify separately.
-
-Campus management supports CSV/ICS import and export. Expand “CSV / ICS 文件交换”, select a UTF-8 file, confirm the column mapping, target time zone and duplicate decisions, then commit the import. Rows can be corrected or skipped. Files are limited to 2MiB and 10,000 candidates, with 100 items and 64KiB of state per card. Export filters include item type and completion status. The CSV template contains demonstration data; use board packages for complete backups.
-
-In development. In the first batch of the academic workbench the paper feed and the preset scholar board are usable (a fresh install places the paper feed on the fourth row of the Scholar board); the simulation runner is in progress, and the right sidebar, the widget library page, widget version history and sharing/import are still to come.
+S00–S08 are complete and the group meeting → action item → manuscript → research overview path is usable. Multi-user collaboration, cloud sync, a long-form editor and experiment execution are out of scope. The older campus card remains available with CSV/ICS import and export and in-board reminders.
 
 ## License and credits
 
-MIT. See [LICENSE](LICENSE) and [THIRD_PARTY.md](THIRD_PARTY.md) for the upstream project and all third-party copyright and license notices. The built-in example widgets and the `nwflower.*` market prototype entries were written by Nwflower and keep their MIT attribution.
+MIT. This project is a derivative of [Nwflower/dsh-widget-board](https://github.com/Nwflower/dsh-widget-board) (MIT, Copyright (c) 2026 Nwflower), independently maintained by Study0915 and not affiliated with upstream; the fork point is upstream master plus the stacked changes of upstream PRs #11–#14 (snapshot of 2026-11-04). The original copyright and license notices for upstream and every third-party dependency are kept in [LICENSE](LICENSE) and [THIRD_PARTY.md](THIRD_PARTY.md); the `nwflower.*` example widgets and market prototypes were written by Nwflower and keep that attribution under MIT.

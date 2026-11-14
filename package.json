@@ -4,6 +4,11 @@
   "version": "0.1.6",
   "type": "module",
   "main": "lib/host/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Study0915/dsh-scholar-board.git"
+  },
+  "homepage": "https://study0915.github.io/dsh-scholar-board/",
   "workspaces": [
     "packages/*"
   ],
