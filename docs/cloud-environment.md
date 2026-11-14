@@ -103,6 +103,10 @@ gh auth status
 
 ## 日常开发流程
 
+S09–S26 的任务入口是 [PLAN-scholar](PLAN-scholar.md)。公共 Waker 执行契约与任务表对应规格小节共同组成完整任务说明。一次只执行当前一项；规格与产品功能的状态分别记录。完成后更新计划、交接、PR 与合并 SHA；未执行的检查和未确认的视觉保留原状态。
+
+此处的 `origin` 指云端产品克隆。执行前用 `git remote -v` 确认它是 `Study0915/dsh-scholar-board`；Windows 既有工作区的产品远端为 `scholar`，旧 `origin` 是另一个 fork，不能照抄命令向旧 fork 提交产品主线。既有环境已初始化时先检测工具和锁文件变化，不重复运行初始化安装。
+
 1. `git fetch origin --prune`，`git switch main`，`git pull --ff-only`。
 2. 从 main 建一个任务分支，一次只做一个计划任务。
 3. 实现后运行 `npm run verify`；失败先修复，不跳过检查。
