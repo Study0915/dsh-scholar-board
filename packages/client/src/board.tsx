@@ -30,7 +30,7 @@ import type { CardControls } from './card'
 import { CARD_CLIP_RADIUS } from './card-shell'
 import { isChinese, t } from './copy'
 import { CardEditorDialog } from './editor'
-import type { EditorTarget } from './editor'
+import { useBoardDialogs } from './board-dialogs'
 import { BoardDock } from './dock'
 import { frameHostOf } from './page-frames'
 import { FLIP_GROUP_ENTRY } from './group'
@@ -102,26 +102,21 @@ export interface BoardPageProps {
  * @returns 中栏这一页。
  */
 export function BoardPage({ context }: BoardPageProps): ReactNode {
+  const {
+    libraryOpen, setLibraryOpen, editor, setEditor, composerOpen, contentId, returnFocusRef,
+    openEditor, openComposer, openContent, closeContent, finishContent, closeComposer, closeEditor,
+  } = useBoardDialogs()
   const [snapshot, setSnapshot] = useState<WorkspaceSnapshot | null>(cachedWorkspace)
   const [failure, setFailure] = useState<string | null>(null)
   const [metrics, setMetrics] = useState<GridMetrics | null>(null)
   const [theme, setTheme] = useState<ShellTheme>(resolveTheme)
-  const [libraryOpen, setLibraryOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   /** 正在退场的卡片：请求与快照之间留出动画时间。卡片 id 全工作区唯一，一份集合就够。 */
   const [exiting, setExiting] = useState<ReadonlySet<string>>(() => new Set())
   /** 刷新一次就让每张卡换一个 key：卡片文档重新挂载，组件里的本地画面也跟着重来。 */
   const [refreshGeneration, setRefreshGeneration] = useState(0)
-  /** 正在编辑的卡片或组；`null` 时弹窗关着（D27）。 */
-  const [editor, setEditor] = useState<EditorTarget | null>(null)
-  /** 创建卡片弹窗开着（C01）；与设置弹窗互斥，两个都按看板页的矩形定位。 */
-  const [composerOpen, setComposerOpen] = useState(false)
-  /** 正在编辑内容的那张卡（C02）；与上面两个弹窗互斥。 */
-  const [contentId, setContentId] = useState<string | null>(null)
   const shellRef = useRef<HTMLDivElement | null>(null)
   const boardsRef = useRef<HTMLDivElement | null>(null)
-  /** 打开设置的那枚按钮：关掉弹窗之后把焦点还回去。 */
-  const returnFocusRef = useRef<HTMLButtonElement | null>(null)
   const busyRef = useRef(false)
   /** 快照请求的序号：先发出、后返回的那一份不能盖掉更新的那一份。 */
   const fetchIdRef = useRef(0)
@@ -184,57 +179,6 @@ export function BoardPage({ context }: BoardPageProps): ReactNode {
       if (id === fetchIdRef.current) setFailure(error.message)
     })
   }, [adopt])
-
-  /** 打开一张卡或一组的设置；记下按钮，关掉弹窗之后把焦点还回去（D27）。 */
-  const openEditor = useCallback((kind: 'instance' | 'group', id: string, button: HTMLButtonElement | null): void => {
-    returnFocusRef.current = button
-    setLibraryOpen(false)
-    setComposerOpen(false)
-    setEditor({ kind, id })
-  }, [])
-
-  /** 打开创建卡片：组件库先收起来，两个浮层不同时开着（C01）。 */
-  const openComposer = useCallback((): void => {
-    setLibraryOpen(false)
-    setEditor(null)
-    setContentId(null)
-    setComposerOpen(true)
-  }, [])
-
-  /** 打开一张卡的内容编辑（C02）：设置弹窗让位，回来之后重新打开它。 */
-  const openContent = useCallback((id: string): void => {
-    setContentId(id)
-    setEditor(null)
-  }, [])
-
-  /** 关掉内容编辑：回到设置弹窗，让人接着看配置与日志。 */
-  const closeContent = useCallback((): void => {
-    const id = contentId
-    setContentId(null)
-    if (id !== null) setEditor({ kind: 'instance', id })
-  }, [contentId])
-
-  /** 内容另存成了新卡片：两个弹窗一起收起来，别挡住下面的菜单。 */
-  const finishContent = useCallback((): void => {
-    setContentId(null)
-    setEditor(null)
-  }, [])
-
-  /** 关掉创建器并把焦点还给打开它的按钮。 */
-  const closeComposer = useCallback((): void => {
-    setComposerOpen(false)
-    const button = returnFocusRef.current
-    returnFocusRef.current = null
-    window.setTimeout(() => { button?.focus() }, 0)
-  }, [])
-
-  /** 关掉设置弹窗并把焦点还给打开它的按钮。 */
-  const closeEditor = useCallback((): void => {
-    setEditor(null)
-    const button = returnFocusRef.current
-    returnFocusRef.current = null
-    window.setTimeout(() => { button?.focus() }, 0)
-  }, [])
 
   /** 一张卡退场结束：收起退场标记；退场期间攒下的增删通知这时才去重取（D18）。 */
   const finishExit = useCallback((id: string): void => {

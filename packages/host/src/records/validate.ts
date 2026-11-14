@@ -7,33 +7,19 @@
 import type {
   ActionStatus,
   ChoreStatus,
-  CourseWork,
   DomainRecord,
-  FigureKind,
   LiteratureStage,
-  ManuscriptFigure,
   ManuscriptStage,
-  MaterialRef,
-  ProjectCommunication,
-  ProjectDeliverable,
-  ProjectIssue,
-  ProjectMilestone,
-  ProjectTask,
   RecordKind,
   RecordRef,
   ResearchEntry,
   ResearchMethod,
-  RevisionItem,
-  RevisionStatus,
   StageEntry,
-  SubmissionDecision,
-  SubmissionRound,
-  ThesisChapter,
-  ThesisExperiment,
-  ThesisMilestone,
-  ThesisResult,
 } from '@dsh-scholar-board/contracts'
 import { RECORDS_FORMAT, RECORDS_LIMITS, isOpenableUrl } from '@dsh-scholar-board/contracts'
+export { FIGURE_KINDS, SUBMISSION_DECISIONS, REVISION_STATUSES } from './manuscript-validate'
+export { searchTextOf } from './search'
+import { figuresOf, submissionsOf, revisionsOf, manuscriptArraysProblem } from './manuscript-validate'
 import { isRecord } from '../guards'
 import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
 import { chaptersOf, experimentsOf, thesisArraysProblem, thesisMilestonesOf, thesisResultsOf } from './thesis-validate'
@@ -62,15 +48,6 @@ export const LITERATURE_STAGES: readonly LiteratureStage[] = ['queued', 'reading
 /** 研究记录的三种做法。 */
 export const RESEARCH_METHODS: readonly ResearchMethod[] = ['derivation', 'simulation', 'experiment']
 
-/** 图表目录里的两种条目。 */
-export const FIGURE_KINDS: readonly FigureKind[] = ['figure', 'table']
-
-/** 投稿轮次的七种结果；拒稿、撤稿与转投都留在历史里。 */
-export const SUBMISSION_DECISIONS: readonly SubmissionDecision[] = ['pending', 'minor', 'major', 'accepted', 'rejected', 'withdrawn', 'transferred']
-
-/** 修回事项的四种状态。 */
-export const REVISION_STATUSES: readonly RevisionStatus[] = ['todo', 'doing', 'done', 'declined']
-
 /** 每种记录可写的字段；系统字段与阶段历史不在这张表里。 */
 const WRITABLE: Record<RecordKind, readonly string[]> = {
   meeting: ['title', 'date', 'topics', 'feedback', 'openQuestions', 'related', 'materials', 'derivedFrom'],
@@ -97,9 +74,6 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   chore: [],
 }
 
-/** 搜索和展示时要读的文本字段。 */
-const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion', 'code', 'teacher', 'schedule', 'notes', 'note', 'category'] as const
-
 /**
  * 一组指向前向记录的引用。
  *
@@ -123,149 +97,6 @@ function refsOf(value: unknown, field: string, allowed: readonly RecordKind[]): 
     if (seen.has(key)) fail(`${field} 里有重复的引用`)
     seen.add(key)
     return { kind: entry.kind as RecordKind, id: entry.id }
-  })
-}
-
-/**
- * 图表的编号：去空白后非空，按 Unicode 码点计不超过编号上限。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @returns 去空白之后的编号。
- */
-function labelOf(value: unknown, field: string): string {
-  if (typeof value !== 'string') fail(`${field} 要是文字`)
-  const wanted = value.trim()
-  if (wanted === '') fail(`${field} 不能是空的`)
-  if ([...wanted].length > RECORDS_LIMITS.figureLabelLength) fail(`${field} 最多 ${String(RECORDS_LIMITS.figureLabelLength)} 个字符`)
-  return wanted
-}
-
-/**
- * 修回反馈与改动：比标题长，仍受单条记录预算约束。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @param required - 反馈必填；改动可留空。
- * @returns 去空白之后的文字；未填时是 `null`。
- */
-function revisionTextOf(value: unknown, field: string, required: boolean): string | null {
-  if (value === null) {
-    if (required) fail(`${field} 不能是空的`)
-    return null
-  }
-  if (typeof value !== 'string') fail(`${field} 要是文字`)
-  const wanted = value.trim()
-  if (wanted === '') {
-    if (required) fail(`${field} 不能是空的`)
-    return null
-  }
-  if ([...wanted].length > RECORDS_LIMITS.revisionText) fail(`${field} 最多 ${String(RECORDS_LIMITS.revisionText)} 个字符`)
-  return wanted
-}
-
-/**
- * 图表目录：编号与标题必填，证据材料只收 http/https，条目 id 不重复。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @returns 图表表；未填时是 `null`。
- */
-function figuresOf(value: unknown, field: string): ManuscriptFigure[] | null {
-  if (value === null) return null
-  if (!Array.isArray(value)) fail(`${field} 要是数组`)
-  if (value.length > RECORDS_LIMITS.figures) fail(`${field} 最多 ${String(RECORDS_LIMITS.figures)} 项`)
-  const seen = new Set<string>()
-  return value.map((entry, index) => {
-    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { id, kind, label, title }`)
-    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
-    if (seen.has(entry.id)) fail(`${field} 里的 id 重复`)
-    seen.add(entry.id)
-    if (typeof entry.kind !== 'string' || !FIGURE_KINDS.includes(entry.kind as FigureKind)) {
-      fail(`${field}[${String(index)}].kind 只能是 ${FIGURE_KINDS.join('、')}`)
-    }
-    const label = labelOf(entry.label, `${field}[${String(index)}].label`)
-    const title = titleOf(entry.title, `${field}[${String(index)}].title`)
-    const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
-    const materials = entry.materials === undefined ? null : materialsOf(entry.materials, `${field}[${String(index)}].materials`)
-    return {
-      id: entry.id,
-      kind: entry.kind as FigureKind,
-      label,
-      title,
-      ...(note === null ? {} : { note }),
-      ...(materials === null ? {} : { materials }),
-    }
-  })
-}
-
-/**
- * 投稿轮次：刊会必填，结果必填，投稿与决定日期可留空。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @returns 轮次表；未填时是 `null`。
- */
-function submissionsOf(value: unknown, field: string): SubmissionRound[] | null {
-  if (value === null) return null
-  if (!Array.isArray(value)) fail(`${field} 要是数组`)
-  if (value.length > RECORDS_LIMITS.submissions) fail(`${field} 最多 ${String(RECORDS_LIMITS.submissions)} 项`)
-  const seen = new Set<string>()
-  return value.map((entry, index) => {
-    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { id, venue, decision }`)
-    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
-    if (seen.has(entry.id)) fail(`${field} 里的 id 重复`)
-    seen.add(entry.id)
-    const venue = titleOf(entry.venue, `${field}[${String(index)}].venue`)
-    if (typeof entry.decision !== 'string' || !SUBMISSION_DECISIONS.includes(entry.decision as SubmissionDecision)) {
-      fail(`${field}[${String(index)}].decision 只能是 ${SUBMISSION_DECISIONS.join('、')}`)
-    }
-    const submittedAt = entry.submittedAt === undefined ? null : dueOf(entry.submittedAt, `${field}[${String(index)}].submittedAt`)
-    const decidedAt = entry.decidedAt === undefined ? null : dueOf(entry.decidedAt, `${field}[${String(index)}].decidedAt`)
-    const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
-    return {
-      id: entry.id,
-      venue,
-      decision: entry.decision as SubmissionDecision,
-      ...(submittedAt === null ? {} : { submittedAt }),
-      ...(decidedAt === null ? {} : { decidedAt }),
-      ...(note === null ? {} : { note }),
-    }
-  })
-}
-
-/**
- * 修回事项：反馈必填、必须指向本稿件的一轮投稿，改动与证据可留空。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @returns 修回表；未填时是 `null`。
- */
-function revisionsOf(value: unknown, field: string): RevisionItem[] | null {
-  if (value === null) return null
-  if (!Array.isArray(value)) fail(`${field} 要是数组`)
-  if (value.length > RECORDS_LIMITS.revisions) fail(`${field} 最多 ${String(RECORDS_LIMITS.revisions)} 项`)
-  const seen = new Set<string>()
-  return value.map((entry, index) => {
-    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { id, roundId, feedback, status }`)
-    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
-    if (seen.has(entry.id)) fail(`${field} 里的 id 重复`)
-    seen.add(entry.id)
-    if (typeof entry.roundId !== 'string' || entry.roundId === '' || entry.roundId.length > 64) fail(`${field}[${String(index)}].roundId 不合法`)
-    const feedback = revisionTextOf(entry.feedback, `${field}[${String(index)}].feedback`, true)
-    const change = entry.change === undefined ? null : revisionTextOf(entry.change, `${field}[${String(index)}].change`, false)
-    if (typeof entry.status !== 'string' || !REVISION_STATUSES.includes(entry.status as RevisionStatus)) {
-      fail(`${field}[${String(index)}].status 只能是 ${REVISION_STATUSES.join('、')}`)
-    }
-    const materials = entry.materials === undefined ? null : materialsOf(entry.materials, `${field}[${String(index)}].materials`)
-    return {
-      id: entry.id,
-      roundId: entry.roundId,
-      feedback: feedback as string,
-      status: entry.status as RevisionStatus,
-      ...(change === null ? {} : { change }),
-      ...(materials === null ? {} : { materials }),
-    }
   })
 }
 
@@ -490,53 +321,6 @@ export function assertRecordWritable(record: DomainRecord): void {
 }
 
 /**
- * 稿件里三组内嵌条目的形状与互链：修回必须指向本稿件的一轮投稿。
- *
- * @param value - 一条记录。
- * @returns 不合格时是一句原因；合格时是 `null`。
- */
-function manuscriptArraysProblem(value: Record<string, unknown>): string | null {
-  if (value.figures !== undefined) {
-    if (!Array.isArray(value.figures)) return 'figures 不是数组'
-    const ids = new Set<string>()
-    for (const entry of value.figures as unknown[]) {
-      if (!isRecord(entry)) return 'figures 的条目不合法'
-      if (typeof entry.id !== 'string' || entry.id === '') return 'figures 的条目缺少 id'
-      if (ids.has(entry.id)) return 'figures 的 id 重复'
-      ids.add(entry.id)
-      if (entry.kind !== 'figure' && entry.kind !== 'table') return 'figures 的 kind 不认识'
-      if (typeof entry.label !== 'string' || entry.label === '' || typeof entry.title !== 'string' || entry.title === '') return 'figures 的条目缺少编号或标题'
-    }
-  }
-  const roundIds = new Set<string>()
-  if (value.submissions !== undefined) {
-    if (!Array.isArray(value.submissions)) return 'submissions 不是数组'
-    for (const entry of value.submissions as unknown[]) {
-      if (!isRecord(entry)) return 'submissions 的条目不合法'
-      if (typeof entry.id !== 'string' || entry.id === '') return 'submissions 的条目缺少 id'
-      if (roundIds.has(entry.id)) return 'submissions 的 id 重复'
-      roundIds.add(entry.id)
-      if (typeof entry.venue !== 'string' || entry.venue === '') return 'submissions 的条目缺少刊会'
-      if (typeof entry.decision !== 'string' || !SUBMISSION_DECISIONS.includes(entry.decision as SubmissionDecision)) return 'submissions 的 decision 不认识'
-    }
-  }
-  if (value.revisions !== undefined) {
-    if (!Array.isArray(value.revisions)) return 'revisions 不是数组'
-    const ids = new Set<string>()
-    for (const entry of value.revisions as unknown[]) {
-      if (!isRecord(entry)) return 'revisions 的条目不合法'
-      if (typeof entry.id !== 'string' || entry.id === '') return 'revisions 的条目缺少 id'
-      if (ids.has(entry.id)) return 'revisions 的 id 重复'
-      ids.add(entry.id)
-      if (typeof entry.roundId !== 'string' || !roundIds.has(entry.roundId)) return '修回事项指向的投稿轮次不存在'
-      if (typeof entry.feedback !== 'string' || entry.feedback === '') return 'revisions 的条目缺少反馈'
-      if (typeof entry.status !== 'string' || !REVISION_STATUSES.includes(entry.status as RevisionStatus)) return 'revisions 的 status 不认识'
-    }
-  }
-  return null
-}
-
-/**
  * 一条记录能不能被当作存储里的一份读回来：系统字段与各类型的必填项都在。
  *
  * @param value - 从磁盘读出来的值。
@@ -591,105 +375,6 @@ export function storedProblem(value: unknown): string | null {
   }
   if (value.kind === 'chore' && (typeof value.status !== 'string' || !CHORE_STATUSES.includes(value.status as ChoreStatus))) return 'status 不认识'
   return null
-}
-
-/**
- * 一条记录的搜索文本：标题与全部短文本字段，材料标题也进来。
- *
- * @param record - 记录。
- * @returns 小写之后的整段文字。
- */
-export function searchTextOf(record: DomainRecord): string {
-  const entry = record as unknown as Record<string, unknown>
-  const parts: string[] = []
-  for (const field of TEXT_FIELDS) {
-    const value = entry[field]
-    if (typeof value === 'string') parts.push(value)
-  }
-  const materials = entry.materials
-  if (Array.isArray(materials)) {
-    for (const material of materials as MaterialRef[]) {
-      if (typeof material?.title === 'string') parts.push(material.title)
-    }
-  }
-  for (const field of ['parameters', 'metrics'] as const) {
-    const entries = entry[field]
-    if (!Array.isArray(entries)) continue
-    for (const item of entries as ResearchEntry[]) {
-      if (typeof item?.name === 'string') parts.push(item.name)
-      if (typeof item?.value === 'string') parts.push(item.value)
-      if (typeof item?.unit === 'string') parts.push(item.unit)
-    }
-  }
-  for (const figure of (Array.isArray(entry.figures) ? entry.figures : []) as ManuscriptFigure[]) {
-    if (typeof figure?.label === 'string') parts.push(figure.label)
-    if (typeof figure?.title === 'string') parts.push(figure.title)
-    if (typeof figure?.note === 'string') parts.push(figure.note)
-    for (const material of Array.isArray(figure?.materials) ? figure.materials : []) {
-      if (typeof material?.title === 'string') parts.push(material.title)
-    }
-  }
-  for (const round of (Array.isArray(entry.submissions) ? entry.submissions : []) as SubmissionRound[]) {
-    if (typeof round?.venue === 'string') parts.push(round.venue)
-    if (typeof round?.note === 'string') parts.push(round.note)
-  }
-  for (const revision of (Array.isArray(entry.revisions) ? entry.revisions : []) as RevisionItem[]) {
-    if (typeof revision?.feedback === 'string') parts.push(revision.feedback)
-    if (typeof revision?.change === 'string') parts.push(revision.change)
-    for (const material of Array.isArray(revision?.materials) ? revision.materials : []) {
-      if (typeof material?.title === 'string') parts.push(material.title)
-    }
-  }
-  for (const chapter of (Array.isArray(entry.chapters) ? entry.chapters : []) as ThesisChapter[]) {
-    if (typeof chapter?.title === 'string') parts.push(chapter.title)
-    if (typeof chapter?.question === 'string') parts.push(chapter.question)
-    if (typeof chapter?.note === 'string') parts.push(chapter.note)
-  }
-  for (const result of (Array.isArray(entry.results) ? entry.results : []) as ThesisResult[]) {
-    if (typeof result?.note === 'string') parts.push(result.note)
-    for (const material of Array.isArray(result?.materials) ? result.materials : []) {
-      if (typeof material?.title === 'string') parts.push(material.title)
-    }
-  }
-  for (const experiment of (Array.isArray(entry.experiments) ? entry.experiments : []) as ThesisExperiment[]) {
-    if (typeof experiment?.title === 'string') parts.push(experiment.title)
-    if (typeof experiment?.note === 'string') parts.push(experiment.note)
-  }
-  for (const milestone of (Array.isArray(entry.milestones) ? entry.milestones : []) as ThesisMilestone[]) {
-    if (typeof milestone?.label === 'string') parts.push(milestone.label)
-    if (typeof milestone?.note === 'string') parts.push(milestone.note)
-  }
-  for (const task of (Array.isArray(entry.tasks) ? entry.tasks : []) as ProjectTask[]) {
-    if (typeof task?.title === 'string') parts.push(task.title)
-    if (typeof task?.note === 'string') parts.push(task.note)
-    for (const material of Array.isArray(task?.materials) ? task.materials : []) {
-      if (typeof material?.title === 'string') parts.push(material.title)
-    }
-  }
-  for (const deliverable of (Array.isArray(entry.deliverables) ? entry.deliverables : []) as ProjectDeliverable[]) {
-    if (typeof deliverable?.name === 'string') parts.push(deliverable.name)
-    if (typeof deliverable?.version === 'string') parts.push(deliverable.version)
-    if (typeof deliverable?.note === 'string') parts.push(deliverable.note)
-    for (const material of Array.isArray(deliverable?.materials) ? deliverable.materials : []) {
-      if (typeof material?.title === 'string') parts.push(material.title)
-    }
-  }
-  for (const communication of (Array.isArray(entry.communications) ? entry.communications : []) as ProjectCommunication[]) {
-    if (typeof communication?.summary === 'string') parts.push(communication.summary)
-    if (typeof communication?.note === 'string') parts.push(communication.note)
-  }
-  for (const issue of (Array.isArray(entry.issues) ? entry.issues : []) as ProjectIssue[]) {
-    if (typeof issue?.title === 'string') parts.push(issue.title)
-    if (typeof issue?.note === 'string') parts.push(issue.note)
-  }
-  for (const work of (Array.isArray(entry.work) ? entry.work : []) as CourseWork[]) {
-    if (typeof work?.title === 'string') parts.push(work.title)
-    if (typeof work?.note === 'string') parts.push(work.note)
-    for (const material of Array.isArray(work?.materials) ? work.materials : []) {
-      if (typeof material?.title === 'string') parts.push(material.title)
-    }
-  }
-  return parts.join('\n').toLowerCase()
 }
 
 /**

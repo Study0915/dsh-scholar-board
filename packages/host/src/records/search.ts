@@ -1,0 +1,104 @@
+/** 领域记录的检索文本，供统一查询使用。 */
+import type { DomainRecord, ResearchEntry, ManuscriptFigure, RevisionItem, SubmissionRound, CourseWork, MaterialRef, ProjectCommunication, ProjectDeliverable, ProjectIssue, ProjectTask, ThesisChapter, ThesisExperiment, ThesisMilestone, ThesisResult } from '@dsh-scholar-board/contracts'
+
+/** 搜索和展示时要读的文本字段。 */
+const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion', 'code', 'teacher', 'schedule', 'notes', 'note', 'category'] as const
+
+/**
+ * 一条记录的搜索文本：标题与全部短文本字段，材料标题也进来。
+ *
+ * @param record - 记录。
+ * @returns 小写之后的整段文字。
+ */
+export function searchTextOf(record: DomainRecord): string {
+  const entry = record as unknown as Record<string, unknown>
+  const parts: string[] = []
+  for (const field of TEXT_FIELDS) {
+    const value = entry[field]
+    if (typeof value === 'string') parts.push(value)
+  }
+  const materials = entry.materials
+  if (Array.isArray(materials)) {
+    for (const material of materials as MaterialRef[]) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const field of ['parameters', 'metrics'] as const) {
+    const entries = entry[field]
+    if (!Array.isArray(entries)) continue
+    for (const item of entries as ResearchEntry[]) {
+      if (typeof item?.name === 'string') parts.push(item.name)
+      if (typeof item?.value === 'string') parts.push(item.value)
+      if (typeof item?.unit === 'string') parts.push(item.unit)
+    }
+  }
+  for (const figure of (Array.isArray(entry.figures) ? entry.figures : []) as ManuscriptFigure[]) {
+    if (typeof figure?.label === 'string') parts.push(figure.label)
+    if (typeof figure?.title === 'string') parts.push(figure.title)
+    if (typeof figure?.note === 'string') parts.push(figure.note)
+    for (const material of Array.isArray(figure?.materials) ? figure.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const round of (Array.isArray(entry.submissions) ? entry.submissions : []) as SubmissionRound[]) {
+    if (typeof round?.venue === 'string') parts.push(round.venue)
+    if (typeof round?.note === 'string') parts.push(round.note)
+  }
+  for (const revision of (Array.isArray(entry.revisions) ? entry.revisions : []) as RevisionItem[]) {
+    if (typeof revision?.feedback === 'string') parts.push(revision.feedback)
+    if (typeof revision?.change === 'string') parts.push(revision.change)
+    for (const material of Array.isArray(revision?.materials) ? revision.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const chapter of (Array.isArray(entry.chapters) ? entry.chapters : []) as ThesisChapter[]) {
+    if (typeof chapter?.title === 'string') parts.push(chapter.title)
+    if (typeof chapter?.question === 'string') parts.push(chapter.question)
+    if (typeof chapter?.note === 'string') parts.push(chapter.note)
+  }
+  for (const result of (Array.isArray(entry.results) ? entry.results : []) as ThesisResult[]) {
+    if (typeof result?.note === 'string') parts.push(result.note)
+    for (const material of Array.isArray(result?.materials) ? result.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const experiment of (Array.isArray(entry.experiments) ? entry.experiments : []) as ThesisExperiment[]) {
+    if (typeof experiment?.title === 'string') parts.push(experiment.title)
+    if (typeof experiment?.note === 'string') parts.push(experiment.note)
+  }
+  for (const milestone of (Array.isArray(entry.milestones) ? entry.milestones : []) as ThesisMilestone[]) {
+    if (typeof milestone?.label === 'string') parts.push(milestone.label)
+    if (typeof milestone?.note === 'string') parts.push(milestone.note)
+  }
+  for (const task of (Array.isArray(entry.tasks) ? entry.tasks : []) as ProjectTask[]) {
+    if (typeof task?.title === 'string') parts.push(task.title)
+    if (typeof task?.note === 'string') parts.push(task.note)
+    for (const material of Array.isArray(task?.materials) ? task.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const deliverable of (Array.isArray(entry.deliverables) ? entry.deliverables : []) as ProjectDeliverable[]) {
+    if (typeof deliverable?.name === 'string') parts.push(deliverable.name)
+    if (typeof deliverable?.version === 'string') parts.push(deliverable.version)
+    if (typeof deliverable?.note === 'string') parts.push(deliverable.note)
+    for (const material of Array.isArray(deliverable?.materials) ? deliverable.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const communication of (Array.isArray(entry.communications) ? entry.communications : []) as ProjectCommunication[]) {
+    if (typeof communication?.summary === 'string') parts.push(communication.summary)
+    if (typeof communication?.note === 'string') parts.push(communication.note)
+  }
+  for (const issue of (Array.isArray(entry.issues) ? entry.issues : []) as ProjectIssue[]) {
+    if (typeof issue?.title === 'string') parts.push(issue.title)
+    if (typeof issue?.note === 'string') parts.push(issue.note)
+  }
+  for (const work of (Array.isArray(entry.work) ? entry.work : []) as CourseWork[]) {
+    if (typeof work?.title === 'string') parts.push(work.title)
+    if (typeof work?.note === 'string') parts.push(work.note)
+    for (const material of Array.isArray(work?.materials) ? work.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  return parts.join('\n').toLowerCase()
+}
