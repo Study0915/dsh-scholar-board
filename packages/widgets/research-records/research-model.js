@@ -9,11 +9,13 @@
 
   var KIND = 'research'
   var METHODS = ['derivation', 'simulation', 'experiment']
+  var RUN_STATUSES = ['planned', 'running', 'succeeded', 'failed', 'cancelled']
   var DAY = 86400000
   var DRAFT_DELAY = 700
   var LOAD_TIMEOUT = 4000
   var MAX_ENTRIES = 64
   var UNIT_LENGTH = 32
+  var RUN_TITLE_LENGTH = 160
 
   /** 记录里的做法：不认识的值按仿真算。 */
   function methodOf(record) {
@@ -89,6 +91,60 @@
     var stamp = Date.parse(record.deletedAt)
     if (isNaN(stamp)) return null
     return Math.max(0, Math.ceil((stamp + 30 * DAY - (typeof now === 'number' ? now : Date.now())) / DAY))
+  }
+
+  /** 运行状态：不认识的值按计划中算。 */
+  function runStatusOf(run) {
+    if (run === null || typeof run !== 'object') return 'planned'
+    return RUN_STATUSES.indexOf(run.status) >= 0 ? run.status : 'planned'
+  }
+
+  /** 运行状态对应的文案键。 */
+  function runStatusKey(status) {
+    return status === 'running'
+      ? 'runRunning'
+      : status === 'succeeded'
+        ? 'runSucceeded'
+        : status === 'failed'
+          ? 'runFailed'
+          : status === 'cancelled'
+            ? 'runCancelled'
+            : 'runPlanned'
+  }
+
+  /** 一条运行的时间说法：起止都有时写成一段，只有一个时写那一个。 */
+  function runTimeLine(run) {
+    if (run === null || typeof run !== 'object') return ''
+    var started = typeof run.startedAt === 'string' ? run.startedAt.slice(0, 16).replace('T', ' ') : ''
+    var ended = typeof run.endedAt === 'string' ? run.endedAt.slice(0, 16).replace('T', ' ') : ''
+    if (started !== '' && ended !== '') return started + ' → ' + ended
+    return started !== '' ? started : ended
+  }
+
+  /** 一套方案下的运行标题：沿用方案标题，附上创建时刻，避免多次新建后分不清。 */
+  function runTitleOf(record, now) {
+    var base = textOf(record, 'title')
+    if (base === '') base = '研究运行'
+    if (base.length > RUN_TITLE_LENGTH) base = base.slice(0, RUN_TITLE_LENGTH)
+    var at = typeof now === 'number' ? new Date(now) : new Date()
+    function pad(value) { return value < 10 ? '0' + String(value) : String(value) }
+    return base + ' · 运行 ' + at.getFullYear() + '-' + pad(at.getMonth() + 1) + '-' + pad(at.getDate()) + ' ' + pad(at.getHours()) + ':' + pad(at.getMinutes())
+  }
+
+  /** 一套方案下的运行：没有回收的，按最近更新从新到旧。 */
+  function planRuns(records) {
+    var list = Array.isArray(records) ? records : []
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var run = list[at]
+      if (run === null || typeof run !== 'object') continue
+      if (typeof run.deletedAt === 'string') continue
+      out.push(run)
+    }
+    out.sort(function (left, right) {
+      return String(right.updatedAt).localeCompare(String(left.updatedAt))
+    })
+    return out
   }
 
   /** 一个视图里的行：先按回收与归档状态筛，再按做法筛，按最近更新从新到旧。 */
@@ -169,11 +225,13 @@
   root.ResearchRecords = {
     KIND: KIND,
     METHODS: METHODS,
+    RUN_STATUSES: RUN_STATUSES,
     DAY: DAY,
     DRAFT_DELAY: DRAFT_DELAY,
     LOAD_TIMEOUT: LOAD_TIMEOUT,
     MAX_ENTRIES: MAX_ENTRIES,
     UNIT_LENGTH: UNIT_LENGTH,
+    RUN_TITLE_LENGTH: RUN_TITLE_LENGTH,
     methodOf: methodOf,
     methodKey: methodKey,
     textOf: textOf,
@@ -184,6 +242,11 @@
     entryLine: entryLine,
     entriesLine: entriesLine,
     daysLeft: daysLeft,
+    runStatusOf: runStatusOf,
+    runStatusKey: runStatusKey,
+    runTimeLine: runTimeLine,
+    runTitleOf: runTitleOf,
+    planRuns: planRuns,
     viewRows: viewRows,
     cleanEntries: cleanEntries,
     materialValid: materialValid,

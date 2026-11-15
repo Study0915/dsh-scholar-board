@@ -67,6 +67,19 @@
         <textarea class="rs__input rs__textarea" rows="2" data-field="question"></textarea>
       </label>
       <label class="rs__field">
+        <span class="rs__label" data-role="label-purpose">目的</span>
+        <textarea class="rs__input rs__textarea" rows="2" data-field="purpose"></textarea>
+      </label>
+      <label class="rs__field">
+        <span class="rs__label" data-role="label-hypothesis">假设</span>
+        <textarea class="rs__input rs__textarea" rows="2" data-field="hypothesis"></textarea>
+      </label>
+      <label class="rs__field">
+        <span class="rs__label" data-role="label-steps">步骤</span>
+        <textarea class="rs__input rs__textarea" rows="3" data-field="steps"></textarea>
+      </label>
+      <p class="rs__note-line" data-role="steps-hint"></p>
+      <label class="rs__field">
         <span class="rs__label" data-role="label-environment">环境</span>
         <input class="rs__input" type="text" data-field="environment-input" autocomplete="off" />
       </label>
@@ -88,6 +101,13 @@
         <textarea class="rs__input rs__textarea" rows="3" data-field="conclusion"></textarea>
       </label>
       <p class="rs__note-line" data-role="conclusion-hint"></p>
+      <fieldset class="rs__runs" data-role="plan-runs">
+        <legend class="rs__label" data-role="label-runs">这套方案下的运行</legend>
+        <p class="rs__note-line" data-role="runs-hint"></p>
+        <ul class="rs__run-list" data-role="runs"></ul>
+        <button class="rs__ghost" type="button" data-action="new-run">新建运行</button>
+        <p class="rs__error" data-role="run-error" role="status"></p>
+      </fieldset>
       <fieldset class="rs__materials">
         <legend class="rs__label" data-role="label-materials">结果材料</legend>
         <ul class="rs__material-list" data-role="materials"></ul>

@@ -1,0 +1,520 @@
+{
+  "id": "run-records",
+  "title": {
+    "zh": "运行记录",
+    "en": "Run records"
+  },
+  "description": {
+    "zh": "记录一次运行：所属研究方案、状态、代码仓库与提交、数据集与版本、检查点、配置、环境、种子、评估集合、起止时间、观测指标、结果（单次或汇总，汇总注明来源运行、方法、样本数与离散度）、日志产物、失败原因与备注。列表按状态筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，修订冲突可以载入最新记录；可以把一条运行复制成计划中的新运行，不复制状态、观测值、时间与产物。这里只记录，不执行任何脚本。",
+    "en": "Records a run: its research plan, status, code repository and commit, datasets with splits and versions, checkpoints, configuration, environment, seeds, evaluation set, start and end times, observed metrics, results (single or aggregate with source runs, method, sample size and dispersion), log artifacts, failure reason and notes. The list filters by status, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. A run can be duplicated as a planned run without copying status, observations, times or artifacts. Nothing is executed here."
+  },
+  "author": "dsh-scholar-board",
+  "version": "0.1.0",
+  "sizes": [
+    "m",
+    "l"
+  ],
+  "source": "widget-board:records",
+  "capabilities": [
+    "widget-board:records.read",
+    "widget-board:records.write",
+    "widget-board:records.draft",
+    "widget-board:records.open"
+  ],
+  "defaultBox": {
+    "w": 2,
+    "h": 30
+  },
+  "minBox": {
+    "w": 1,
+    "h": 16
+  },
+  "scripts": [
+    "run-model.js",
+    "copy.js",
+    "view.js",
+    "editor.js"
+  ],
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string",
+        "maxLength": 80
+      },
+      "kicker": {
+        "type": "string",
+        "maxLength": 40
+      }
+    }
+  },
+  "data": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "records": {
+        "type": "array",
+        "maxItems": 200,
+        "items": {
+          "type": "object"
+        }
+      },
+      "quota": {
+        "type": "object"
+      },
+      "total": {
+        "type": "number"
+      },
+      "truncated": {
+        "type": "boolean"
+      }
+    }
+  },
+  "text": {
+    "title": {
+      "zh": "运行记录",
+      "en": "Run records"
+    },
+    "kicker": {
+      "zh": "配置、结果与来源",
+      "en": "Configurations, results and sources"
+    },
+    "new": {
+      "zh": "新建",
+      "en": "New"
+    },
+    "search": {
+      "zh": "搜索标题、方案、环境与结果",
+      "en": "Search titles, plans, environments and results"
+    },
+    "active": {
+      "zh": "活跃",
+      "en": "Active"
+    },
+    "archived": {
+      "zh": "归档",
+      "en": "Archived"
+    },
+    "trash": {
+      "zh": "回收站",
+      "en": "Trash"
+    },
+    "loading": {
+      "zh": "正在读取记录…",
+      "en": "Reading records…"
+    },
+    "failed": {
+      "zh": "读取失败",
+      "en": "Records unavailable"
+    },
+    "retry": {
+      "zh": "重试",
+      "en": "Retry"
+    },
+    "emptyActive": {
+      "zh": "还没有运行记录；点「新建」记下一次运行。",
+      "en": "No run records yet; use New to record a run."
+    },
+    "emptyArchived": {
+      "zh": "没有归档的运行记录。",
+      "en": "No archived run records."
+    },
+    "emptyTrash": {
+      "zh": "回收站是空的。移入回收站的记录三十天后自动清除。",
+      "en": "The trash is empty. Trashed records are cleared after thirty days."
+    },
+    "emptySearch": {
+      "zh": "没有匹配的记录。",
+      "en": "No matching records."
+    },
+    "emptyStatus": {
+      "zh": "这个状态还没有记录。",
+      "en": "No runs with this status."
+    },
+    "truncated": {
+      "zh": "只列出最近 {n} 条，共 {total} 条；用搜索找更早的记录。",
+      "en": "Showing the latest {n} of {total}; search for older records."
+    },
+    "quotaWarning": {
+      "zh": "记录已用到 {percent}%，先整理归档或回收站。",
+      "en": "Records use {percent}% of the limit; tidy the archive or trash."
+    },
+    "statusAll": {
+      "zh": "全部状态",
+      "en": "All statuses"
+    },
+    "status": {
+      "zh": "状态",
+      "en": "Status"
+    },
+    "statusPlanned": {
+      "zh": "计划中",
+      "en": "Planned"
+    },
+    "statusRunning": {
+      "zh": "运行中",
+      "en": "Running"
+    },
+    "statusSucceeded": {
+      "zh": "成功",
+      "en": "Succeeded"
+    },
+    "statusFailed": {
+      "zh": "失败",
+      "en": "Failed"
+    },
+    "statusCancelled": {
+      "zh": "已取消",
+      "en": "Cancelled"
+    },
+    "unknown": {
+      "zh": "未知",
+      "en": "Unknown"
+    },
+    "fieldTitle": {
+      "zh": "标题",
+      "en": "Title"
+    },
+    "plan": {
+      "zh": "研究方案",
+      "en": "Research plan"
+    },
+    "planNone": {
+      "zh": "未指定方案",
+      "en": "No plan"
+    },
+    "planMissing": {
+      "zh": "来源缺失",
+      "en": "Source missing"
+    },
+    "planNoneHint": {
+      "zh": "只列出活跃与归档的研究记录；方案缺失时保留原 id，可以重新选。",
+      "en": "Lists active and archived research notes; a missing plan keeps its id so you can reselect it."
+    },
+    "planLoadFailed": {
+      "zh": "方案列表读取失败",
+      "en": "Plans unavailable"
+    },
+    "repository": {
+      "zh": "代码仓库",
+      "en": "Repository"
+    },
+    "commit": {
+      "zh": "提交",
+      "en": "Commit"
+    },
+    "codeHint": {
+      "zh": "仓库写地址，提交写哈希或标记；只是记录，不拉取代码。",
+      "en": "Repository as an address, commit as a hash or tag; recorded only, nothing is fetched."
+    },
+    "datasets": {
+      "zh": "数据集",
+      "en": "Datasets"
+    },
+    "datasetName": {
+      "zh": "名称",
+      "en": "Name"
+    },
+    "datasetSplit": {
+      "zh": "划分",
+      "en": "Split"
+    },
+    "datasetVersion": {
+      "zh": "版本",
+      "en": "Version"
+    },
+    "addDataset": {
+      "zh": "添加数据集",
+      "en": "Add dataset"
+    },
+    "removeDataset": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "datasetInvalid": {
+      "zh": "数据集要有名称；整行留空会丢掉。",
+      "en": "Datasets need a name; entirely empty rows are dropped."
+    },
+    "checkpoints": {
+      "zh": "检查点",
+      "en": "Checkpoints"
+    },
+    "config": {
+      "zh": "运行配置",
+      "en": "Configuration"
+    },
+    "metrics": {
+      "zh": "观测指标",
+      "en": "Observed metrics"
+    },
+    "entriesHint": {
+      "zh": "指标保持名称、数值、单位与定义；值可以写文字，零与未给出分开记录。",
+      "en": "Metrics keep name, value, unit and definition; values may be text, and zero stays distinct from missing."
+    },
+    "entryName": {
+      "zh": "名称",
+      "en": "Name"
+    },
+    "entryValue": {
+      "zh": "数值",
+      "en": "Value"
+    },
+    "entryUnit": {
+      "zh": "单位",
+      "en": "Unit"
+    },
+    "entryDefinition": {
+      "zh": "定义",
+      "en": "Definition"
+    },
+    "addCheckpoint": {
+      "zh": "添加检查点",
+      "en": "Add checkpoint"
+    },
+    "addConfig": {
+      "zh": "添加配置",
+      "en": "Add configuration"
+    },
+    "addMetric": {
+      "zh": "添加指标",
+      "en": "Add metric"
+    },
+    "removeEntry": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "entryInvalid": {
+      "zh": "条目要同时有名称和数值；整行留空会丢掉。",
+      "en": "Entries need both a name and a value; entirely empty rows are dropped."
+    },
+    "environment": {
+      "zh": "环境",
+      "en": "Environment"
+    },
+    "environmentHint": {
+      "zh": "例如机器、工具链版本与依赖；留空时列表显示未知。",
+      "en": "For example machine, toolchain versions and dependencies; an empty field shows as unknown."
+    },
+    "seed": {
+      "zh": "随机种子",
+      "en": "Seeds"
+    },
+    "seedHint": {
+      "zh": "一组或多组种子，原样记录；留空时列表显示未知。",
+      "en": "One or more seeds, recorded as written; an empty field shows as unknown."
+    },
+    "evaluation": {
+      "zh": "评估集合",
+      "en": "Evaluation set"
+    },
+    "evaluationHint": {
+      "zh": "例如测试集名称、阈值校准集合与评估集合的划分。",
+      "en": "For example test set names, or how calibration and evaluation sets differ."
+    },
+    "startedAt": {
+      "zh": "开始时间",
+      "en": "Started"
+    },
+    "endedAt": {
+      "zh": "结束时间",
+      "en": "Ended"
+    },
+    "timeHint": {
+      "zh": "时间允许未知；成功也不要求补造时间。",
+      "en": "Times may be unknown; a successful run does not need invented times."
+    },
+    "timeInvalid": {
+      "zh": "时间要是可识别的写法，例如 2026-11-15T08:00。",
+      "en": "Times must be recognizable, for example 2026-11-15T08:00."
+    },
+    "results": {
+      "zh": "结果",
+      "en": "Results"
+    },
+    "resultKind": {
+      "zh": "类型",
+      "en": "Kind"
+    },
+    "resultSingle": {
+      "zh": "单次运行",
+      "en": "Single run"
+    },
+    "resultAggregate": {
+      "zh": "统计汇总",
+      "en": "Aggregate"
+    },
+    "resultText": {
+      "zh": "内容",
+      "en": "Text"
+    },
+    "resultMethod": {
+      "zh": "统计方法",
+      "en": "Method"
+    },
+    "resultSampleSize": {
+      "zh": "样本数",
+      "en": "Sample size"
+    },
+    "resultDispersion": {
+      "zh": "离散度",
+      "en": "Dispersion"
+    },
+    "resultManual": {
+      "zh": "手工汇总（没有可引用的来源运行）",
+      "en": "Manual aggregate (no source runs)"
+    },
+    "resultSources": {
+      "zh": "来源运行",
+      "en": "Source runs"
+    },
+    "resultSourcesHint": {
+      "zh": "汇总要选来源运行，或显式标记手工汇总；不编造种子。",
+      "en": "Aggregates pick source runs or are explicitly marked manual; seeds are never invented."
+    },
+    "addResult": {
+      "zh": "添加结果",
+      "en": "Add result"
+    },
+    "removeResult": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "resultInvalid": {
+      "zh": "每条结果要有内容；汇总没有来源运行时要标记手工汇总。",
+      "en": "Every result needs text; an aggregate without source runs must be marked manual."
+    },
+    "artifacts": {
+      "zh": "日志与产物",
+      "en": "Logs and artifacts"
+    },
+    "artifactUrl": {
+      "zh": "https://…",
+      "en": "https://…"
+    },
+    "artifactTitle": {
+      "zh": "链接说明",
+      "en": "Link title"
+    },
+    "addArtifact": {
+      "zh": "添加",
+      "en": "Add"
+    },
+    "removeArtifact": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "artifactInvalid": {
+      "zh": "产物地址只收 http/https 的完整地址，说明不能为空。",
+      "en": "Artifact links must be complete http/https addresses with a title."
+    },
+    "failure": {
+      "zh": "失败原因",
+      "en": "Failure reason"
+    },
+    "note": {
+      "zh": "备注",
+      "en": "Notes"
+    },
+    "failureHint": {
+      "zh": "失败与负结果照常归档检索，不因为结果不好而改写状态。",
+      "en": "Failures and negative results stay searchable; a bad outcome does not rewrite the status."
+    },
+    "duplicate": {
+      "zh": "复制为新计划",
+      "en": "Duplicate as planned"
+    },
+    "duplicateHint": {
+      "zh": "复制方案、代码、数据集、检查点、配置、环境与种子；不复制状态、指标、结果、时间与产物。",
+      "en": "Copies plan, code, datasets, checkpoints, configuration, environment and seeds; status, metrics, results, times and artifacts are not copied."
+    },
+    "duplicated": {
+      "zh": "已复制为一条计划中的运行。",
+      "en": "Duplicated as a planned run."
+    },
+    "duplicateFailed": {
+      "zh": "复制运行失败",
+      "en": "Could not duplicate the run"
+    },
+    "artifactsCount": {
+      "zh": "{n} 份产物",
+      "en": "{n} artifacts"
+    },
+    "close": {
+      "zh": "关闭",
+      "en": "Close"
+    },
+    "save": {
+      "zh": "保存",
+      "en": "Save"
+    },
+    "saving": {
+      "zh": "保存中…",
+      "en": "Saving…"
+    },
+    "saved": {
+      "zh": "已保存",
+      "en": "Saved"
+    },
+    "saveFailed": {
+      "zh": "保存失败",
+      "en": "Save failed"
+    },
+    "draftSaved": {
+      "zh": "草稿已存",
+      "en": "Draft kept"
+    },
+    "draftRestored": {
+      "zh": "已恢复上次未保存的内容。",
+      "en": "Restored the unsaved draft."
+    },
+    "archive": {
+      "zh": "归档",
+      "en": "Archive"
+    },
+    "restore": {
+      "zh": "恢复",
+      "en": "Restore"
+    },
+    "trashAction": {
+      "zh": "移入回收站",
+      "en": "Move to trash"
+    },
+    "deletedIn": {
+      "zh": "{n} 天后自动清除",
+      "en": "Cleared in {n} days"
+    },
+    "unsavedClose": {
+      "zh": "还有没保存的修改；关闭后草稿会保留。",
+      "en": "There are unsaved changes; closing keeps the draft."
+    },
+    "keepEditing": {
+      "zh": "继续编辑",
+      "en": "Keep editing"
+    },
+    "closeKeepDraft": {
+      "zh": "关闭并保留草稿",
+      "en": "Close and keep draft"
+    },
+    "conflict": {
+      "zh": "这条记录在别处更新过，保存被拒绝。可以载入最新的内容，或继续用你的编辑。",
+      "en": "This record changed elsewhere and the save was rejected. Load the latest content, or continue with your edits."
+    },
+    "loadLatest": {
+      "zh": "载入最新（放弃本地修改）",
+      "en": "Load latest (discard local edits)"
+    },
+    "recordMissing": {
+      "zh": "这条记录已经不在了。",
+      "en": "This record no longer exists."
+    },
+    "trashRestoreHint": {
+      "zh": "回收站里的记录三十天后自动清除；先恢复再编辑。",
+      "en": "Trashed records are cleared after thirty days; restore before editing."
+    },
+    "titleRequired": {
+      "zh": "标题不能是空的。",
+      "en": "The title is required."
+    }
+  }
+}

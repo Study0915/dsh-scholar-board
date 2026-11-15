@@ -69,6 +69,9 @@
     titleInput: card.querySelector('[data-field="title-input"]'),
     methodInput: card.querySelector('[data-field="method-input"]'),
     question: card.querySelector('[data-field="question"]'),
+    purpose: card.querySelector('[data-field="purpose"]'),
+    hypothesis: card.querySelector('[data-field="hypothesis"]'),
+    steps: card.querySelector('[data-field="steps"]'),
     environmentInput: card.querySelector('[data-field="environment-input"]'),
     seedInput: card.querySelector('[data-field="seed-input"]'),
     conclusion: card.querySelector('[data-field="conclusion"]'),
@@ -76,6 +79,10 @@
     materialTitle: card.querySelector('[data-field="material-title"]'),
     parameters: card.querySelector('[data-role="parameters"]'),
     metrics: card.querySelector('[data-role="metrics"]'),
+    runs: card.querySelector('[data-role="runs"]'),
+    planRuns: card.querySelector('[data-role="plan-runs"]'),
+    runError: card.querySelector('[data-role="run-error"]'),
+    newRunButton: card.querySelector('[data-action="new-run"]'),
     archiveAction: card.querySelector('[data-action="archive"]'),
     restoreAction: card.querySelector('[data-action="restore"]'),
     trashAction: card.querySelector('[data-action="trash"]'),
@@ -91,11 +98,15 @@
     title: card.querySelector('[data-role="label-title"]'),
     method: card.querySelector('[data-role="label-method"]'),
     question: card.querySelector('[data-role="label-question"]'),
+    purpose: card.querySelector('[data-role="label-purpose"]'),
+    hypothesis: card.querySelector('[data-role="label-hypothesis"]'),
+    steps: card.querySelector('[data-role="label-steps"]'),
     environment: card.querySelector('[data-role="label-environment"]'),
     seed: card.querySelector('[data-role="label-seed"]'),
     parameters: card.querySelector('[data-role="label-parameters"]'),
     metrics: card.querySelector('[data-role="label-metrics"]'),
     conclusion: card.querySelector('[data-role="label-conclusion"]'),
+    runs: card.querySelector('[data-role="label-runs"]'),
     materials: card.querySelector('[data-role="label-materials"]')
   }
 
@@ -173,15 +184,22 @@
     put(labels.title, t('fieldTitle'))
     put(labels.method, t('method'))
     put(labels.question, t('question'))
+    put(labels.purpose, t('purpose'))
+    put(labels.hypothesis, t('hypothesis'))
+    put(labels.steps, t('steps'))
     put(labels.environment, t('environment'))
     put(labels.seed, t('seed'))
     put(labels.parameters, t('parameters'))
     put(labels.metrics, t('metrics'))
     put(labels.conclusion, t('conclusion'))
+    put(labels.runs, t('planRuns'))
     put(labels.materials, t('material'))
     put(card.querySelector('[data-role="environment-hint"]'), t('environmentHint'))
     put(card.querySelector('[data-role="seed-hint"]'), t('seedHint'))
+    put(card.querySelector('[data-role="steps-hint"]'), t('stepsHint'))
     put(card.querySelector('[data-role="conclusion-hint"]'), t('conclusionHint'))
+    put(card.querySelector('[data-role="runs-hint"]'), t('planRunsHint'))
+    put(nodes.newRunButton, t('newRun'))
     put(card.querySelector('[data-action="close"]'), t('close'))
     put(card.querySelector('[data-action="add-material"]'), t('addMaterial'))
     put(card.querySelector('[data-action="add-parameter"]'), t('addParameter'))
@@ -398,6 +416,7 @@
   card.querySelector('[data-action="add-material"]').addEventListener('click', function () { editor.addMaterial() })
   card.querySelector('[data-action="add-parameter"]').addEventListener('click', function () { editor.addEntry('parameters') })
   card.querySelector('[data-action="add-metric"]').addEventListener('click', function () { editor.addEntry('metrics') })
+  if (nodes.newRunButton !== null) nodes.newRunButton.addEventListener('click', function () { editor.createRun() })
   if (nodes.parameters !== null) {
     nodes.parameters.addEventListener('click', function (event) {
       var target = event.target
@@ -437,7 +456,7 @@
     nodes.conflict.close()
     editor.reloadLatest()
   })
-  var inputs = [nodes.titleInput, nodes.question, nodes.environmentInput, nodes.seedInput, nodes.conclusion]
+  var inputs = [nodes.titleInput, nodes.question, nodes.purpose, nodes.hypothesis, nodes.steps, nodes.environmentInput, nodes.seedInput, nodes.conclusion]
   for (var inputAt = 0; inputAt < inputs.length; inputAt += 1) inputs[inputAt].addEventListener('input', function () { editor.onInput() })
   nodes.methodInput.addEventListener('change', function () { editor.onInput() })
 

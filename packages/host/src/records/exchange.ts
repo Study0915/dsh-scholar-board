@@ -111,7 +111,7 @@ export function readRecordsPackage(bytes: Buffer): RecordsPackage {
  */
 export function previewRecords(bytes: Buffer): ImportPreview {
   const pkg = readRecordsPackage(bytes)
-  const byKind: Record<RecordKind, number> = { meeting: 0, action: 0, manuscript: 0, literature: 0, research: 0, thesis: 0, project: 0, course: 0, chore: 0, topic: 0 }
+  const byKind: Record<RecordKind, number> = { meeting: 0, action: 0, manuscript: 0, literature: 0, research: 0, thesis: 0, project: 0, course: 0, chore: 0, topic: 0, run: 0 }
   let active = 0
   let archived = 0
   let trashed = 0
@@ -151,7 +151,7 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
   for (const record of pkg.records) mapping.set(record.id, randomUUID())
   const at = new Date(now).toISOString()
   const remapped = pkg.records.map((record) => {
-    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string, questions?: { actionId?: string }[] }
+    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string, questions?: { actionId?: string }[], plan?: { kind: RecordKind, id: string }, results?: { sources?: string[] }[] }
     copy.id = mapping.get(record.id) as string
     copy.revision = 1
     copy.updatedAt = at
@@ -168,6 +168,14 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
     if (Array.isArray(copy.questions)) {
       for (const question of copy.questions) {
         if (typeof question.actionId === 'string') question.actionId = mapping.get(question.actionId) ?? question.actionId
+      }
+    }
+    if (copy.plan !== undefined) {
+      copy.plan = { ...copy.plan, id: mapping.get(copy.plan.id) ?? copy.plan.id }
+    }
+    if (Array.isArray(copy.results)) {
+      for (const result of copy.results) {
+        if (Array.isArray(result.sources)) result.sources = result.sources.map(source => mapping.get(source) ?? source)
       }
     }
     return copy as DomainRecord

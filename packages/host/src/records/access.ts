@@ -93,6 +93,7 @@ const WIDGET_KINDS: Record<string, RecordKind> = {
   'course-records': 'course',
   'chore-records': 'chore',
   'topic-records': 'topic',
+  'run-records': 'run',
 }
 
 /** 数据源能认的记录类型：props.kind 优先，内置记录组件按 id 取类型。 */

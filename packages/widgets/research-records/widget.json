@@ -5,8 +5,8 @@
     "en": "Research notes"
   },
   "description": {
-    "zh": "记下一次推导、仿真或实验：研究问题、环境、随机种子、参数与指标（带单位）、结论和结果材料。列表按做法筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。缺失的内容显示「未知」，这里只记录不执行实验程序。",
-    "en": "Records a derivation, simulation or experiment: research question, environment, seeds, parameters and metrics with units, conclusion and result materials. The list filters by method, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. Missing content shows as unknown, and nothing is executed here."
+    "zh": "记下一次推导、仿真或实验：研究问题、目的、假设、步骤、环境、随机种子、参数与指标（带单位）、结论和结果材料。同一套方案下的运行会列在详情里，也能一键新建一条计划中的运行去运行记录卡继续填写。列表按做法筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。缺失的内容显示「未知」，这里只记录不执行实验程序。",
+    "en": "Records a derivation, simulation or experiment: research question, purpose, hypothesis, steps, environment, seeds, parameters and metrics with units, conclusion and result materials. Runs that use this note as their plan are listed in the detail, and New run creates a planned run to continue on the run records card. The list filters by method, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. Missing content shows as unknown, and nothing is executed here."
   },
   "author": "dsh-scholar-board",
   "version": "0.1.0",
@@ -199,6 +199,74 @@
     "question": {
       "zh": "研究问题",
       "en": "Research question"
+    },
+    "purpose": {
+      "zh": "目的",
+      "en": "Purpose"
+    },
+    "hypothesis": {
+      "zh": "假设",
+      "en": "Hypothesis"
+    },
+    "steps": {
+      "zh": "步骤",
+      "en": "Steps"
+    },
+    "stepsHint": {
+      "zh": "步骤、环境与种子都只是记录，不执行实验程序。",
+      "en": "Steps, environments and seeds are recorded only; nothing is executed."
+    },
+    "planRuns": {
+      "zh": "这套方案下的运行",
+      "en": "Runs for this plan"
+    },
+    "planRunsHint": {
+      "zh": "这里只列出以这条研究记录为方案的运行；新建的运行从「计划中」开始，在运行记录卡里继续填写。",
+      "en": "Lists runs that use this research note as their plan; a new run starts as planned and is filled in on the run records card."
+    },
+    "planRunsEmpty": {
+      "zh": "这套方案还没有运行记录。",
+      "en": "No runs for this plan yet."
+    },
+    "newRun": {
+      "zh": "新建运行",
+      "en": "New run"
+    },
+    "creatingRun": {
+      "zh": "正在新建运行…",
+      "en": "Creating a run…"
+    },
+    "runCreated": {
+      "zh": "已新建一条计划中的运行。",
+      "en": "Created a planned run."
+    },
+    "runCreateFailed": {
+      "zh": "新建运行失败",
+      "en": "Could not create the run"
+    },
+    "runsFailed": {
+      "zh": "运行列表读取失败",
+      "en": "Runs unavailable"
+    },
+    "runPlanned": {
+      "zh": "计划中",
+      "en": "Planned"
+    },
+    "runRunning": {
+      "zh": "运行中",
+      "en": "Running"
+    },
+    "runSucceeded": {
+      "zh": "成功",
+      "en": "Succeeded"
+    },
+    "runFailed": {
+      "zh": "失败",
+      "en": "Failed"
+    },
+    "runCancelled": {
+      "zh": "已取消",
+      "en": "Cancelled"
     },
     "environment": {
       "zh": "环境",

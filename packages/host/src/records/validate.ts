@@ -14,6 +14,10 @@ import type {
   RecordRef,
   ResearchEntry,
   ResearchMethod,
+  RunCode,
+  RunDataset,
+  RunResult,
+  RunStatus,
   StageEntry,
 } from '@dsh-scholar-board/contracts'
 import { RECORDS_FORMAT, RECORDS_LIMITS, RECORD_KINDS, isOpenableUrl } from '@dsh-scholar-board/contracts'
@@ -54,12 +58,13 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   action: ['title', 'status', 'due', 'source', 'sourceEntry', 'related', 'blockedNote', 'doneNote', 'materials'],
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials', 'figures', 'submissions', 'revisions'],
   literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'related', 'materials'],
-  research: ['title', 'method', 'question', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials'],
+  research: ['title', 'method', 'question', 'purpose', 'hypothesis', 'steps', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials'],
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
   project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
   course: ['title', 'term', 'code', 'teacher', 'schedule', 'notes', 'work', 'related', 'materials'],
   chore: ['title', 'category', 'status', 'due', 'note', 'related', 'materials'],
   topic: ['title', 'question', 'goal', 'hypothesis', 'judgment', 'nextStep', 'questions', 'related', 'materials'],
+  run: ['title', 'plan', 'status', 'code', 'datasets', 'checkpoints', 'config', 'environment', 'seed', 'evaluation', 'startedAt', 'endedAt', 'metrics', 'artifacts', 'failure', 'note', 'results', 'related', 'materials'],
 }
 
 /** 每种记录允许指向的引用类型。 */
@@ -74,6 +79,7 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   course: RECORD_KINDS,
   chore: RECORD_KINDS,
   topic: RECORD_KINDS,
+  run: RECORD_KINDS,
 }
 
 /**
@@ -174,7 +180,131 @@ function entriesOf(value: unknown, field: string): ResearchEntry[] | null {
       if ([...entry.unit.trim()].length > RECORDS_LIMITS.unitLength) fail(`${field}[${String(index)}].unit 最多 ${String(RECORDS_LIMITS.unitLength)} 个字符`)
     }
     const unit = entry.unit === undefined ? null : textOf(entry.unit, `${field}[${String(index)}].unit`)
-    return { name, value: quantity, ...(unit === null ? {} : { unit }) }
+    const definition = entry.definition === undefined ? null : textOf(entry.definition, `${field}[${String(index)}].definition`)
+    return { name, value: quantity, ...(unit === null ? {} : { unit }), ...(definition === null ? {} : { definition }) }
+  })
+}
+
+/** 运行的五个状态；不认识的值直接拒绝。 */
+export const RUN_STATUSES: readonly RunStatus[] = ['planned', 'running', 'succeeded', 'failed', 'cancelled']
+
+/**
+ * 运行状态：只认五个明确的值。
+ *
+ * @param value - 外来值。
+ * @returns 状态。
+ */
+function runStatusOf(value: unknown): RunStatus {
+  if (typeof value !== 'string' || !RUN_STATUSES.includes(value as RunStatus)) fail(`status 只能是 ${RUN_STATUSES.join('、')}`)
+  return value as RunStatus
+}
+
+/**
+ * 运行时间：可留空；填了要是能解析的时间字符串，统一存成 UTC。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns ISO 时间；未填时是 `null`。
+ */
+function runTimeOf(value: unknown, field: string): string | null {
+  if (value === null) return null
+  if (typeof value !== 'string' || value.trim() === '') fail(`${field} 要是时间字符串`)
+  const stamp = Date.parse(value)
+  if (Number.isNaN(stamp)) fail(`${field} 不是可识别的时间`)
+  return new Date(stamp).toISOString()
+}
+
+/**
+ * 运行的代码来源：仓库与提交都可留空。
+ *
+ * @param value - 外来值。
+ * @returns 代码来源；未填时是 `null`。
+ */
+function runCodeOf(value: unknown): RunCode | null {
+  if (value === null) return null
+  if (!isRecord(value)) fail('code 要写成 { repository?, commit? }')
+  const repository = value.repository === undefined ? null : textOf(value.repository, 'code.repository')
+  const commit = value.commit === undefined ? null : textOf(value.commit, 'code.commit')
+  return { ...(repository === null ? {} : { repository }), ...(commit === null ? {} : { commit }) }
+}
+
+/**
+ * 运行用到的数据集：名称必填，划分与版本可留空，id 唯一。
+ *
+ * @param value - 外来值。
+ * @returns 数据集表；未填时是 `null`。
+ */
+function runDatasetsOf(value: unknown): RunDataset[] | null {
+  if (value === null) return null
+  if (!Array.isArray(value)) fail('datasets 要是数组')
+  if (value.length > RECORDS_LIMITS.runDatasets) fail(`datasets 最多 ${String(RECORDS_LIMITS.runDatasets)} 项`)
+  const seen = new Set<string>()
+  return value.map((entry, index) => {
+    if (!isRecord(entry)) fail(`datasets[${String(index)}] 要写成 { id, name, split?, version? }`)
+    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`datasets[${String(index)}].id 不合法`)
+    if (seen.has(entry.id)) fail('datasets 里的 id 重复')
+    seen.add(entry.id)
+    const name = titleOf(entry.name, `datasets[${String(index)}].name`)
+    const split = entry.split === undefined ? null : textOf(entry.split, `datasets[${String(index)}].split`)
+    const version = entry.version === undefined ? null : textOf(entry.version, `datasets[${String(index)}].version`)
+    return { id: entry.id, name, ...(split === null ? {} : { split }), ...(version === null ? {} : { version }) }
+  })
+}
+
+/**
+ * 运行结果：单次观测或统计汇总；汇总缺来源时必须显式标记手工汇总。
+ *
+ * @param value - 外来值。
+ * @returns 结果表；未填时是 `null`。
+ */
+function runResultsOf(value: unknown): RunResult[] | null {
+  if (value === null) return null
+  if (!Array.isArray(value)) fail('results 要是数组')
+  if (value.length > RECORDS_LIMITS.runResults) fail(`results 最多 ${String(RECORDS_LIMITS.runResults)} 项`)
+  const seen = new Set<string>()
+  return value.map((entry, index) => {
+    const at = `results[${String(index)}]`
+    if (!isRecord(entry)) fail(`${at} 要写成 { id, kind, text }`)
+    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${at}.id 不合法`)
+    if (seen.has(entry.id)) fail('results 里的 id 重复')
+    seen.add(entry.id)
+    if (entry.kind !== 'single' && entry.kind !== 'aggregate') fail(`${at}.kind 只能是 single 或 aggregate`)
+    if (typeof entry.text !== 'string') fail(`${at}.text 要是文字`)
+    const text = entry.text.trim()
+    if (text === '') fail(`${at}.text 不能是空的`)
+    if ([...text].length > RECORDS_LIMITS.runResultText) fail(`${at}.text 最多 ${String(RECORDS_LIMITS.runResultText)} 个字符`)
+    const out: RunResult = { id: entry.id, kind: entry.kind, text }
+    if (entry.sources !== undefined) {
+      if (!Array.isArray(entry.sources)) fail(`${at}.sources 要是数组`)
+      if (entry.sources.length > RECORDS_LIMITS.runResultSources) fail(`${at}.sources 最多 ${String(RECORDS_LIMITS.runResultSources)} 项`)
+      const ids = new Set<string>()
+      for (const source of entry.sources) {
+        if (typeof source !== 'string' || source === '' || source.length > 64) fail(`${at}.sources 的 id 不合法`)
+        if (ids.has(source)) fail(`${at}.sources 的 id 重复`)
+        ids.add(source)
+      }
+      if (ids.size > 0) out.sources = [...ids]
+    }
+    if (entry.method !== undefined) {
+      const method = textOf(entry.method, `${at}.method`)
+      if (method !== null && [...method].length > RECORDS_LIMITS.runMethodLength) fail(`${at}.method 最多 ${String(RECORDS_LIMITS.runMethodLength)} 个字符`)
+      if (method !== null) out.method = method
+    }
+    if (entry.sampleSize !== undefined && entry.sampleSize !== null) {
+      if (typeof entry.sampleSize !== 'number' || !Number.isInteger(entry.sampleSize) || entry.sampleSize < 0) fail(`${at}.sampleSize 要是非负整数`)
+      out.sampleSize = entry.sampleSize
+    }
+    if (entry.dispersion !== undefined) {
+      const dispersion = textOf(entry.dispersion, `${at}.dispersion`)
+      if (dispersion !== null && [...dispersion].length > RECORDS_LIMITS.runDispersionLength) fail(`${at}.dispersion 最多 ${String(RECORDS_LIMITS.runDispersionLength)} 个字符`)
+      if (dispersion !== null) out.dispersion = dispersion
+    }
+    if (entry.manual === true) {
+      if (out.sources !== undefined) fail(`${at} 有来源运行时不需要标记手工汇总`)
+      out.manual = true
+    }
+    if (out.kind === 'aggregate' && out.sources === undefined && out.manual !== true) fail(`${at} 的汇总没有来源运行时要标记 manual`)
+    return out
   })
 }
 
@@ -229,7 +359,9 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.summary !== undefined) out.summary = textOf(input.summary, 'summary')
   if (input.question !== undefined) out.question = textOf(input.question, 'question')
   if (input.goal !== undefined) out.goal = textOf(input.goal, 'goal')
+  if (input.purpose !== undefined) out.purpose = textOf(input.purpose, 'purpose')
   if (input.hypothesis !== undefined) out.hypothesis = textOf(input.hypothesis, 'hypothesis')
+  if (input.steps !== undefined) out.steps = textOf(input.steps, 'steps')
   if (input.judgment !== undefined) out.judgment = textOf(input.judgment, 'judgment')
   if (input.nextStep !== undefined) out.nextStep = textOf(input.nextStep, 'nextStep')
   if (input.blockers !== undefined) out.blockers = textOf(input.blockers, 'blockers')
@@ -244,18 +376,34 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   }
   if (input.environment !== undefined) out.environment = textOf(input.environment, 'environment')
   if (input.seed !== undefined) out.seed = textOf(input.seed, 'seed')
+  if (input.evaluation !== undefined) out.evaluation = textOf(input.evaluation, 'evaluation')
+  if (input.failure !== undefined) out.failure = textOf(input.failure, 'failure')
   if (input.parameters !== undefined) out.parameters = entriesOf(input.parameters, 'parameters')
+  if (input.checkpoints !== undefined) out.checkpoints = entriesOf(input.checkpoints, 'checkpoints')
+  if (input.config !== undefined) out.config = entriesOf(input.config, 'config')
   if (input.metrics !== undefined) out.metrics = entriesOf(input.metrics, 'metrics')
   if (input.conclusion !== undefined) out.conclusion = textOf(input.conclusion, 'conclusion')
   if (input.blockedNote !== undefined) out.blockedNote = textOf(input.blockedNote, 'blockedNote')
   if (input.doneNote !== undefined) out.doneNote = textOf(input.doneNote, 'doneNote')
   if (input.related !== undefined) out.related = refsOf(input.related, 'related', REFERRABLE[kind])
   if (input.materials !== undefined) out.materials = materialsOf(input.materials, 'materials')
+  if (input.artifacts !== undefined) out.artifacts = materialsOf(input.artifacts, 'artifacts')
+  if (input.plan !== undefined) {
+    if (input.plan === null) out.plan = null
+    else {
+      if (!isRecord(input.plan) || typeof input.plan.id !== 'string' || input.plan.id === '' || input.plan.id.length > 64) fail('plan 要写成 { kind: "research", id }')
+      if (input.plan.kind !== 'research') fail('plan.kind 只能是 research')
+      out.plan = { kind: 'research', id: input.plan.id }
+    }
+  }
+  if (input.datasets !== undefined) out.datasets = runDatasetsOf(input.datasets)
+  if (input.startedAt !== undefined) out.startedAt = runTimeOf(input.startedAt, 'startedAt')
+  if (input.endedAt !== undefined) out.endedAt = runTimeOf(input.endedAt, 'endedAt')
   if (input.figures !== undefined) out.figures = figuresOf(input.figures, 'figures')
   if (input.submissions !== undefined) out.submissions = submissionsOf(input.submissions, 'submissions')
   if (input.revisions !== undefined) out.revisions = revisionsOf(input.revisions, 'revisions')
   if (input.chapters !== undefined) out.chapters = chaptersOf(input.chapters, 'chapters')
-  if (input.results !== undefined) out.results = thesisResultsOf(input.results, 'results')
+  if (input.results !== undefined) out.results = kind === 'run' ? runResultsOf(input.results) : thesisResultsOf(input.results, 'results')
   if (input.experiments !== undefined) out.experiments = experimentsOf(input.experiments, 'experiments')
   if (input.milestones !== undefined) out.milestones = kind === 'project' ? projectMilestonesOf(input.milestones, 'milestones') : thesisMilestonesOf(input.milestones, 'milestones')
   if (input.tasks !== undefined) out.tasks = projectTasksOf(input.tasks, 'tasks')
@@ -264,7 +412,7 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.issues !== undefined) out.issues = projectIssuesOf(input.issues, 'issues')
   if (input.term !== undefined || (kind === 'course' && mode === 'create')) out.term = courseTermOf(input.term, 'term')
   if (input.work !== undefined) out.work = courseWorkOf(input.work, 'work')
-  if (input.code !== undefined) out.code = textOf(input.code, 'code')
+  if (input.code !== undefined) out.code = kind === 'run' ? runCodeOf(input.code) : textOf(input.code, 'code')
   if (input.teacher !== undefined) out.teacher = textOf(input.teacher, 'teacher')
   if (input.schedule !== undefined) out.schedule = textOf(input.schedule, 'schedule')
   if (input.notes !== undefined) out.notes = textOf(input.notes, 'notes')
@@ -292,6 +440,7 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
     fail('来源是课题时要写明问题条目 sourceEntry')
   }
   if (kind === 'action' && (input.status !== undefined || mode === 'create')) out.status = statusOf(input.status)
+  if (kind === 'run' && (input.status !== undefined || mode === 'create')) out.status = runStatusOf(input.status)
   if (kind === 'manuscript' && (input.stage !== undefined || mode === 'create')) out.stage = stageOf(input.stage)
   if (kind === 'literature' && (input.stage !== undefined || mode === 'create')) out.stage = literatureStageOf(input.stage)
   if (kind === 'research' && (input.method !== undefined || mode === 'create')) out.method = researchMethodOf(input.method)
@@ -401,6 +550,53 @@ export function storedProblem(value: unknown): string | null {
   if (value.kind === 'topic') {
     const arraysProblem = topicArraysProblem(value)
     if (arraysProblem !== null) return arraysProblem
+  }
+  if (value.kind === 'run') {
+    if (typeof value.status !== 'string' || !RUN_STATUSES.includes(value.status as RunStatus)) return 'status 不认识'
+    if (value.plan !== undefined) {
+      if (!isRecord(value.plan) || typeof value.plan.id !== 'string' || value.plan.id === '' || value.plan.kind !== 'research') return 'plan 不合法'
+    }
+    if (value.code !== undefined) {
+      if (!isRecord(value.code)) return 'code 不合法'
+      for (const field of ['repository', 'commit'] as const) {
+        if (value.code[field] !== undefined && typeof value.code[field] !== 'string') return `code.${field} 不合法`
+      }
+    }
+    for (const field of ['datasets'] as const) {
+      if (value[field] === undefined) continue
+      if (!Array.isArray(value[field])) return `${field} 不是数组`
+      const ids = new Set<string>()
+      for (const entry of value[field] as unknown[]) {
+        if (!isRecord(entry) || typeof entry.id !== 'string' || entry.id === '' || typeof entry.name !== 'string' || entry.name === '') return `${field} 的条目缺少 id 或名称`
+        if (ids.has(entry.id)) return `${field} 的 id 重复`
+        ids.add(entry.id)
+      }
+    }
+    for (const field of ['checkpoints', 'config', 'metrics'] as const) {
+      if (value[field] === undefined) continue
+      if (!Array.isArray(value[field])) return `${field} 不是数组`
+      for (const entry of value[field] as unknown[]) {
+        if (!isRecord(entry) || typeof entry.name !== 'string' || entry.name === '' || typeof entry.value !== 'string' || entry.value === '') return `${field} 的条目缺少名称或数值`
+        if (entry.unit !== undefined && (typeof entry.unit !== 'string' || entry.unit === '')) return `${field} 的单位不合法`
+        if (entry.definition !== undefined && (typeof entry.definition !== 'string' || entry.definition === '')) return `${field} 的定义不合法`
+      }
+    }
+    for (const field of ['startedAt', 'endedAt'] as const) {
+      if (value[field] !== undefined && (typeof value[field] !== 'string' || Number.isNaN(Date.parse(value[field] as string)))) return `${field} 不合法`
+    }
+    if (value.results !== undefined) {
+      if (!Array.isArray(value.results)) return 'results 不是数组'
+      const ids = new Set<string>()
+      for (const entry of value.results as unknown[]) {
+        if (!isRecord(entry) || typeof entry.id !== 'string' || entry.id === '') return 'results 的条目缺少 id'
+        if (ids.has(entry.id)) return 'results 的 id 重复'
+        ids.add(entry.id)
+        if (entry.kind !== 'single' && entry.kind !== 'aggregate') return 'results 的 kind 不认识'
+        if (typeof entry.text !== 'string' || entry.text.trim() === '') return 'results 的条目缺少内容'
+        if (entry.sources !== undefined && (!Array.isArray(entry.sources) || entry.sources.some(source => typeof source !== 'string' || source === ''))) return 'results 的 sources 不合法'
+        if (entry.kind === 'aggregate' && (entry.sources === undefined || entry.sources.length === 0) && entry.manual !== true) return 'results 的汇总没有来源运行时要标记 manual'
+      }
+    }
   }
   return null
 }
