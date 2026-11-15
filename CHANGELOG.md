@@ -6,6 +6,16 @@
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">问题修复</h3>
+
+- 发布管线沿用 CHANGELOG 里已有的版本段：打包的版本已经由发布提交写进 CHANGELOG 时，不再插一个只有占位说明的空段，发布说明取完整原文；这一版还有待发布条目时直接报错，不丢条目。
+
+<h3 id="en-unreleased">Bug Fixes</h3>
+
+- The release pipeline reuses the version section already in the CHANGELOG: when the packaged version was recorded by the release commit, it no longer prepends a placeholder-only section and the release notes use the full text; pending fragments for an already recorded version now fail the run instead of being dropped.
+
 ## [0.5.0] - 2026-11-15
 
 [中文](#cn-0.5.0) | [English](#en-0.5.0)

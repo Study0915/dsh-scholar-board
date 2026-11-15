@@ -16,6 +16,7 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import semver from 'semver'
+import { findSection, releaseNotesPlan } from './release-notes.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const PACKAGE = path.join(ROOT, 'package.json')
@@ -116,11 +117,9 @@ function pendingChanges() {
  * @returns Markdown 正文。
  */
 function notesOf(version) {
-  const text = fs.readFileSync(CHANGELOG, 'utf8')
-  const start = text.indexOf(`## [${version}] - `)
-  if (start === -1) throw new Error(`release: CHANGELOG.md 里没有 ${version} 的段`)
-  const next = text.indexOf('\n## [', start + 1)
-  return text.slice(start, next === -1 ? undefined : next).trim()
+  const section = findSection(fs.readFileSync(CHANGELOG, 'utf8'), version)
+  if (section === undefined) throw new Error(`release: CHANGELOG.md 里没有 ${version} 的段`)
+  return section
 }
 
 /** 包在 GitHub 上的地址，用来写安装命令。 */
@@ -147,14 +146,16 @@ fs.mkdirSync(out, { recursive: true })
 
 const noteZh = argument('--note-zh')
 const noteEn = argument('--note-en')
-if (pendingChanges() === 0) {
+const pending = pendingChanges()
+const plan = releaseNotesPlan(fs.readFileSync(CHANGELOG, 'utf8'), version, pending)
+if (plan.reuse === false && pending === 0) {
   if (noteZh === undefined || noteEn === undefined) throw new Error('release: docs/changes/ 里没有待发布条目；用 --note-zh 与 --note-en 说明这次发布')
   addNoteFragment(date, noteZh, noteEn)
 }
 
 writePackageVersion(version)
 writeCompatibility(version)
-run(process.execPath, [path.join(ROOT, 'scripts', 'changelog.mjs'), '--release', version, '--date', date])
+if (plan.reuse === false) run(process.execPath, [path.join(ROOT, 'scripts', 'changelog.mjs'), '--release', version, '--date', date])
 
 if (!process.argv.includes('--no-build')) run(process.execPath, [path.join(ROOT, 'scripts', 'build.mjs')])
 run('npm', ['pack', '--pack-destination', out])
