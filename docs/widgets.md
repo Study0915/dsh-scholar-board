@@ -13,10 +13,11 @@ style.css       样式，只用运行时套件的令牌
 main.js         可选
 samples.json    可选，每个尺寸族的样例
 scripts         可选，按顺序排在 main.js 之前的额外脚本
+styles          可选，接在 style.css 之后的额外样式表
 vendor/         可选，随组件发布的第三方库（各自的许可照原样保留）
 ```
 
-`widget.json` 写名字与尺寸，加 `index.html`、`style.css`，需要脚本时加 `main.js`。
+`widget.json` 写名字与尺寸，加 `index.html`、`style.css`，需要脚本时加 `main.js`。组件大到一份样式表放不下时，把 `styles` 列成组件目录里的文件，它们按顺序接在 `style.css` 后面，同一个文档里照常层叠。
 
 ## 沙箱
 

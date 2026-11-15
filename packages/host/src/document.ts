@@ -139,6 +139,13 @@ export function buildDocument(record: WidgetRecord, assets: DocumentAssets, nonc
   const name = record.manifest.id
   const markup = inlineAssets(record.files.get('index.html')?.toString('utf8') ?? '', record, `${name}/index.html`)
   const style = inlineAssets(record.files.get('style.css')?.toString('utf8') ?? '', record, `${name}/style.css`)
+  // 组件声明的额外样式表：接在 style.css 之后，后写的规则照常盖住前面的。
+  const extraStyles = (record.manifest.styles ?? []).map((path) => {
+    const content = record.files.get(path)
+    if (content === undefined) throw new Error(`组件 ${name} 声明的样式 ${path} 不在组件目录里`)
+    const css = inlineAssets(content.toString('utf8'), record, `${name}/${path}`)
+    return `<style>${styleSafe(css, `${name}/${path}`)}</style>`
+  })
   const rawScript = record.files.get('main.js')?.toString('utf8')
   const script = rawScript === undefined ? undefined : inlineAssets(rawScript, record, `${name}/main.js`)
   const libs = (record.manifest.libs ?? []).map((id) => {
@@ -162,6 +169,7 @@ export function buildDocument(record: WidgetRecord, assets: DocumentAssets, nonc
 <style>${styleSafe(assets.tokensCss, '组件运行时令牌')}</style>
 <style>${styleSafe(assets.suiteCss, '组件套件')}</style>
 <style>${styleSafe(style, `${name}/style.css`)}</style>
+${extraStyles.join('\n')}
 </head>
 <body>
 ${markup}

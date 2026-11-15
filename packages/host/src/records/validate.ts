@@ -62,7 +62,7 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   meeting: ['title', 'date', 'topics', 'feedback', 'openQuestions', 'related', 'materials', 'derivedFrom'],
   action: ['title', 'status', 'due', 'source', 'sourceEntry', 'related', 'blockedNote', 'doneNote', 'materials'],
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials', 'figures', 'submissions', 'revisions'],
-  literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'format', 'doi', 'arxivId', 'arxivVersion', 'versions', 'reading', 'related', 'materials'],
+  literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'format', 'doi', 'arxivId', 'arxivVersion', 'versions', 'reading', 'external', 'related', 'materials'],
   research: ['title', 'method', 'question', 'purpose', 'hypothesis', 'steps', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'conclusionBasis', 'conclusionScope', 'conclusionEvidence', 'related', 'materials', 'template'],
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
   project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],

@@ -5,7 +5,7 @@
  */
 import type { MaterialRef } from '@dsh-scholar-board/contracts'
 import type { Due } from '@dsh-scholar-board/contracts/campus'
-import { RECORDS_LIMITS, isOpenableUrl } from '@dsh-scholar-board/contracts'
+import { RECORDS_LIMITS, isLocalPath, isOpenableUrl } from '@dsh-scholar-board/contracts'
 import { validZone } from '@dsh-scholar-board/model'
 import { isRecord } from '../guards'
 import { Refusal } from '../refusal'
@@ -84,7 +84,9 @@ export function dueOf(value: unknown, field: string): Due | null {
 }
 
 /**
- * 一组材料引用：地址只收 http/https，记录内局部键不重复。
+ * 一组材料引用：网页给地址、本地给路径，记录内局部键不重复。
+ *
+ * 旧记录只有 `url`，按网页读；本地路径只校验文本形状，不检查磁盘、不执行。
  *
  * @param value - 外来值。
  * @param field - 出错时指人。
@@ -96,15 +98,70 @@ export function materialsOf(value: unknown, field: string): MaterialRef[] | null
   if (value.length > RECORDS_LIMITS.materials) fail(`${field} 最多 ${String(RECORDS_LIMITS.materials)} 项`)
   const seen = new Set<string>()
   return value.map((entry, index) => {
-    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { id, url, title }`)
+    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { id, title, kind, url 或 path }`)
     if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
     if (seen.has(entry.id)) fail(`${field} 里的材料 id 重复`)
     seen.add(entry.id)
-    if (!isOpenableUrl(entry.url)) fail(`${field}[${String(index)}].url 只收 http/https 的完整地址`)
     const title = titleOf(entry.title, `${field}[${String(index)}].title`)
+    const declared = entry.kind
+    if (declared !== undefined && declared !== 'web' && declared !== 'local') fail(`${field}[${String(index)}].kind 只能是 web 或 local`)
+    const kind = declared === 'local' ? 'local' : declared === 'web' ? 'web' : typeof entry.url === 'string' && entry.url !== '' ? 'web' : 'local'
+    let url: string | undefined
+    let path: string | undefined
+    if (kind === 'web') {
+      if (!isOpenableUrl(entry.url)) fail(`${field}[${String(index)}].url 只收 http/https 的完整地址`)
+      if (entry.path !== undefined && entry.path !== '') fail(`${field}[${String(index)}].path 只给本地材料`)
+      url = entry.url
+    } else {
+      if (!isLocalPath(entry.path)) fail(`${field}[${String(index)}].path 要写成一行本地路径（不含控制字符，最多 ${String(RECORDS_LIMITS.materialPathLength)} 个字符）`)
+      if (entry.url !== undefined && entry.url !== '') fail(`${field}[${String(index)}].url 只给网页材料`)
+      path = entry.path.trim()
+    }
     const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
-    return { id: entry.id, url: entry.url, title, ...(note === null ? {} : { note }) }
+    const purpose = boundedTextOf(entry.purpose, `${field}[${String(index)}].purpose`, RECORDS_LIMITS.materialPurposeLength)
+    const device = boundedTextOf(entry.device, `${field}[${String(index)}].device`, RECORDS_LIMITS.materialDeviceLength)
+    const version = boundedTextOf(entry.version, `${field}[${String(index)}].version`, RECORDS_LIMITS.materialVersionLength)
+    const checkedAt = entry.checkedAt === undefined || entry.checkedAt === null ? null : dateTextOf(entry.checkedAt, `${field}[${String(index)}].checkedAt`)
+    return {
+      id: entry.id,
+      kind,
+      title,
+      ...(url === undefined ? {} : { url }),
+      ...(path === undefined ? {} : { path }),
+      ...(note === null ? {} : { note }),
+      ...(purpose === null ? {} : { purpose }),
+      ...(device === null ? {} : { device }),
+      ...(version === null ? {} : { version }),
+      ...(checkedAt === null ? {} : { checkedAt }),
+    }
   })
+}
+
+/**
+ * 有长度上限的可选文字；去掉首尾空白后按 Unicode 码点计。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @param limit - 最多几个字符。
+ * @returns 文字；未填时是 `null`。
+ */
+function boundedTextOf(value: unknown, field: string, limit: number): string | null {
+  const text = value === undefined ? null : textOf(value, field)
+  if (text === null) return null
+  if ([...text].length > limit) fail(`${field} 最多 ${String(limit)} 个字符`)
+  return text
+}
+
+/**
+ * 一行日期文本：`YYYY-MM-DD`，不换算时区。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns 原样的日期文本。
+ */
+function dateTextOf(value: unknown, field: string): string {
+  if (typeof value !== 'string' || !DATE_PATTERN.test(value)) fail(`${field} 要写成 YYYY-MM-DD`)
+  return value
 }
 
 /**

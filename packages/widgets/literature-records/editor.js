@@ -48,6 +48,82 @@
       ensureSaved: function () { return ensureSaved() },
       adopt: function (record) { adoptRecord(record) }
     })
+    var materials = root.createLiteratureMaterials({
+      nodes: nodes,
+      t: t,
+      pure: pure,
+      view: view,
+      deviceOf: ctx.deviceOf,
+      count: function () { return app.materials.length },
+      onAdd: function (material) {
+        app.materials.push(material)
+        renderMaterials()
+        onInput()
+      }
+    })
+    var doi = root.createLiteratureDoiPanel({
+      widget: widget,
+      live: live,
+      t: t,
+      pure: pure,
+      nodes: nodes,
+      current: currentValues,
+      apply: applyField
+    })
+    var zotero = root.createLiteratureZoteroPanel({
+      widget: widget,
+      live: live,
+      t: t,
+      pure: pure,
+      nodes: nodes,
+      deviceOf: ctx.deviceOf,
+      current: currentValues,
+      onImport: importZotero
+    })
+
+    /** 表单里参与 DOI / Zotero 采用的几项当前值。 */
+    function currentValues() {
+      return {
+        title: nodes.titleInput.value,
+        authors: nodes.authorsInput.value,
+        venue: nodes.venueInput.value,
+        year: nodes.yearInput.value,
+        url: nodes.urlInput.value,
+        doi: nodes.doiInput.value
+      }
+    }
+
+    /** 采用一个候选字段；只改这一项，别的输入与笔记不动。 */
+    function applyField(field, value) {
+      if (field === 'title') nodes.titleInput.value = value
+      else if (field === 'authors') nodes.authorsInput.value = value
+      else if (field === 'venue') nodes.venueInput.value = value
+      else if (field === 'year') nodes.yearInput.value = value
+      else if (field === 'url') nodes.urlInput.value = value
+      else return
+      onInput()
+    }
+
+    /** Zotero 导入：只补空着的元数据，笔记、问题与阅读记录保持原样。 */
+    function importZotero(item, library, fields) {
+      var names = ['title', 'authors', 'venue', 'year', 'doi', 'url']
+      for (var at = 0; at < names.length; at += 1) {
+        var name = names[at]
+        var candidate = typeof fields[name] === 'string' ? fields[name].trim() : ''
+        if (candidate === '') continue
+        var input = name === 'title' ? nodes.titleInput
+          : name === 'authors' ? nodes.authorsInput
+            : name === 'venue' ? nodes.venueInput
+              : name === 'year' ? nodes.yearInput
+                : name === 'doi' ? nodes.doiInput
+                  : nodes.urlInput
+        if (input.value.trim() === '') input.value = candidate
+      }
+      var ref = pure.zoteroExternal(library, item)
+      if (ref !== null) app.external = pure.externalWith(app.external, ref)
+      onInput()
+      ctx.setStatus(t('zoteroImportedDetail'), 'ok')
+    }
 
     function formOf() {
       return {
@@ -66,7 +142,8 @@
         understanding: nodes.understanding.value,
         questions: nodes.questions.value,
         reading: reading.value(),
-        materials: app.materials
+        materials: app.materials,
+        external: app.external
       }
     }
 
@@ -93,6 +170,7 @@
       nodes.questions.value = typeof form.questions === 'string' ? form.questions : ''
       reading.load(form.reading)
       if (nodes.urlError !== null) nodes.urlError.textContent = ''
+      doi.reset()
       renderMaterials()
       ctx.setStatus('', 'neutral')
       if (nodes.detailHint !== null) nodes.detailHint.hidden = true
@@ -122,8 +200,9 @@
       nodes.questions.disabled = trashed
       nodes.materialUrl.disabled = trashed
       nodes.materialTitle.disabled = trashed
-      var add = ctx.card.querySelector('[data-action="add-material"]')
-      if (add !== null) add.disabled = trashed
+      materials.setReadonly(trashed)
+      if (nodes.doiLookup !== null) nodes.doiLookup.disabled = trashed
+      if (nodes.zoteroOpen !== null) nodes.zoteroOpen.disabled = trashed
       var addReading = ctx.card.querySelector('[data-action="add-reading"]')
       if (addReading !== null) addReading.disabled = trashed
       reading.setReadonly(trashed)
@@ -156,7 +235,8 @@
         versions: Array.isArray(record.versions) ? record.versions : [],
         understanding: record.understanding,
         questions: record.questions,
-        reading: record.reading
+        reading: record.reading,
+        external: record.external
       }
     }
 
@@ -168,6 +248,7 @@
       app.dirty = false
       app.saving = false
       app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
+      app.external = Array.isArray(record.external) ? record.external.slice() : []
       fillForm(formOfRecord(record))
       showDetail(record, true)
       restoreDraft(record.id).then(function (restored) {
@@ -183,7 +264,8 @@
       app.dirty = false
       app.saving = false
       app.materials = []
-      fillForm({ title: '', authors: '', venue: '', year: null, url: '', stage: 'queued', format: '', doi: '', arxivId: '', arxivVersion: '', versions: [], understanding: '', questions: '', reading: [] })
+      app.external = []
+      fillForm({ title: '', authors: '', venue: '', year: null, url: '', stage: 'queued', format: '', doi: '', arxivId: '', arxivVersion: '', versions: [], understanding: '', questions: '', reading: [], external: [] })
       showDetail(null, true)
       restoreDraft('new').then(function (restored) {
         if (restored) ctx.setStatus(t('draftRestored'), 'neutral')
@@ -282,6 +364,8 @@
         nodes.questions.value = typeof form.questions === 'string' ? form.questions : ''
         reading.load(form.reading)
         app.materials = Array.isArray(form.materials) ? form.materials : []
+        app.external = Array.isArray(form.external) ? form.external : []
+        doi.reset()
         renderMaterials()
         app.dirty = true
         return true
@@ -333,7 +417,8 @@
         understanding: nodes.understanding.value.trim() === '' ? null : nodes.understanding.value.trim(),
         questions: nodes.questions.value.trim() === '' ? null : nodes.questions.value.trim(),
         reading: reading.value(),
-        materials: app.materials.length === 0 ? null : app.materials
+        materials: app.materials.length === 0 ? null : app.materials,
+        external: app.external.length === 0 ? null : app.external
       }
       var expected = app.baseline === null ? null : app.baseline.revision
       fields.related = relations.value().length ? relations.value() : null
@@ -361,6 +446,7 @@
         ui.openId = record.id
         ctx.persist({ openId: record.id, draftIds: ui.draftIds })
         app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
+        app.external = Array.isArray(record.external) ? record.external.slice() : []
         renderMaterials()
         fillIdentifiers(record)
         reading.load(record.reading)
@@ -408,6 +494,7 @@
       ui.openId = record.id
       ctx.persist({ openId: record.id })
       app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
+      app.external = Array.isArray(record.external) ? record.external.slice() : []
       fillForm(formOfRecord(record))
       showDetail(record, false)
       ctx.refreshList()
@@ -448,6 +535,7 @@
       app.related = Array.isArray(latest.related) ? latest.related.slice() : []
       app.pendingLatest = null
       app.materials = Array.isArray(latest.materials) ? latest.materials.slice() : []
+      app.external = Array.isArray(latest.external) ? latest.external.slice() : []
       fillForm(formOfRecord(latest))
       app.dirty = false
       showDetail(latest, false)
@@ -461,30 +549,17 @@
       widget.open(url)
     }
 
+    /** 记录在回收站里时材料只读：不给添加，也不给移除。 */
+    function readonlyOf() {
+      return app.baseline !== null && typeof app.baseline.deletedAt === 'string'
+    }
+
     function renderMaterials() {
-      if (nodes.materials === null) return
-      var items = []
-      for (var at = 0; at < app.materials.length; at += 1) {
-        var material = app.materials[at]
-        if (material === null || typeof material !== 'object') continue
-        items.push(view.materialRow(material, t('removeMaterial')))
-      }
-      nodes.materials.replaceChildren.apply(nodes.materials, items)
+      materials.render(app.materials, readonlyOf())
     }
 
     function addMaterial() {
-      var url = nodes.materialUrl.value.trim()
-      var title = nodes.materialTitle.value.trim()
-      if (!pure.materialValid(url, title)) {
-        nodes.materialError.textContent = t('materialInvalid')
-        return
-      }
-      nodes.materialError.textContent = ''
-      app.materials.push({ id: 'm-' + String(Date.now()) + '-' + String(app.materials.length), url: url, title: title })
-      nodes.materialUrl.value = ''
-      nodes.materialTitle.value = ''
-      renderMaterials()
-      onInput()
+      materials.add()
     }
 
     function removeMaterial(id) {
@@ -509,7 +584,11 @@
       removeMaterial: removeMaterial,
       addReading: function () { reading.add() },
       reloadLatest: reloadLatest,
-      openSource: openSource
+      openSource: openSource,
+      lookupDoi: function () { doi.lookup() },
+      resetDoi: function () { doi.reset() },
+      openZotero: function () { zotero.open() },
+      closeZotero: function () { zotero.close() }
     }
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)

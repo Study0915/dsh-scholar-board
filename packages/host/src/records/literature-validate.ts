@@ -4,7 +4,7 @@
  * 标识按 `literature-identifiers` 的同一套规则规范化；写进来的值不合法时直接拒绝，
  * 读盘时只报告问题，不抛出。
  */
-import type { LiteratureFormat, ReadingEntry, RecordRef } from '@dsh-scholar-board/contracts'
+import type { ExternalSourceRef, LiteratureFormat, ReadingEntry, RecordRef } from '@dsh-scholar-board/contracts'
 import { LITERATURE_FORMATS, RECORDS_LIMITS, normalizeArxivId, normalizeArxivVersion, normalizeDoi } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
 import { dueOf, fail, textOf } from './fields'
@@ -78,6 +78,7 @@ export function literatureIdentifiersOf(input: Record<string, unknown>): Literat
 export interface LiteratureFields extends LiteratureIdentifiers {
   versions?: RecordRef[] | null
   reading?: ReadingEntry[] | null
+  external?: ExternalSourceRef[] | null
 }
 
 /**
@@ -90,7 +91,54 @@ export function literatureFieldsOf(input: Record<string, unknown>): LiteratureFi
   const out: LiteratureFields = { ...literatureIdentifiersOf(input) }
   if (input.versions !== undefined) out.versions = literatureVersionsOf(input.versions, 'versions')
   if (input.reading !== undefined) out.reading = readingEntriesOf(input.reading, 'reading')
+  if (input.external !== undefined) out.external = literatureExternalOf(input.external, 'external')
   return out
+}
+
+/** 外部来源里几段文本的长度上限。 */
+const EXTERNAL_TEXT_LIMIT = 120
+
+/**
+ * 外部来源：提供方、库、条目 key、接口版本与读取时间。
+ *
+ * 外部版本只说明这份元数据从哪读来，不参与记录自己的修订号。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns 外部来源；未填时是 `null`。
+ */
+export function literatureExternalOf(value: unknown, field: string): ExternalSourceRef[] | null {
+  if (value === null) return null
+  if (!Array.isArray(value)) fail(`${field} 要是数组`)
+  if (value.length > RECORDS_LIMITS.literatureExternal) fail(`${field} 最多 ${String(RECORDS_LIMITS.literatureExternal)} 项`)
+  const seen = new Set<string>()
+  return value.map((entry, index) => {
+    const at = `${field}[${String(index)}]`
+    if (!isRecord(entry)) fail(`${at} 要写成 { provider: 'zotero', library, itemKey, apiVersion, fetchedAt }`)
+    if (entry.provider !== 'zotero') fail(`${at}.provider 只能是 zotero`)
+    const library = externalText(entry.library, `${at}.library`)
+    const itemKey = externalText(entry.itemKey, `${at}.itemKey`)
+    const apiVersion = externalText(entry.apiVersion, `${at}.apiVersion`)
+    if (typeof entry.fetchedAt !== 'string' || Number.isNaN(Date.parse(entry.fetchedAt))) fail(`${at}.fetchedAt 要写成 ISO 时间`)
+    const key = `${library}\u0000${itemKey}`
+    if (seen.has(key)) fail(`${field} 里有重复的条目`)
+    seen.add(key)
+    return { provider: 'zotero', library, itemKey, apiVersion, fetchedAt: entry.fetchedAt }
+  })
+}
+
+/**
+ * 外部来源里的一段必填文本。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns 去空白后的文本。
+ */
+function externalText(value: unknown, field: string): string {
+  const text = textOf(value, field)
+  if (text === null) fail(`${field} 不能是空的`)
+  if ([...text].length > EXTERNAL_TEXT_LIMIT) fail(`${field} 最多 ${String(EXTERNAL_TEXT_LIMIT)} 个字符`)
+  return text
 }
 
 /**
@@ -185,6 +233,15 @@ export function literatureProblem(value: Record<string, unknown>): string | null
       if (!isRecord(entry) || typeof entry.id !== 'string' || entry.id === '') return 'reading 的条目 id 不合法'
       if (seen.has(entry.id)) return 'reading 里的条目 id 重复'
       seen.add(entry.id)
+    }
+  }
+  const external = value.external
+  if (external !== undefined) {
+    if (!Array.isArray(external) || external.length > RECORDS_LIMITS.literatureExternal) return 'external 不合法'
+    for (const entry of external as unknown[]) {
+      if (!isRecord(entry) || entry.provider !== 'zotero') return 'external 的来源不合法'
+      if (typeof entry.library !== 'string' || entry.library === '' || typeof entry.itemKey !== 'string' || entry.itemKey === '') return 'external 缺少库或条目'
+      if (typeof entry.apiVersion !== 'string' || entry.apiVersion === '' || typeof entry.fetchedAt !== 'string') return 'external 的接口版本或读取时间不合法'
     }
   }
   return null

@@ -314,6 +314,13 @@ export interface WidgetManifest {
    * 这些文件与 `main.js` 同处一个文档、同一个全局作用域，互相只能靠约定的全局名字通信。
    */
   scripts?: string[]
+  /**
+   * 组件目录里的额外样式表，按顺序接在 `style.css` 之后。
+   *
+   * 路径相对组件目录，如 `panels.css`；组件写到需要按职责拆开时用它，不必把全部样式塞进一份。
+   * 与 `style.css` 同一个文档、同一层叠顺序靠后者胜出，`@media` 等规则与平时一样生效。
+   */
+  styles?: string[]
   text?: Record<string, LocalizedText>
   /** 看板上的最小盒子（D16）。 */
   minBox?: WidgetMinBox
@@ -499,6 +506,7 @@ export const WIDGET_MANIFEST_SCHEMA = {
     },
     libs: { type: 'array', items: { type: 'string', minLength: 1 } },
     scripts: { type: 'array', items: { type: 'string', minLength: 1 } },
+    styles: { type: 'array', items: { type: 'string', minLength: 1 } },
     text: { type: 'object', additionalProperties: { $ref: '#/$defs/text' } },
     minBox: { $ref: '#/$defs/box' },
     defaultBox: { $ref: '#/$defs/box' },

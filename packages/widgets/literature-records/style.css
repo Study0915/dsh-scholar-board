@@ -338,63 +338,8 @@
   opacity: 0.6;
 }
 
-.lt__materials {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
+/* 材料、DOI 与 Zotero 面板的样式在 external.css；这里只留标题、列表与详情的骨架。 */
 
-.lt__material-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 0 0 var(--w-space-xs, 4px);
-  padding: 0;
-  list-style: none;
-}
-
-.lt__material {
-  display: flex;
-  align-items: center;
-  gap: var(--w-space-sm, 8px);
-  min-width: 0;
-}
-
-.lt__material-open {
-  flex: 1;
-  min-width: 0;
-  padding: 2px 0;
-  border: 0;
-  background: none;
-  color: var(--w-color-accent, #2563eb);
-  font: inherit;
-  font-size: var(--w-type-caption, 12px);
-  line-height: 18px;
-  text-align: left;
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--w-color-accent, #2563eb) 40%, transparent);
-  text-underline-offset: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.lt__material-remove {
-  padding: 1px 6px;
-}
-
-.lt__material-add {
-  display: flex;
-  gap: var(--w-space-xs, 4px);
-  min-width: 0;
-}
-
-.lt__material-add .lt__input {
-  font-size: var(--w-type-caption, 12px);
-  line-height: 18px;
-}
 
 .lt__error {
   margin: 2px 0 0;
@@ -685,3 +630,4 @@
   width: auto;
   flex: 1 1 136px;
 }
+

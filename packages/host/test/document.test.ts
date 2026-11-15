@@ -78,6 +78,25 @@ describe('文档', () => {
     expect(() => buildDocument(widget, ASSETS, 'n1', { lang: 'zh-CN' })).toThrow(/不在组件目录里/)
   })
 
+  it('组件自己的额外样式表接在 style.css 之后', () => {
+    const widget = record({
+      'index.html': '<p></p>',
+      'style.css': '.base{}',
+      'panels.css': '.panel{}',
+      'print.css': '.print{}',
+    })
+    widget.manifest.styles = ['panels.css', 'print.css']
+    const html = buildDocument(widget, ASSETS, 'n1', { lang: 'zh-CN' })
+    expect(html.indexOf('.base{}')).toBeLessThan(html.indexOf('.panel{}'))
+    expect(html.indexOf('.panel{}')).toBeLessThan(html.indexOf('.print{}'))
+  })
+
+  it('点名了不存在的额外样式表时拒绝拼装', () => {
+    const widget = record({ 'index.html': '<p></p>', 'style.css': 'p{}' })
+    widget.manifest.styles = ['gone.css']
+    expect(() => buildDocument(widget, ASSETS, 'n1', { lang: 'zh-CN' })).toThrow(/不在组件目录里/)
+  })
+
   it('样式的结束标签让文档拒绝拼装', () => {
     expect(() => buildDocument(record({ 'index.html': '<p></p>', 'style.css': 'p{} </style><b>' }), ASSETS, 'n', { lang: 'zh-CN' }))
       .toThrow(/<\/style/)

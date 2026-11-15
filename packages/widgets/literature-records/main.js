@@ -82,8 +82,31 @@
     urlInput: card.querySelector('[data-field="url-input"]'),
     understanding: card.querySelector('[data-field="understanding"]'),
     questions: card.querySelector('[data-field="questions"]'),
-    materialUrl: card.querySelector('[data-field="material-url"]'),
-    materialTitle: card.querySelector('[data-field="material-title"]'),
+    doiLookup: card.querySelector('[data-action="lookup-doi"]'),
+    doiStatus: card.querySelector('[data-role="doi-status"]'),
+    doiCandidates: card.querySelector('[data-role="doi-candidates"]'),
+    zoteroOpen: card.querySelector('[data-action="open-zotero"]'),
+    zoteroHint: card.querySelector('[data-role="zotero-hint"]'),
+    zotero: card.querySelector('[data-role="zotero"]'),
+    zoteroNote: card.querySelector('[data-role="zotero-note"]'),
+    zoteroLibrary: card.querySelector('[data-role="zotero-library"]'),
+    zoteroCollection: card.querySelector('[data-role="zotero-collection"]'),
+    zoteroSearch: card.querySelector('[data-role="zotero-search"]'),
+    zoteroSearchGo: card.querySelector('[data-role="zotero-search-go"]'),
+    zoteroItems: card.querySelector('[data-role="zotero-items"]'),
+    zoteroPreview: card.querySelector('[data-role="zotero-preview"]'),
+    zoteroImport: card.querySelector('[data-role="zotero-import"]'),
+    zoteroStatus: card.querySelector('[data-role="zotero-status"]'),
+    materialKind: card.querySelector('[data-role="material-kind"]'),
+    materialUrl: card.querySelector('[data-role="material-url"]'),
+    materialPath: card.querySelector('[data-role="material-path"]'),
+    materialTitle: card.querySelector('[data-role="material-title"]'),
+    materialPurpose: card.querySelector('[data-role="material-purpose"]'),
+    materialDevice: card.querySelector('[data-role="material-device"]'),
+    materialVersion: card.querySelector('[data-role="material-version"]'),
+    materialCheckedAt: card.querySelector('[data-role="material-checked-at"]'),
+    materialAdd: card.querySelector('[data-action="add-material"]'),
+    materialEmpty: card.querySelector('[data-role="material-empty"]'),
     openSource: card.querySelector('[data-action="open-source"]'),
     archiveAction: card.querySelector('[data-action="archive"]'),
     restoreAction: card.querySelector('[data-action="restore"]'),
@@ -110,7 +133,8 @@
     url: card.querySelector('[data-role="label-url"]'),
     understanding: card.querySelector('[data-role="label-understanding"]'),
     questions: card.querySelector('[data-role="label-questions"]'),
-    materials: card.querySelector('[data-role="label-materials"]')
+    materials: card.querySelector('[data-role="label-materials"]'),
+    materialKind: card.querySelector('[data-role="label-material-kind"]')
   }
 
   var live = widget !== undefined && typeof widget.call === 'function'
@@ -131,6 +155,7 @@
     pendingLatest: null,
     draftId: null,
     materials: [],
+    external: [],
     dirty: false,
     saving: false,
     editing: false,
@@ -139,6 +164,7 @@
     triggerId: null
   }
   var loadTimer = null
+  var deviceName = ''
 
   function persist(patch) {
     if (widget !== undefined && typeof widget.setState === 'function') widget.setState(patch)
@@ -196,23 +222,86 @@
     put(labels.understanding, t('understanding'))
     put(labels.questions, t('questions'))
     put(labels.materials, t('material'))
+    put(labels.materialKind, t('materialKind'))
     put(card.querySelector('[data-action="add-reading"]'), t('addReading'))
     put(card.querySelector('[data-role="reading-hint"]'), t('readingHint'))
     put(nodes.readingEmpty, t('readingEmpty'))
     put(card.querySelector('.lt__understanding-hint'), t('understandingHint'))
     put(nodes.openSource, t('openSource'))
     put(card.querySelector('[data-action="close"]'), t('close'))
-    put(card.querySelector('[data-action="add-material"]'), t('addMaterial'))
+    put(nodes.materialAdd, t('addMaterial'))
+    put(nodes.doiLookup, t('lookupDoi'))
+    put(nodes.zoteroOpen, t('openZotero'))
+    put(card.querySelector('[data-role="zotero-title"]'), t('zoteroTitle'))
+    put(card.querySelector('[data-action="zotero-close"]'), t('close'))
+    put(nodes.zoteroImport, t('zoteroImport'))
+    put(nodes.zoteroSearchGo, t('zoteroSearchGo'))
+    put(nodes.zoteroCollection === null ? null : nodes.zoteroCollection.options[0], t('zoteroAllCollections'))
+    if (nodes.doiStatus !== null && nodes.doiCandidates !== null && nodes.doiCandidates.hidden) put(nodes.doiStatus, '')
+    put(nodes.zoteroHint, props.zoteroEnabled === true ? t('zoteroReadyHint') : t('zoteroOffHint'))
+    put(nodes.materialEmpty, t('materialEmpty'))
     put(nodes.saveButton, t('save'))
     put(nodes.archiveAction, t('archive'))
     put(nodes.restoreAction, t('restore'))
     put(nodes.trashAction, t('trashAction'))
     nodes.materialUrl.setAttribute('placeholder', t('materialUrl'))
+    nodes.materialPath.setAttribute('placeholder', t('materialPath'))
     nodes.materialTitle.setAttribute('placeholder', t('materialTitle'))
+    nodes.materialPurpose.setAttribute('placeholder', t('materialPurpose'))
+    nodes.materialDevice.setAttribute('placeholder', t('materialDevice'))
+    nodes.materialVersion.setAttribute('placeholder', t('materialVersion'))
+    nodes.materialCheckedAt.setAttribute('placeholder', t('materialCheckedAt'))
+    nodes.zoteroSearch.setAttribute('placeholder', t('zoteroSearch'))
+    setDeviceHint()
     put(nodes.confirm.querySelector('[data-action="confirm-keep"]'), t('keepEditing'))
     put(nodes.confirm.querySelector('[data-action="confirm-close"]'), t('closeKeepDraft'))
     put(nodes.conflict.querySelector('[data-action="conflict-keep"]'), t('keepEditing'))
     put(nodes.conflict.querySelector('[data-action="conflict-reload"]'), t('loadLatest'))
+  }
+
+  /** 平台只用于本机材料的标注，不含主机名与用户名。 */
+  function platformLabel(platform) {
+    if (platform === 'win32') return t('deviceWindows')
+    if (platform === 'darwin') return t('deviceMac')
+    if (platform === 'linux') return t('deviceLinux')
+    return ''
+  }
+
+  function setDeviceHint() {
+    if (nodes.materialDevice === null) return
+    nodes.materialDevice.placeholder = deviceName === '' ? t('materialDevice') : deviceName
+  }
+
+  /** 设备名先看卡片设置里的自定义标签，再看宿主报告的平台；拿不到就留空。 */
+  function resolveDevice() {
+    setDeviceHint()
+    if (!live) return
+    var props = widget.props !== null && typeof widget.props === 'object' ? widget.props : {}
+    var label = typeof props.deviceLabel === 'string' ? props.deviceLabel.trim() : ''
+    if (label !== '') {
+      deviceName = label
+      setDeviceHint()
+      return
+    }
+    widget.call('materials.device', {}).then(function (result) {
+      if (result !== null && typeof result === 'object' && result.status === 'ready') {
+        deviceName = platformLabel(result.platform)
+        setDeviceHint()
+      }
+    }, function () {})
+  }
+
+  /** 本地路径只复制成文本，不当作地址打开。 */
+  function copyText(value) {
+    if (navigator.clipboard !== undefined && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(value).then(function () {
+        setStatus(t('copyPathDone'), 'ok')
+      }, function () {
+        setStatus(t('copyPathFailed'), 'error')
+      })
+      return
+    }
+    setStatus(t('copyPathFailed'), 'error')
   }
 
   function countLine(rows) {
@@ -334,6 +423,7 @@
     t: t,
     pure: pure,
     view: view,
+    deviceOf: function () { return deviceName },
     setStatus: setStatus,
     persist: persist,
     refreshList: function () { refreshList() }
@@ -413,7 +503,10 @@
   nodes.archiveAction.addEventListener('click', function () { editor.lifeOp('archive') })
   nodes.restoreAction.addEventListener('click', function () { editor.lifeOp('restore') })
   nodes.trashAction.addEventListener('click', function () { editor.lifeOp('trash') })
-  card.querySelector('[data-action="add-material"]').addEventListener('click', function () { editor.addMaterial() })
+  nodes.doiLookup.addEventListener('click', function () { editor.lookupDoi() })
+  nodes.doiInput.addEventListener('input', function () { editor.resetDoi() })
+  nodes.zoteroOpen.addEventListener('click', function () { editor.openZotero() })
+  card.querySelector('[data-action="zotero-close"]').addEventListener('click', function () { editor.closeZotero() })
   card.querySelector('[data-action="add-reading"]').addEventListener('click', function () { editor.addReading() })
   if (nodes.materials !== null) {
     nodes.materials.addEventListener('click', function (event) {
@@ -422,6 +515,11 @@
       var open = target.closest('.lt__material-open')
       if (open !== null && typeof open.dataset.url === 'string' && live && typeof widget.open === 'function') {
         widget.open(open.dataset.url)
+        return
+      }
+      var copy = target.closest('.lt__material-copy')
+      if (copy !== null && typeof copy.dataset.copy === 'string') {
+        copyText(copy.dataset.copy)
         return
       }
       var remove = target.closest('.lt__material-remove')
@@ -458,11 +556,13 @@
   if (widget.size !== null && widget.size !== undefined && widget.size.placement === 'preview') {
     renderSample()
   } else {
+    resolveDevice()
     if (typeof widget.onSize === 'function') widget.onSize(consider)
     if (typeof widget.onProps === 'function') {
       widget.onProps(function () {
         applyLabels()
         setTabs()
+        resolveDevice()
       })
     }
     var initial = widget.data

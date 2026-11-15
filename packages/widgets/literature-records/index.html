@@ -73,6 +73,8 @@
         </select>
       </label>
       <div class="lt__pair lt__pair--doi">
+        <label class="lt__field">
+          <span class="lt__label" data-role="label-format">稿件类型</span>
           <select class="lt__input" data-field="format-input">
             <option value="">未填</option>
             <option value="preprint">预印本</option>
@@ -82,9 +84,14 @@
         </label>
         <label class="lt__field">
           <span class="lt__label" data-role="label-doi">DOI</span>
-          <input class="lt__input" type="text" data-field="doi-input" maxlength="200" placeholder="10.1109/…" autocomplete="off" spellcheck="false" />
+          <span class="lt__lookup">
+            <input class="lt__input" type="text" data-field="doi-input" maxlength="200" placeholder="10.1109/…" autocomplete="off" spellcheck="false" />
+            <button class="lt__ghost lt__lookup-go" type="button" data-action="lookup-doi">查询 DOI</button>
+          </span>
         </label>
       </div>
+      <p class="lt__hint lt__lookup-status" data-role="doi-status" role="status"></p>
+      <div class="lt__doi-candidates" data-role="doi-candidates" hidden></div>
       <div class="lt__pair">
         <label class="lt__field">
           <span class="lt__label" data-role="label-arxiv">arXiv id</span>
@@ -96,6 +103,10 @@
         </label>
       </div>
       <p class="lt__error" data-role="identifier-error" role="status"></p>
+      <div class="lt__import-row">
+        <button class="lt__ghost" type="button" data-action="open-zotero" data-role="zotero-open">从 Zotero 导入</button>
+        <p class="lt__hint" data-role="zotero-hint"></p>
+      </div>
       <label class="lt__field">
         <span class="lt__label" data-role="label-url">来源地址</span>
         <input class="lt__input" type="url" data-field="url-input" placeholder="https://…" autocomplete="off" spellcheck="false" />
@@ -119,16 +130,29 @@
         <span class="lt__label" data-role="label-questions">问题</span>
         <textarea class="lt__input lt__textarea" rows="2" data-field="questions"></textarea>
       </label>
-      <fieldset class="lt__materials">
-        <legend class="lt__label" data-role="label-materials">材料</legend>
+      <section class="lt__materials" data-role="materials-block" aria-label="材料">
+        <span class="lt__label" data-role="label-materials">材料</span>
+        <p class="lt__hint" data-role="material-empty" hidden></p>
         <ul class="lt__material-list" data-role="materials"></ul>
         <div class="lt__material-add">
-          <input class="lt__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
-          <input class="lt__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
-          <button class="lt__ghost" type="button" data-action="add-material">添加</button>
+          <label class="lt__material-kind">
+            <span class="lt__label" data-role="label-material-kind">来源</span>
+            <select class="lt__input" data-role="material-kind">
+              <option value="web">网页</option>
+              <option value="local">本地路径</option>
+            </select>
+          </label>
+          <input class="lt__input" type="url" data-role="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="lt__input" type="text" data-role="material-path" maxlength="1024" placeholder="/papers/…" autocomplete="off" spellcheck="false" hidden />
+          <input class="lt__input" type="text" data-role="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <input class="lt__input" type="text" data-role="material-purpose" maxlength="200" placeholder="用途（可选）" autocomplete="off" />
+          <input class="lt__input" type="text" data-role="material-device" maxlength="80" placeholder="设备（可选）" autocomplete="off" hidden />
+          <input class="lt__input" type="text" data-role="material-version" maxlength="80" placeholder="版本（可选）" autocomplete="off" />
+          <input class="lt__input" type="text" data-role="material-checked-at" maxlength="10" placeholder="YYYY-MM-DD" autocomplete="off" />
+          <button class="lt__ghost" type="button" data-action="add-material" data-role="material-add">添加</button>
         </div>
         <p class="lt__error" data-role="material-error" role="status"></p>
-      </fieldset>
+      </section>
       <div class="lt__detail-actions">
         <button class="lt__primary" type="button" data-action="save">保存</button>
         <button class="lt__ghost" type="button" data-action="close">关闭</button>
@@ -149,6 +173,28 @@
     <div class="lt__dialog-actions">
       <button class="lt__ghost" type="button" data-action="conflict-keep">继续编辑</button>
       <button class="lt__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <dialog class="lt__dialog lt__zotero" data-role="zotero">
+    <div class="lt__zotero-head">
+      <h3 class="lt__zotero-heading" data-role="zotero-title">从 Zotero 导入</h3>
+      <button class="lt__ghost" type="button" data-action="zotero-close">关闭</button>
+    </div>
+    <p class="lt__hint" data-role="zotero-note"></p>
+    <div class="lt__zotero-controls">
+      <select class="lt__input" data-role="zotero-library" aria-label="文库"></select>
+      <select class="lt__input" data-role="zotero-collection" aria-label="分类"></select>
+      <input class="lt__input" type="search" data-role="zotero-search" placeholder="按标题搜索" autocomplete="off" />
+      <button class="lt__ghost" type="button" data-role="zotero-search-go">搜索</button>
+    </div>
+    <div class="lt__zotero-body">
+      <div class="t-data__scroll lt__zotero-items" data-role="zotero-items"></div>
+      <div class="lt__zotero-preview" data-role="zotero-preview" hidden></div>
+    </div>
+    <p class="lt__hint" data-role="zotero-status" role="status"></p>
+    <div class="lt__dialog-actions">
+      <button class="lt__primary" type="button" data-role="zotero-import" disabled>补入空字段</button>
     </div>
   </dialog>
 

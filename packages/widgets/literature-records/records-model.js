@@ -207,6 +207,192 @@
     return openableUrl(url)
   }
 
+  /** 材料的来源：显式 kind 优先，旧记录按 url 与 path 推断。 */
+  function materialKindOf(material) {
+    if (material === null || typeof material !== 'object') return ''
+    if (material.kind === 'web' || material.kind === 'local') return material.kind
+    if (typeof material.url === 'string' && material.url !== '') return 'web'
+    if (typeof material.path === 'string' && material.path !== '') return 'local'
+    return ''
+  }
+
+  /**
+   * 本地路径只当文本：长度有限、没有控制字符，也不是 `scheme:` 形式。
+   *
+   * 这里不检查文件是否存在——卡片不扫描磁盘，路径只是给人看的引用。
+   */
+  function localPathValid(path) {
+    if (typeof path !== 'string') return false
+    var text = path.trim()
+    if (text === '' || text.length > 1024) return false
+    if (/[\u0000-\u001f\u007f]/.test(text)) return false
+    return !/^[A-Za-z][A-Za-z0-9+.-]+:/.test(text)
+  }
+
+  /** 一份材料的校验结果；空串表示通过，否则是文案键。 */
+  function materialProblem(material) {
+    if (material === null || typeof material !== 'object') return 'materialInvalid'
+    if (typeof material.title !== 'string' || material.title.trim() === '') return 'materialInvalid'
+    var kind = materialKindOf(material)
+    if (kind === 'web') {
+      if (!openableUrl(material.url)) return 'materialInvalid'
+      return material.path === undefined || material.path === null || material.path === '' ? '' : 'materialInvalid'
+    }
+    if (kind === 'local') {
+      if (!localPathValid(material.path)) return 'materialPathInvalid'
+      return material.url === undefined || material.url === null || material.url === '' ? '' : 'materialInvalid'
+    }
+    return 'materialInvalid'
+  }
+
+  /** 可选日期按 `YYYY-MM-DD`；空串表示未填，其它形状不合法。 */
+  function dateTextValid(text) {
+    if (typeof text !== 'string' || text.trim() === '') return true
+    return /^\d{4}-\d{2}-\d{2}$/.test(text.trim()) && !isNaN(Date.parse(text.trim()))
+  }
+
+  /**
+   * 添加材料时的输入变成记录里的材料引用：空字段不出现，网页与本地各留各的坐标。
+   *
+   * @param {object} input - `{ kind, url, path, title, purpose, device, version, checkedAt }`。
+   * @param {number} now - 生成 id 用的时刻。
+   * @param {number} index - 同一时刻的序号。
+   * @returns {object | null} 材料；输入不合法时是 `null`。
+   */
+  function materialDraft(input, now, index) {
+    if (input === null || typeof input !== 'object') return null
+    var kind = input.kind === 'local' ? 'local' : 'web'
+    var title = typeof input.title === 'string' ? input.title.trim() : ''
+    var material = { id: 'm-' + String(now) + '-' + String(index), kind: kind, title: title }
+    if (kind === 'web') material.url = typeof input.url === 'string' ? input.url.trim() : ''
+    else material.path = typeof input.path === 'string' ? input.path.trim() : ''
+    var purpose = typeof input.purpose === 'string' ? input.purpose.trim() : ''
+    if (purpose !== '') material.purpose = purpose
+    if (kind === 'local') {
+      var device = typeof input.device === 'string' ? input.device.trim() : ''
+      if (device !== '') material.device = device
+    }
+    var version = typeof input.version === 'string' ? input.version.trim() : ''
+    if (version !== '') material.version = version
+    var checkedAt = typeof input.checkedAt === 'string' ? input.checkedAt.trim() : ''
+    if (checkedAt !== '' && dateTextValid(checkedAt)) material.checkedAt = checkedAt
+    return materialProblem(material) === '' ? material : null
+  }
+
+  /** 材料记在哪台设备；没记设备时是空串。 */
+  function materialDevice(material) {
+    if (material === null || typeof material !== 'object') return ''
+    return typeof material.device === 'string' ? material.device.trim() : ''
+  }
+
+  /** 这条本地材料是不是属于另一台设备；没有设备标签时不做判断。 */
+  function deviceMismatch(material, device) {
+    if (materialKindOf(material) !== 'local') return false
+    var recorded = materialDevice(material)
+    var current = typeof device === 'string' ? device.trim() : ''
+    return recorded !== '' && current !== '' && recorded !== current
+  }
+
+  /** 一条材料的标题行；标题为空时退回路径或地址。 */
+  function materialTitleOf(material) {
+    if (material === null || typeof material !== 'object') return ''
+    if (typeof material.title === 'string' && material.title.trim() !== '') return material.title.trim()
+    var kind = materialKindOf(material)
+    return kind === 'local' ? String(material.path || '') : String(material.url || '')
+  }
+
+  /** 一条材料的补充说明：用途、版本、设备与核查日期，有的才写。 */
+  function materialMetaOf(material) {
+    if (material === null || typeof material !== 'object') return ''
+    var parts = []
+    if (typeof material.purpose === 'string' && material.purpose !== '') parts.push(material.purpose)
+    if (typeof material.version === 'string' && material.version !== '') parts.push('v' + material.version)
+    if (materialKindOf(material) === 'local' && materialDevice(material) !== '') parts.push(materialDevice(material))
+    if (typeof material.checkedAt === 'string' && material.checkedAt !== '') parts.push(material.checkedAt)
+    return parts.join(' · ')
+  }
+
+  /** 外部来源：同一库同一条目只留最新的一份，最多四份。 */
+  function externalWith(list, ref) {
+    var out = Array.isArray(list) ? list.filter(function (entry) { return entry !== null && typeof entry === 'object' }).slice() : []
+    if (ref === null || typeof ref !== 'object') return out
+    var key = String(ref.library) + '\u0000' + String(ref.itemKey)
+    out = out.filter(function (entry) {
+      return String(entry.library) + '\u0000' + String(entry.itemKey) !== key
+    })
+    out.push(ref)
+    return out.slice(-4)
+  }
+
+  /** 导入的 Zotero 条目变成一条外部来源。 */
+  function zoteroExternal(library, item) {
+    if (item === null || typeof item !== 'object' || typeof item.key !== 'string') return null
+    return {
+      provider: 'zotero',
+      library: String(library),
+      itemKey: item.key,
+      apiVersion: '3',
+      fetchedAt: new Date().toISOString()
+    }
+  }
+
+  /** 外部来源的一行说明：Zotero 库与条目 key。 */
+  function externalLine(ref) {
+    if (ref === null || typeof ref !== 'object' || ref.provider !== 'zotero') return ''
+    return 'Zotero · ' + String(ref.library) + ' · ' + String(ref.itemKey)
+  }
+
+  /** 一条 Zotero 条目的字段：与文献卡的表单同名，空值给空串。 */
+  function zoteroFields(item) {
+    if (item === null || typeof item !== 'object') return null
+    return {
+      title: typeof item.title === 'string' ? item.title : '',
+      authors: Array.isArray(item.authors) ? item.authors.join(', ') : '',
+      venue: typeof item.venue === 'string' ? item.venue : '',
+      year: typeof item.year === 'number' ? String(item.year) : '',
+      url: typeof item.url === 'string' ? item.url : '',
+      doi: typeof item.doi === 'string' ? item.doi : ''
+    }
+  }
+
+  /** 候选元数据的一行：当前值与候选值相同、冲突还是空缺。 */
+  function adoptionState(value, current) {
+    var candidate = typeof value === 'string' ? value.trim() : ''
+    var existing = typeof current === 'string' ? current.trim() : ''
+    if (candidate === '') return ''
+    if (existing === '') return 'empty'
+    return existing === candidate ? 'same' : 'conflict'
+  }
+
+  /**
+   * DOI 候选的逐字段采用视图：标题、作者、出处、年份与来源地址。
+   *
+   * 只列候选里有的字段；笔记、阅读记录与材料不在其中，补入时碰不到。
+   *
+   * @param {object} candidate - 宿主回来的候选。
+   * @param {object} current - 表单当前值。
+   * @returns {Array<object>} 每一行的字段、候选值、当前值与状态。
+   */
+  function doiAdoption(candidate, current) {
+    if (candidate === null || typeof candidate !== 'object') return []
+    var values = current !== null && typeof current === 'object' ? current : {}
+    var fields = [
+      { field: 'title', label: 'fieldTitle', value: typeof candidate.title === 'string' ? candidate.title : '' },
+      { field: 'authors', label: 'authors', value: Array.isArray(candidate.authors) ? candidate.authors.join(', ') : '' },
+      { field: 'venue', label: 'venue', value: typeof candidate.venue === 'string' ? candidate.venue : '' },
+      { field: 'year', label: 'year', value: typeof candidate.year === 'number' ? String(candidate.year) : '' },
+      { field: 'url', label: 'sourceUrl', value: typeof candidate.url === 'string' ? candidate.url : '' }
+    ]
+    var out = []
+    for (var at = 0; at < fields.length; at += 1) {
+      var row = fields[at]
+      var state = adoptionState(row.value, values[row.field])
+      if (state === '') continue
+      out.push({ field: row.field, label: row.label, value: row.value.trim(), current: typeof values[row.field] === 'string' ? values[row.field].trim() : '', state: state })
+    }
+    return out
+  }
+
   /** 来源地址只收 http/https 的完整地址；空串表示未填。 */
   function openableUrl(url) {
     if (typeof url !== 'string' || url === '') return false
@@ -260,6 +446,20 @@
     daysLeft: daysLeft,
     viewRows: viewRows,
     materialValid: materialValid,
+    materialKindOf: materialKindOf,
+    localPathValid: localPathValid,
+    materialProblem: materialProblem,
+    dateTextValid: dateTextValid,
+    materialDraft: materialDraft,
+    materialDevice: materialDevice,
+    deviceMismatch: deviceMismatch,
+    materialTitleOf: materialTitleOf,
+    materialMetaOf: materialMetaOf,
+    externalWith: externalWith,
+    zoteroExternal: zoteroExternal,
+    externalLine: externalLine,
+    zoteroFields: zoteroFields,
+    doiAdoption: doiAdoption,
     openableUrl: openableUrl,
     yearValue: yearValue,
     fill: fill
