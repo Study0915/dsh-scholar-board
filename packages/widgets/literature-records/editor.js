@@ -25,37 +25,73 @@
     var READ = 'widget-board:records.read'
     var WRITE = 'widget-board:records.write'
     var DRAFT = 'widget-board:records.draft'
+    var VERSIONS_LIMIT = 20
     var draftTimer = null
     var relations = widget.createRecordRelations({ container: nodes.detail,
       current: function () { return app.baseline },
       onChange: function (refs) { app.related = refs; onInput() }
     })
+    var versions = widget.createRecordRelations({ container: nodes.detail,
+      current: function () { return app.baseline },
+      onChange: function () { onInput() },
+      kinds: ['literature'],
+      title: t('versionsTitle')
+    })
+    var reading = root.createLiteratureReading({
+      widget: widget,
+      live: live,
+      nodes: nodes,
+      t: t,
+      pure: pure,
+      setStatus: ctx.setStatus,
+      onInput: function () { onInput() },
+      ensureSaved: function () { return ensureSaved() },
+      adopt: function (record) { adoptRecord(record) }
+    })
 
     function formOf() {
       return {
         related: relations.value(),
+        versions: versions.value(),
         title: nodes.titleInput.value,
         authors: nodes.authorsInput.value,
         venue: nodes.venueInput.value,
         year: nodes.yearInput.value,
         url: nodes.urlInput.value,
         stage: nodes.stageInput.value,
+        format: nodes.formatInput.value,
+        doi: nodes.doiInput.value,
+        arxivId: nodes.arxivInput.value,
+        arxivVersion: nodes.arxivVersionInput.value,
         understanding: nodes.understanding.value,
         questions: nodes.questions.value,
+        reading: reading.value(),
         materials: app.materials
       }
     }
 
+    /** 记录里的标识字段放回输入框；未填时清空。 */
+    function fillIdentifiers(form) {
+      nodes.formatInput.value = pure.formatOf({ format: form.format })
+      nodes.doiInput.value = typeof form.doi === 'string' ? form.doi : ''
+      nodes.arxivInput.value = typeof form.arxivId === 'string' ? form.arxivId : ''
+      nodes.arxivVersionInput.value = typeof form.arxivVersion === 'string' ? form.arxivVersion : ''
+      if (nodes.identifierError !== null) nodes.identifierError.textContent = ''
+    }
+
     function fillForm(form) {
       relations.load(Array.isArray(form.related) ? form.related : app.related)
+      versions.load(Array.isArray(form.versions) ? form.versions : [])
       nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
       nodes.authorsInput.value = typeof form.authors === 'string' ? form.authors : ''
       nodes.venueInput.value = typeof form.venue === 'string' ? form.venue : ''
       nodes.yearInput.value = typeof form.year === 'number' ? String(form.year) : ''
       nodes.urlInput.value = typeof form.url === 'string' ? form.url : ''
       nodes.stageInput.value = pure.STAGES.indexOf(form.stage) >= 0 ? form.stage : 'queued'
+      fillIdentifiers(form)
       nodes.understanding.value = typeof form.understanding === 'string' ? form.understanding : ''
       nodes.questions.value = typeof form.questions === 'string' ? form.questions : ''
+      reading.load(form.reading)
       if (nodes.urlError !== null) nodes.urlError.textContent = ''
       renderMaterials()
       ctx.setStatus('', 'neutral')
@@ -77,6 +113,10 @@
       nodes.venueInput.disabled = trashed
       nodes.yearInput.disabled = trashed
       nodes.urlInput.disabled = trashed
+      nodes.formatInput.disabled = trashed
+      nodes.doiInput.disabled = trashed
+      nodes.arxivInput.disabled = trashed
+      nodes.arxivVersionInput.disabled = trashed
       nodes.stageInput.disabled = trashed
       nodes.understanding.disabled = trashed
       nodes.questions.disabled = trashed
@@ -84,6 +124,9 @@
       nodes.materialTitle.disabled = trashed
       var add = ctx.card.querySelector('[data-action="add-material"]')
       if (add !== null) add.disabled = trashed
+      var addReading = ctx.card.querySelector('[data-action="add-reading"]')
+      if (addReading !== null) addReading.disabled = trashed
+      reading.setReadonly(trashed)
       nodes.saveButton.disabled = trashed
       nodes.saveButton.textContent = t('save')
       nodes.openSource.hidden = trashed || (record !== null && !pure.openableUrl(record.url))
@@ -97,6 +140,26 @@
       if (focus === true) nodes.titleInput.focus()
     }
 
+    /** 一条记录变成编辑面板的取值；关联与材料由调用方另放。 */
+    function formOfRecord(record) {
+      return {
+        title: record.title,
+        authors: record.authors,
+        venue: record.venue,
+        year: record.year,
+        url: record.url,
+        stage: pure.stageOf(record),
+        format: record.format,
+        doi: record.doi,
+        arxivId: record.arxivId,
+        arxivVersion: record.arxivVersion,
+        versions: Array.isArray(record.versions) ? record.versions : [],
+        understanding: record.understanding,
+        questions: record.questions,
+        reading: record.reading
+      }
+    }
+
     function openRecord(record) {
       app.related = Array.isArray(record.related) ? record.related.slice() : []
       app.editing = true
@@ -105,16 +168,7 @@
       app.dirty = false
       app.saving = false
       app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
-      fillForm({
-        title: record.title,
-        authors: record.authors,
-        venue: record.venue,
-        year: record.year,
-        url: record.url,
-        stage: pure.stageOf(record),
-        understanding: record.understanding,
-        questions: record.questions
-      })
+      fillForm(formOfRecord(record))
       showDetail(record, true)
       restoreDraft(record.id).then(function (restored) {
         if (restored) ctx.setStatus(t('draftRestored'), 'neutral')
@@ -129,7 +183,7 @@
       app.dirty = false
       app.saving = false
       app.materials = []
-      fillForm({ title: '', authors: '', venue: '', year: null, url: '', stage: 'queued', understanding: '', questions: '' })
+      fillForm({ title: '', authors: '', venue: '', year: null, url: '', stage: 'queued', format: '', doi: '', arxivId: '', arxivVersion: '', versions: [], understanding: '', questions: '', reading: [] })
       showDetail(null, true)
       restoreDraft('new').then(function (restored) {
         if (restored) ctx.setStatus(t('draftRestored'), 'neutral')
@@ -216,14 +270,17 @@
         app.draftId = id
         var form = draft.form
         if (Array.isArray(form.related)) { app.related = form.related; relations.load(form.related) }
+        if (Array.isArray(form.versions)) versions.load(form.versions)
         nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
         nodes.authorsInput.value = typeof form.authors === 'string' ? form.authors : ''
         nodes.venueInput.value = typeof form.venue === 'string' ? form.venue : ''
         nodes.yearInput.value = typeof form.year === 'string' || typeof form.year === 'number' ? String(form.year) : ''
         nodes.urlInput.value = typeof form.url === 'string' ? form.url : ''
         nodes.stageInput.value = pure.STAGES.indexOf(form.stage) >= 0 ? form.stage : 'queued'
+        fillIdentifiers(form)
         nodes.understanding.value = typeof form.understanding === 'string' ? form.understanding : ''
         nodes.questions.value = typeof form.questions === 'string' ? form.questions : ''
+        reading.load(form.reading)
         app.materials = Array.isArray(form.materials) ? form.materials : []
         renderMaterials()
         app.dirty = true
@@ -234,28 +291,33 @@
     }
 
     function save() {
-      if (!live || app.saving) return
-      if (app.baseline !== null && typeof app.baseline.deletedAt === 'string') return
+      if (!live || app.saving) return Promise.resolve(null)
+      if (app.baseline !== null && typeof app.baseline.deletedAt === 'string') return Promise.resolve(null)
       var title = nodes.titleInput.value.trim()
       if (title === '') {
         ctx.setStatus(t('titleRequired'), 'error')
         nodes.titleInput.focus()
-        return
+        return Promise.resolve(null)
       }
       var year = pure.yearValue(nodes.yearInput.value)
       if (!year.ok) {
         ctx.setStatus(t('yearInvalid'), 'error')
         nodes.yearInput.focus()
-        return
+        return Promise.resolve(null)
       }
       var url = nodes.urlInput.value.trim()
       if (url !== '' && !pure.openableUrl(url)) {
         if (nodes.urlError !== null) nodes.urlError.textContent = t('sourceUrlInvalid')
         ctx.setStatus(t('sourceUrlInvalid'), 'error')
         nodes.urlInput.focus()
-        return
+        return Promise.resolve(null)
       }
       if (nodes.urlError !== null) nodes.urlError.textContent = ''
+      var versionRefs = versions.value()
+      if (versionRefs.length > VERSIONS_LIMIT) {
+        ctx.setStatus(t('versionsLimit'), 'error')
+        return Promise.resolve(null)
+      }
       var fields = {
         title: title,
         authors: nodes.authorsInput.value.trim() === '' ? null : nodes.authorsInput.value.trim(),
@@ -263,8 +325,14 @@
         year: year.value,
         url: url === '' ? null : url,
         stage: pure.STAGES.indexOf(nodes.stageInput.value) >= 0 ? nodes.stageInput.value : 'queued',
+        format: pure.FORMATS.indexOf(nodes.formatInput.value) >= 0 ? nodes.formatInput.value : null,
+        doi: nodes.doiInput.value.trim() === '' ? null : nodes.doiInput.value.trim(),
+        arxivId: nodes.arxivInput.value.trim() === '' ? null : nodes.arxivInput.value.trim(),
+        arxivVersion: nodes.arxivVersionInput.value.trim() === '' ? null : nodes.arxivVersionInput.value.trim(),
+        versions: versionRefs.length === 0 ? null : versionRefs,
         understanding: nodes.understanding.value.trim() === '' ? null : nodes.understanding.value.trim(),
         questions: nodes.questions.value.trim() === '' ? null : nodes.questions.value.trim(),
+        reading: reading.value(),
         materials: app.materials.length === 0 ? null : app.materials
       }
       var expected = app.baseline === null ? null : app.baseline.revision
@@ -277,7 +345,7 @@
       var request = creating
         ? widget.call(WRITE, { op: 'create', record: { kind: pure.KIND, ...fields } })
         : widget.call(WRITE, { op: 'update', id: app.baseline.id, expectedRevision: expected, patch: fields })
-      request.then(function (result) {
+      return request.then(function (result) {
         app.saving = false
         app.dirty = false
         if (draftTimer !== null) { window.clearTimeout(draftTimer); draftTimer = null }
@@ -286,7 +354,7 @@
           ctx.setStatus(t('saveFailed'), 'error')
           nodes.saveButton.disabled = false
           nodes.saveButton.textContent = t('save')
-          return
+          return null
         }
         removeDraft(creating ? 'new' : record.id, app.draftId)
         app.baseline = record
@@ -294,11 +362,14 @@
         ctx.persist({ openId: record.id, draftIds: ui.draftIds })
         app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
         renderMaterials()
+        fillIdentifiers(record)
+        reading.load(record.reading)
         showDetail(record, false)
         ctx.setStatus(t('saved'), 'ok')
         nodes.saveButton.disabled = false
         nodes.saveButton.textContent = t('save')
         ctx.refreshList()
+        return record
       }, function (error) {
         app.saving = false
         nodes.saveButton.disabled = false
@@ -319,7 +390,27 @@
             }
           }, function () {})
         }
+        return null
       })
+    }
+
+    /** 没改过就交出当前记录，改过先保存；保存不成时是 `null`。 */
+    function ensureSaved() {
+      if (app.baseline !== null && !app.dirty) return Promise.resolve(app.baseline)
+      return save()
+    }
+
+    /** 关联行动项之后把新记录放回面板，不覆盖用户正在别处输入的内容。 */
+    function adoptRecord(record) {
+      if (record === null || typeof record !== 'object') return
+      app.baseline = record
+      app.dirty = false
+      ui.openId = record.id
+      ctx.persist({ openId: record.id })
+      app.materials = Array.isArray(record.materials) ? record.materials.slice() : []
+      fillForm(formOfRecord(record))
+      showDetail(record, false)
+      ctx.refreshList()
     }
 
     function lifeOp(op) {
@@ -357,16 +448,7 @@
       app.related = Array.isArray(latest.related) ? latest.related.slice() : []
       app.pendingLatest = null
       app.materials = Array.isArray(latest.materials) ? latest.materials.slice() : []
-      fillForm({
-        title: latest.title,
-        authors: latest.authors,
-        venue: latest.venue,
-        year: latest.year,
-        url: latest.url,
-        stage: pure.stageOf(latest),
-        understanding: latest.understanding,
-        questions: latest.questions
-      })
+      fillForm(formOfRecord(latest))
       app.dirty = false
       showDetail(latest, false)
       ctx.setStatus(t('saved'), 'ok')
@@ -425,6 +507,7 @@
       renderMaterials: renderMaterials,
       addMaterial: addMaterial,
       removeMaterial: removeMaterial,
+      addReading: function () { reading.add() },
       reloadLatest: reloadLatest,
       openSource: openSource
     }

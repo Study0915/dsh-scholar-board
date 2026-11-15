@@ -29,6 +29,8 @@ export { TOPIC_QUESTION_STATUSES } from './topic-validate'
 export { searchTextOf } from './search'
 import { figuresOf, submissionsOf, revisionsOf, manuscriptArraysProblem } from './manuscript-validate'
 import { evidenceOf, evidenceProblem, evidenceTextOf } from './evidence-validate'
+import { literatureFieldsOf, literatureProblem } from './literature-validate'
+import { actionSourceOf, actionSourceProblem } from './action-source'
 import { isRecord } from '../guards'
 import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
 import { chaptersOf, experimentsOf, thesisArraysProblem, thesisMilestonesOf, thesisResultsOf } from './thesis-validate'
@@ -60,7 +62,7 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   meeting: ['title', 'date', 'topics', 'feedback', 'openQuestions', 'related', 'materials', 'derivedFrom'],
   action: ['title', 'status', 'due', 'source', 'sourceEntry', 'related', 'blockedNote', 'doneNote', 'materials'],
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials', 'figures', 'submissions', 'revisions'],
-  literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'related', 'materials'],
+  literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'format', 'doi', 'arxivId', 'arxivVersion', 'versions', 'reading', 'related', 'materials'],
   research: ['title', 'method', 'question', 'purpose', 'hypothesis', 'steps', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'conclusionBasis', 'conclusionScope', 'conclusionEvidence', 'related', 'materials', 'template'],
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
   project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
@@ -475,6 +477,7 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.venue !== undefined) out.venue = textOf(input.venue, 'venue')
   if (input.year !== undefined) out.year = yearOf(input.year)
   if (input.url !== undefined) out.url = urlOf(input.url)
+  if (kind === 'literature') Object.assign(out, literatureFieldsOf(input))
   if (input.understanding !== undefined) out.understanding = textOf(input.understanding, 'understanding')
   if (input.questions !== undefined) {
     out.questions = kind === 'topic' ? topicQuestionsOf(input.questions, 'questions') : textOf(input.questions, 'questions')
@@ -531,22 +534,7 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
     else if (typeof input.derivedFrom !== 'string' || input.derivedFrom === '' || input.derivedFrom.length > 64) fail('derivedFrom 不合法')
     else out.derivedFrom = input.derivedFrom
   }
-  if (input.source !== undefined) {
-    if (input.source === null) out.source = null
-    else {
-      if (!isRecord(input.source) || typeof input.source.id !== 'string' || input.source.id === '' || input.source.id.length > 64) fail('source 要写成 { kind, id }')
-      if (input.source.kind !== 'meeting' && input.source.kind !== 'manuscript' && input.source.kind !== 'topic') fail('source.kind 只能是 meeting、manuscript 或 topic')
-      out.source = { kind: input.source.kind, id: input.source.id }
-    }
-  }
-  if (input.sourceEntry !== undefined) {
-    if (input.sourceEntry === null) out.sourceEntry = null
-    else if (typeof input.sourceEntry !== 'string' || input.sourceEntry === '' || input.sourceEntry.length > 64) fail('sourceEntry 不合法')
-    else out.sourceEntry = input.sourceEntry
-  }
-  if (kind === 'action' && mode === 'create' && isRecord(out.source) && out.source.kind === 'topic' && out.sourceEntry === undefined) {
-    fail('来源是课题时要写明问题条目 sourceEntry')
-  }
+  Object.assign(out, actionSourceOf(input, kind === 'action' && mode === 'create'))
   if (kind === 'action' && (input.status !== undefined || mode === 'create')) out.status = statusOf(input.status)
   if (kind === 'run' && (input.status !== undefined || mode === 'create')) out.status = runStatusOf(input.status)
   if (kind === 'manuscript' && (input.stage !== undefined || mode === 'create')) out.stage = stageOf(input.stage)
@@ -610,7 +598,11 @@ export function storedProblem(value: unknown): string | null {
   if (value.deletedAt !== undefined && (typeof value.deletedAt !== 'string' || Number.isNaN(Date.parse(value.deletedAt)))) return 'deletedAt 不合法'
   if (typeof value.title !== 'string' || value.title.trim() === '') return '缺少 title'
   if (value.kind === 'action' && (typeof value.status !== 'string' || !ACTION_STATUSES.includes(value.status as ActionStatus))) return 'status 不认识'
-  if (value.kind === 'literature' && (typeof value.stage !== 'string' || !LITERATURE_STAGES.includes(value.stage as LiteratureStage))) return 'stage 不认识'
+  if (value.kind === 'literature') {
+    if (typeof value.stage !== 'string' || !LITERATURE_STAGES.includes(value.stage as LiteratureStage)) return 'stage 不认识'
+    const literature = literatureProblem(value)
+    if (literature !== null) return literature
+  }
   if (value.kind === 'research') {
     if (typeof value.method !== 'string' || !RESEARCH_METHODS.includes(value.method as ResearchMethod)) return 'method 不认识'
     const evidence = evidenceProblem(value.conclusionEvidence)
@@ -649,12 +641,8 @@ export function storedProblem(value: unknown): string | null {
     if (arraysProblem !== null) return arraysProblem
   }
   if (value.kind === 'action') {
-    if (value.source !== undefined) {
-      if (!isRecord(value.source) || typeof value.source.id !== 'string' || value.source.id === '') return 'source 不合法'
-      if (value.source.kind !== 'meeting' && value.source.kind !== 'manuscript' && value.source.kind !== 'topic') return 'source.kind 不认识'
-    }
-    if (value.sourceEntry !== undefined && (typeof value.sourceEntry !== 'string' || value.sourceEntry === '')) return 'sourceEntry 不合法'
-    if (isRecord(value.source) && value.source.kind === 'topic' && typeof value.sourceEntry !== 'string') return '课题来源缺少问题条目'
+    const sourceProblem = actionSourceProblem(value)
+    if (sourceProblem !== null) return sourceProblem
   }
   if (value.kind === 'chore' && (typeof value.status !== 'string' || !CHORE_STATUSES.includes(value.status as ChoreStatus))) return 'status 不认识'
   if (value.kind === 'topic') {

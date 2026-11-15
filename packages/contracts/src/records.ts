@@ -5,6 +5,7 @@
  * 完整规格在 `docs/scholar-records-spec.md`。
  */
 import type { Due } from './campus'
+import type { LiteratureFormat } from './literature-identifiers'
 import type { TemplateRecord, TemplateSnapshot } from './templates'
 
 /** 记录存储的格式版本；读盘时不认识的版本保留原文件并报错。 */
@@ -56,6 +57,12 @@ export const RECORDS_LIMITS = {
   runMethodLength: 200,
   runDispersionLength: 200,
   searchLength: 200,
+  literatureDoiLength: 200,
+  arxivIdLength: 64,
+  arxivVersionLength: 16,
+  literatureVersions: 20,
+  readingEntries: 100,
+  readingText: 2000,
 } as const
 
 /** 领域记录的十二种类型；`template` 只由模板面板读写，不出现在关联选择器里。 */
@@ -225,6 +232,20 @@ export interface ManuscriptRecord extends RecordBase {
   revisions?: RevisionItem[]
 }
 
+/** 一条阅读记录：读到哪、记下什么、还有哪些疑问与待复现事项。 */
+export interface ReadingEntry {
+  id: string
+  /** 章节、页码或公式位置，原样记录。 */
+  location?: string
+  note?: string
+  understanding?: string
+  questions?: string
+  reproduce?: string
+  at?: Due
+  /** 问题转成的行动项；由界面写回，宿主不自动建。 */
+  actionId?: string
+}
+
 /** 文献阅读。 */
 export interface LiteratureRecord extends RecordBase {
   kind: 'literature'
@@ -236,6 +257,13 @@ export interface LiteratureRecord extends RecordBase {
   stage: LiteratureStage
   understanding?: string
   questions?: string
+  format?: LiteratureFormat
+  doi?: string
+  arxivId?: string
+  arxivVersion?: string
+  /** 同一工作的其他版本（预印本与正式稿等），只指向文献记录。 */
+  versions?: RecordRef[]
+  reading?: ReadingEntry[]
   related?: RecordRef[]
   materials?: MaterialRef[]
 }
@@ -547,7 +575,7 @@ export interface RecordQuery {
   /** 找到直接引用该记录的对象，不预先双写反向列表。 */
   references?: RecordRef
   /** 只看来源指向某条记录的行动项：反向引用由宿主现算，不双写。 */
-  source?: { kind: 'meeting' | 'manuscript' | 'topic', id: string }
+  source?: { kind: 'meeting' | 'manuscript' | 'topic' | 'literature', id: string }
 }
 
 /** 一次读取最多给出多少条，以及序列化后的字节预算：消息上限 320 KB，留出余量。 */

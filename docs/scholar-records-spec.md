@@ -63,8 +63,8 @@
 | title | string ≤200 | 是 | 事项标题 |
 | status | 枚举 | 是 | todo、doing、blocked、done、cancelled |
 | due | date 或 instant | 否 | 可选期限，无期限不倒计时 |
-| source | `{ kind:'meeting'\|'manuscript'\|'topic', id }` | 否 | 生成来源 |
-| sourceEntry | string ≤64 | 否 | 来源是课题时必填，指向问题条目的 id |
+| source | `{ kind:'meeting'\|'manuscript'\|'topic'\|'literature', id }` | 否 | 生成来源 |
+| sourceEntry | string ≤64 | 否 | 来源是课题或文献时必填，指向问题、阅读条目的 id |
 | related | `Ref[]` | 否 | 十一种可关联类型互指，模板不参与（S11、S13） |
 | blockedNote | string | 否 | 阻碍说明 |
 | doneNote | string | 否 | 完成说明 |
@@ -115,14 +115,25 @@ S05 补齐。文献记录的是「我读到了什么、读懂了什么」，不�
 | year | integer 1000–3000 | 否 | 出版年份，未知留空 |
 | url | string | 否 | 来源地址，只收 http/https，经 `isOpenableUrl` 校验（D26） |
 | stage | 枚举 | 是 | 待读 queued、在读 reading、已理解 understood |
+| doi | string | 否 | 正式 DOI，按 `10.xxxx/…` 规范化保存（S15） |
+| arxivId | string | 否 | arXiv 主 id，去掉版本号（S15） |
+| arxivVersion | string | 否 | arXiv 版本，例如 `v2`（S15） |
+| format | 枚举 | 否 | 预印本 preprint、正式发表 published、其他 other（S15） |
+| versions | `Ref[]` ≤20 | 否 | 同一工作的其他版本，只指向文献记录，id 不重复（S15） |
+| reading | `ReadingEntry[]` ≤100 | 否 | 实际读到的位置与笔记（S15） |
 | understanding | string | 否 | 自己的理解，不是订阅摘要 |
 | questions | string | 否 | 仍未想清的问题 |
 | related | `Ref[]` | 否 | 十一种可关联类型互指，模板不参与（S11、S13） |
 | materials | `MaterialRef[]` | 否 | 笔记、幻灯片或复现代码的链接 |
 
-- 阅读阶段由用户维护；订阅获取、加入工作台与完成阅读是不同事实（领域术语）。从文献追踪卡加入工作台时只带入标题、作者、刊会、年份与来源地址，阶段从待读开始，摘要不写入 `understanding`。
-- 同一来源地址的活跃或归档文献视为已在工作台；回收站里的记录不挡重新加入。
-- `related` 可指向十一种可关联类型（模板不参与关联，S11）。理解与问题是短文本，搜索会一并匹配。
+阅读条目 `ReadingEntry`：`id`（稳定 id，≤64）、`location`（章节、页码或公式位置）、`note`、`understanding`、`questions`、`reproduce`（待复现事项）、`at`（日期）与可选 `actionId`（由它转出的行动项）。各段文字不超过 2000 字符；条目 id 在一条记录里不重复。
+
+- 阅读阶段由用户维护；订阅获取、加入工作台与完成阅读是不同事实（领域术语）。从文献追踪卡加入工作台时带入标题、作者、刊会、年份、来源地址、DOI、arXiv 主 id 与版本，阶段从待读开始，摘要不写入 `understanding`。只读了几节不会自动算全文已读。
+- 标识在写入时规范化；读盘时只报告形状问题，不改写旧数据。旧记录没有这些字段时按「未填」处理。
+- `related` 可指向十一种可关联类型（模板不参与关联，S11）。理解、问题与阅读条目都参与搜索。
+- 阅读条目里的问题可转行动项：`source` 写成 `{ kind:'literature', id }`，`sourceEntry` 是阅读条目的 id；同一条目重复转时回到已有的行动项。文献来源的行动项在读盘时与课题来源同样校验。
+- 工作台查重先比规范化 DOI，再比 arXiv 主 id，再比来源地址（忽略版本号）；标题相近只作候选。回收站里的记录不参与查重，归档记录参与。重复预览逐项列出双方字段，由用户选择保留现有、补充缺失字段、建立版本关系或仍要加入；不从同标题直接删除记录。
+- 订阅在卡片 props 里保存名称、查询条件、来源与分类；查询条件留空时按分类组成 `cat:<分类>`，旧卡片只存分类时仍读得到原来的订阅。
 
 ### 研究记录 research
 

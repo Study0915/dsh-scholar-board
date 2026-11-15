@@ -2,7 +2,7 @@
 import type { DomainRecord, ResearchEntry, ManuscriptFigure, RevisionItem, SubmissionRound, CourseWork, MaterialRef, ProjectCommunication, ProjectDeliverable, ProjectIssue, ProjectTask, ThesisChapter, ThesisExperiment, ThesisMilestone, ThesisResult } from '@dsh-scholar-board/contracts'
 
 /** 搜索和展示时要读的文本字段。 */
-const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'goal', 'purpose', 'hypothesis', 'steps', 'judgment', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'evaluation', 'failure', 'conclusion', 'conclusionBasis', 'conclusionScope', 'code', 'teacher', 'schedule', 'notes', 'note', 'category', 'direction'] as const
+const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'goal', 'purpose', 'hypothesis', 'steps', 'judgment', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'doi', 'arxivId', 'arxivVersion', 'environment', 'seed', 'evaluation', 'failure', 'conclusion', 'conclusionBasis', 'conclusionScope', 'code', 'teacher', 'schedule', 'notes', 'note', 'category', 'direction'] as const
 
 /**
  * 一条记录的搜索文本：标题与全部短文本字段，材料标题也进来。
@@ -89,6 +89,12 @@ export function searchTextOf(record: DomainRecord): string {
   }
   for (const evidence of (Array.isArray(entry.conclusionEvidence) ? entry.conclusionEvidence : []) as { summary?: unknown }[]) {
     if (typeof evidence?.summary === 'string') parts.push(evidence.summary)
+  }
+  for (const reading of (Array.isArray(entry.reading) ? entry.reading : []) as { location?: unknown, note?: unknown, understanding?: unknown, questions?: unknown, reproduce?: unknown }[]) {
+    for (const field of ['location', 'note', 'understanding', 'questions', 'reproduce'] as const) {
+      const value = reading?.[field]
+      if (typeof value === 'string') parts.push(value)
+    }
   }
   for (const round of (Array.isArray(entry.submissions) ? entry.submissions : []) as SubmissionRound[]) {
     if (typeof round?.venue === 'string') parts.push(round.venue)

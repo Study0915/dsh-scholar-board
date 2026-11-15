@@ -3,6 +3,9 @@
     "lang": "zh-CN",
     "motion": "reduced",
     "props": {
+      "name": "信号处理新稿",
+      "query": "cat:eess.SP",
+      "source": "arxiv",
       "category": "eess.SP",
       "limit": 3
     },
@@ -43,6 +46,9 @@
     "lang": "zh-CN",
     "motion": "full",
     "props": {
+      "name": "光学新稿",
+      "query": "cat:physics.optics",
+      "source": "arxiv",
       "category": "physics.optics",
       "limit": 6
     },

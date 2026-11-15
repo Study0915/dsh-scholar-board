@@ -88,6 +88,27 @@ function placeholderValue(manifest: WidgetManifest, props: Record<string, unknow
   return value
 }
 
+/** 占位符最多套几层：props schema 的默认值里可以再引用另一个占位符，但不能无限展开。 */
+const PLACEHOLDER_DEPTH = 3
+
+/**
+ * 取一个占位符的原始值，把默认值里的占位符也展开。
+ *
+ * 旧卡片只写了 `category` 时，新加的 `query` 默认值可以写成 `cat:{category}`，
+ * 这样不必改写已保存的 props 也能读到原来那个分类。
+ *
+ * @param manifest - 组件的 manifest。
+ * @param props - 这张卡的 props。
+ * @param name - 占位符的名字。
+ * @param depth - 已经展开的层数。
+ * @returns 展开后的字符串；类型不适合拼进地址时由 `placeholderValue` 抛出。
+ */
+function placeholderText(manifest: WidgetManifest, props: Record<string, unknown>, name: string, depth: number): string {
+  const raw = String(placeholderValue(manifest, props, name))
+  if (depth >= PLACEHOLDER_DEPTH) return raw
+  return raw.replace(PLACEHOLDER, (_match, inner: string) => placeholderText(manifest, props, inner, depth + 1))
+}
+
 /**
  * 把地址模板换成这一次请求的地址。
  *
@@ -97,7 +118,7 @@ function placeholderValue(manifest: WidgetManifest, props: Record<string, unknow
  * @returns 每个占位符都换好的地址。
  */
 function fillUrl(template: string, manifest: WidgetManifest, props: Record<string, unknown>): string {
-  return template.replace(PLACEHOLDER, (_match, name: string) => encodeURIComponent(String(placeholderValue(manifest, props, name))))
+  return template.replace(PLACEHOLDER, (_match, name: string) => encodeURIComponent(placeholderText(manifest, props, name, 0)))
 }
 
 /**

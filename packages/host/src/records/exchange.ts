@@ -151,7 +151,7 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
   for (const record of pkg.records) mapping.set(record.id, randomUUID())
   const at = new Date(now).toISOString()
   const remapped = pkg.records.map((record) => {
-    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string, questions?: { actionId?: string }[], plan?: { kind: RecordKind, id: string }, results?: { sources?: string[] }[] }
+    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string, questions?: { actionId?: string }[], plan?: { kind: RecordKind, id: string }, results?: { sources?: string[] }[], versions?: { kind: RecordKind, id: string }[], reading?: { actionId?: string }[] }
     copy.id = mapping.get(record.id) as string
     copy.revision = 1
     copy.updatedAt = at
@@ -176,6 +176,14 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
     if (Array.isArray(copy.results)) {
       for (const result of copy.results) {
         if (Array.isArray(result.sources)) result.sources = result.sources.map(source => mapping.get(source) ?? source)
+      }
+    }
+    if (Array.isArray(copy.versions)) {
+      copy.versions = copy.versions.map(ref => ({ ...ref, id: mapping.get(ref.id) ?? ref.id }))
+    }
+    if (Array.isArray(copy.reading)) {
+      for (const entry of copy.reading) {
+        if (typeof entry.actionId === 'string') entry.actionId = mapping.get(entry.actionId) ?? entry.actionId
       }
     }
     return copy as DomainRecord

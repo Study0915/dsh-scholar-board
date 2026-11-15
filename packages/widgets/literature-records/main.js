@@ -71,6 +71,14 @@
     venueInput: card.querySelector('[data-field="venue-input"]'),
     yearInput: card.querySelector('[data-field="year-input"]'),
     stageInput: card.querySelector('[data-field="stage-input"]'),
+    formatInput: card.querySelector('[data-field="format-input"]'),
+    doiInput: card.querySelector('[data-field="doi-input"]'),
+    arxivInput: card.querySelector('[data-field="arxiv-input"]'),
+    arxivVersionInput: card.querySelector('[data-field="arxiv-version-input"]'),
+    identifierError: card.querySelector('[data-role="identifier-error"]'),
+    readings: card.querySelector('[data-role="readings"]'),
+    readingError: card.querySelector('[data-role="reading-error"]'),
+    readingEmpty: card.querySelector('[data-role="reading-empty"]'),
     urlInput: card.querySelector('[data-field="url-input"]'),
     understanding: card.querySelector('[data-field="understanding"]'),
     questions: card.querySelector('[data-field="questions"]'),
@@ -94,6 +102,11 @@
     venue: card.querySelector('[data-role="label-venue"]'),
     year: card.querySelector('[data-role="label-year"]'),
     stage: card.querySelector('[data-role="label-stage"]'),
+    format: card.querySelector('[data-role="label-format"]'),
+    doi: card.querySelector('[data-role="label-doi"]'),
+    arxiv: card.querySelector('[data-role="label-arxiv"]'),
+    arxivVersion: card.querySelector('[data-role="label-arxiv-version"]'),
+    reading: card.querySelector('[data-role="label-reading"]'),
     url: card.querySelector('[data-role="label-url"]'),
     understanding: card.querySelector('[data-role="label-understanding"]'),
     questions: card.querySelector('[data-role="label-questions"]'),
@@ -174,10 +187,18 @@
     put(labels.venue, t('venue'))
     put(labels.year, t('year'))
     put(labels.stage, t('stage'))
+    put(labels.format, t('format'))
+    put(labels.doi, t('doi'))
+    put(labels.arxiv, t('arxivId'))
+    put(labels.arxivVersion, t('arxivVersion'))
+    put(labels.reading, t('readingBlock'))
     put(labels.url, t('sourceUrl'))
     put(labels.understanding, t('understanding'))
     put(labels.questions, t('questions'))
     put(labels.materials, t('material'))
+    put(card.querySelector('[data-action="add-reading"]'), t('addReading'))
+    put(card.querySelector('[data-role="reading-hint"]'), t('readingHint'))
+    put(nodes.readingEmpty, t('readingEmpty'))
     put(card.querySelector('.lt__understanding-hint'), t('understandingHint'))
     put(nodes.openSource, t('openSource'))
     put(card.querySelector('[data-action="close"]'), t('close'))
@@ -393,6 +414,7 @@
   nodes.restoreAction.addEventListener('click', function () { editor.lifeOp('restore') })
   nodes.trashAction.addEventListener('click', function () { editor.lifeOp('trash') })
   card.querySelector('[data-action="add-material"]').addEventListener('click', function () { editor.addMaterial() })
+  card.querySelector('[data-action="add-reading"]').addEventListener('click', function () { editor.addReading() })
   if (nodes.materials !== null) {
     nodes.materials.addEventListener('click', function (event) {
       var target = event.target
@@ -416,9 +438,10 @@
     nodes.conflict.close()
     editor.reloadLatest()
   })
-  var inputs = [nodes.titleInput, nodes.authorsInput, nodes.venueInput, nodes.yearInput, nodes.urlInput, nodes.understanding, nodes.questions]
+  var inputs = [nodes.titleInput, nodes.authorsInput, nodes.venueInput, nodes.yearInput, nodes.urlInput, nodes.doiInput, nodes.arxivInput, nodes.arxivVersionInput, nodes.understanding, nodes.questions]
   for (var inputAt = 0; inputAt < inputs.length; inputAt += 1) inputs[inputAt].addEventListener('input', function () { editor.onInput() })
   nodes.stageInput.addEventListener('change', function () { editor.onInput() })
+  nodes.formatInput.addEventListener('change', function () { editor.onInput() })
 
   function consider(size) {
     if (size === null || size === undefined) return

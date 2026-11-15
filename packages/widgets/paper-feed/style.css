@@ -5,8 +5,172 @@
  * 宽盒子也不改成多列——标题与摘要需要整行宽度才读得完。
  *
  * 三种状态写在卡片的 `data-state` 上：读取中、空、读不到各有一句话，读不到时再给一条边框上的提示，
- * 免得和「这个分类下没有新稿」混成同一种画面（D11）。
+ * 免得和「这个订阅下没有新稿」混成同一种画面（D11）。
+ *
+ * 题头右侧放订阅的查询条件与「全部加入」；批量结果写在卡片底部的一行状态里。加入时撞上重复，
+ * 预览对话框逐项列出两边的字段，让用户选保留、补充、建立版本关系或仍要加入。
  */
+.paper-feed-card__head-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+  min-width: 0;
+}
+
+.paper-feed-card__head-actions .t-data__meta {
+  overflow: hidden;
+  max-width: 12rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paper-feed-card__add-all {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #d5dae1) 82%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--w-color-muted, #6b7684);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.paper-feed-card__add-all:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.paper-feed-card__add-all:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .paper-feed-card__add-all:hover:not(:disabled) {
+    border-color: var(--w-color-accent, #2563eb);
+    color: var(--w-color-accent, #2563eb);
+  }
+}
+
+.paper-feed-card__status {
+  margin: var(--w-space-sm, 8px) 0 0;
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 16px;
+}
+
+.paper-feed-card__status[data-tone="failed"] {
+  color: var(--w-tone-danger, #b42318);
+}
+
+.paper-feed-card__dialog {
+  width: min(92%, 380px);
+  padding: var(--w-space-lg, 16px);
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  border-radius: var(--w-radius-lg, 14px);
+  background: var(--w-color-surface, #fff);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-body, 14px);
+  line-height: 1.5;
+}
+
+.paper-feed-card__dialog::backdrop {
+  background: color-mix(in srgb, #0b1016 32%, transparent);
+}
+
+.paper-feed-card__dialog-title {
+  margin: 0 0 var(--w-space-xs, 4px);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.paper-feed-card__dialog-reason {
+  margin: 0 0 var(--w-space-sm, 8px);
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.paper-feed-card__diff {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 40vh;
+  margin: 0 0 var(--w-space-sm, 8px);
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.paper-feed-card__diff-row {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) minmax(0, 1fr);
+  gap: 6px;
+  align-items: baseline;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 16px;
+}
+
+.paper-feed-card__diff-name {
+  color: var(--w-color-muted, #6b7684);
+}
+
+.paper-feed-card__diff-current,
+.paper-feed-card__diff-next {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paper-feed-card__diff-next {
+  color: var(--w-color-fg, #0b1016);
+}
+
+.paper-feed-card__diff-row[data-missing="true"] .paper-feed-card__diff-next {
+  color: var(--w-tone-ok, #2563eb);
+}
+
+.paper-feed-card__hint {
+  margin: 0 0 var(--w-space-md, 12px);
+  color: var(--w-color-muted, #6b7684);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.paper-feed-card__dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--w-space-sm, 8px);
+}
+
+.paper-feed-card__dialog-actions button {
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #d5dae1) 82%, transparent);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.paper-feed-card__dialog-actions button:focus-visible {
+  outline: 2px solid var(--w-color-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .paper-feed-card__dialog-actions button:hover {
+    border-color: var(--w-color-accent, #2563eb);
+    color: var(--w-color-accent, #2563eb);
+  }
+}
 .paper-feed-card__list {
   display: flex;
   flex-direction: column;
@@ -169,4 +333,19 @@
 :root[data-box-width="narrow"] .paper-feed-card__byline {
   flex-direction: column;
   gap: 0;
+}
+
+/* 窄盒子：订阅条件与批量入口换到标题下面一行，标题不跟着被挤成竖排。 */
+:root[data-box-width="narrow"] .paper-feed-card .t-data__head {
+  flex-wrap: wrap;
+}
+
+/* 缩略画面：只留标题与样例列表，订阅条件与批量入口收掉，内边距与间距收一档。 */
+:root[data-size="preview"] .t-data {
+  gap: var(--w-space-xs, 4px);
+  padding: var(--w-space-md, 12px);
+}
+
+:root[data-size="preview"] .paper-feed-card__head-actions {
+  display: none;
 }

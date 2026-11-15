@@ -5,8 +5,8 @@
     "en": "Paper feed"
   },
   "description": {
-    "zh": "按 arXiv 分类订阅新稿：一行一篇，标题、作者、提交日期与摘要一行，点一行开对应的 abs 页；分类与条数在卡片设置里填。",
-    "en": "Subscribe to new arXiv submissions by category: one paper per row with title, authors, submission date and a one-line abstract; click a row to open its abs page. Category and count go in the card settings."
+    "zh": "按 arXiv 查询订阅新稿：订阅可保存名称、查询条件、来源与分类；一行一篇，标题、作者、提交日期与摘要一行，点一行开对应的 abs 页。加入工作台时先按 DOI 与 arXiv 主 id 查重，只把 URL 或标题相近的列为候选。",
+    "en": "Subscribe to new arXiv submissions by query: a subscription keeps its name, query, source and category. One paper per row with title, authors, submission date and a one-line abstract; click a row to open its abs page. Adding to the board checks DOI and arXiv main id first, and only lists URL or title matches as candidates."
   },
   "author": "Study0915",
   "version": "0.1.0",
@@ -15,8 +15,9 @@
   "minBox": { "w": 1, "h": 12 },
   "source": "http",
   "capabilities": ["widget-board:records.read", "widget-board:records.write"],
+  "scripts": ["board-sync.js"],
   "request": {
-    "url": "https://export.arxiv.org/api/query?search_query=cat:{category}&sortBy=submittedDate&sortOrder=descending&start=0&max_results={limit}",
+    "url": "https://export.arxiv.org/api/query?search_query={query}&sortBy=submittedDate&sortOrder=descending&start=0&max_results={limit}",
     "format": "atom",
     "cacheMs": 300000
   },
@@ -31,6 +32,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+      "name": { "type": "string", "maxLength": 80 },
+      "query": { "type": "string", "maxLength": 300, "default": "cat:{category}" },
+      "source": { "type": "string", "enum": ["arxiv"], "default": "arxiv" },
       "category": { "type": "string", "maxLength": 40, "pattern": "^[A-Za-z][A-Za-z-]*(?:\\.[A-Za-z-]+)*$", "default": "eess.SP" },
       "limit": { "type": "integer", "minimum": 3, "maximum": 20, "default": 8 },
       "title": { "type": "string", "maxLength": 80 },
@@ -66,8 +70,8 @@
       "en": "Reading arXiv…"
     },
     "empty": {
-      "zh": "这个分类下暂时没有新稿",
-      "en": "No new submissions in this category"
+      "zh": "这个订阅下暂时没有新稿",
+      "en": "No new submissions for this subscription"
     },
     "failed": {
       "zh": "读不到 arXiv",
@@ -76,6 +80,10 @@
     "addToBoard": {
       "zh": "加入工作台",
       "en": "Add to board"
+    },
+    "addAll": {
+      "zh": "全部加入",
+      "en": "Add all"
     },
     "addedToBoard": {
       "zh": "已加入",
@@ -89,13 +97,137 @@
       "zh": "加入失败",
       "en": "Could not add"
     },
+    "batchBusy": {
+      "zh": "正在逐条加入…",
+      "en": "Adding one by one…"
+    },
+    "batchDone": {
+      "zh": "加入 {added} 篇，{skipped} 篇已在工作台或需要确认，{failed} 篇失败。",
+      "en": "Added {added}, {skipped} already on the board or needing a choice, {failed} failed."
+    },
+    "previewTitle": {
+      "zh": "可能重复",
+      "en": "Possible duplicate"
+    },
+    "reasonDoi": {
+      "zh": "DOI 相同：{doi}",
+      "en": "Same DOI: {doi}"
+    },
+    "reasonArxiv": {
+      "zh": "arXiv 主 id 相同：{id}",
+      "en": "Same arXiv main id: {id}"
+    },
+    "reasonUrl": {
+      "zh": "来源地址相同",
+      "en": "Same source address"
+    },
+    "reasonTitle": {
+      "zh": "标题相近：{title}",
+      "en": "Similar title: {title}"
+    },
+    "fieldTitle": {
+      "zh": "标题",
+      "en": "Title"
+    },
+    "fieldAuthors": {
+      "zh": "作者",
+      "en": "Authors"
+    },
+    "fieldVenue": {
+      "zh": "期刊或会议",
+      "en": "Venue"
+    },
+    "fieldYear": {
+      "zh": "年份",
+      "en": "Year"
+    },
+    "fieldDoi": {
+      "zh": "DOI",
+      "en": "DOI"
+    },
+    "fieldArxiv": {
+      "zh": "arXiv",
+      "en": "arXiv"
+    },
+    "fieldUrl": {
+      "zh": "来源地址",
+      "en": "Source address"
+    },
+    "missing": {
+      "zh": "未填",
+      "en": "empty"
+    },
+    "keepExisting": {
+      "zh": "保留现有",
+      "en": "Keep existing"
+    },
+    "supplementMissing": {
+      "zh": "补充缺失字段",
+      "en": "Fill missing fields"
+    },
+    "createVersion": {
+      "zh": "建立版本关系",
+      "en": "Link as versions"
+    },
+    "addAnyway": {
+      "zh": "仍要加入",
+      "en": "Add anyway"
+    },
+    "closePreview": {
+      "zh": "取消",
+      "en": "Cancel"
+    },
+    "noMissing": {
+      "zh": "现有记录没有缺字段可补。",
+      "en": "The existing record has no missing fields."
+    },
+    "supplemented": {
+      "zh": "已补充缺失字段",
+      "en": "Missing fields filled"
+    },
+    "versionLinked": {
+      "zh": "已建立版本关系",
+      "en": "Linked as versions"
+    },
+    "versionPartial": {
+      "zh": "新记录已加入，但反向关联没能写入，可在文献卡里补上。",
+      "en": "The new record was added, but the reverse link could not be saved; add it in the literature card."
+    },
+    "candidateHint": {
+      "zh": "标题相近只作候选：确认是同一份工作再补充或建立版本关系。",
+      "en": "A similar title is only a candidate: confirm it is the same work before filling fields or linking versions."
+    },
+    "props.name.label": {
+      "zh": "订阅名称",
+      "en": "Subscription name"
+    },
+    "props.name.hint": {
+      "zh": "例如「信号处理新稿」；留空时用卡片标题。",
+      "en": "For example “Signal processing”; the card title is used when empty."
+    },
+    "props.query.label": {
+      "zh": "查询条件",
+      "en": "Query"
+    },
+    "props.query.hint": {
+      "zh": "arXiv 的 search_query 表达式，例如 cat:eess.SP、cat:cs.LG+OR+cat:cs.AI、\"graph neural network\"；留空时按下面的分类组成 cat:<分类>。",
+      "en": "An arXiv search_query expression such as cat:eess.SP, cat:cs.LG+OR+cat:cs.AI or \"graph neural network\"; empty falls back to cat:<category> below."
+    },
+    "props.source.label": {
+      "zh": "订阅来源",
+      "en": "Source"
+    },
+    "props.source.hint": {
+      "zh": "当前只接 arXiv 的 Atom 查询。",
+      "en": "Only the arXiv Atom query is wired up for now."
+    },
     "props.category.label": {
       "zh": "arXiv 分类",
       "en": "arXiv category"
     },
     "props.category.hint": {
-      "zh": "例如 eess.SP、physics.optics；按提交时间从新到旧",
-      "en": "For example eess.SP or physics.optics; newest submissions first"
+      "zh": "查询条件留空时用它，例如 eess.SP、physics.optics；按提交时间从新到旧",
+      "en": "Used when the query is empty, for example eess.SP or physics.optics; newest submissions first"
     },
     "props.limit.label": {
       "zh": "最多显示几篇",

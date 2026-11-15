@@ -72,11 +72,45 @@
           <option value="understood">已理解</option>
         </select>
       </label>
+      <div class="lt__pair lt__pair--doi">
+          <select class="lt__input" data-field="format-input">
+            <option value="">未填</option>
+            <option value="preprint">预印本</option>
+            <option value="published">正式发表</option>
+            <option value="other">其他</option>
+          </select>
+        </label>
+        <label class="lt__field">
+          <span class="lt__label" data-role="label-doi">DOI</span>
+          <input class="lt__input" type="text" data-field="doi-input" maxlength="200" placeholder="10.1109/…" autocomplete="off" spellcheck="false" />
+        </label>
+      </div>
+      <div class="lt__pair">
+        <label class="lt__field">
+          <span class="lt__label" data-role="label-arxiv">arXiv id</span>
+          <input class="lt__input" type="text" data-field="arxiv-input" maxlength="64" placeholder="2611.08850" autocomplete="off" spellcheck="false" />
+        </label>
+        <label class="lt__field">
+          <span class="lt__label" data-role="label-arxiv-version">arXiv 版本</span>
+          <input class="lt__input" type="text" data-field="arxiv-version-input" maxlength="16" placeholder="v2" autocomplete="off" spellcheck="false" />
+        </label>
+      </div>
+      <p class="lt__error" data-role="identifier-error" role="status"></p>
       <label class="lt__field">
         <span class="lt__label" data-role="label-url">来源地址</span>
         <input class="lt__input" type="url" data-field="url-input" placeholder="https://…" autocomplete="off" spellcheck="false" />
       </label>
       <p class="lt__error" data-role="url-error" role="status"></p>
+      <section class="lt__reading-block" data-role="reading-block" aria-label="阅读记录">
+        <div class="lt__reading-head">
+          <span class="lt__label" data-role="label-reading">阅读记录</span>
+          <button class="lt__ghost" type="button" data-action="add-reading">新增阅读记录</button>
+        </div>
+        <p class="lt__hint" data-role="reading-hint">记下实际读到的位置；阶段要自己改，读了几节不会自动算全文已读。</p>
+        <p class="lt__hint" data-role="reading-empty" hidden></p>
+        <ul class="lt__reading-list" data-role="readings"></ul>
+        <p class="lt__error" data-role="reading-error" role="status"></p>
+      </section>
       <label class="lt__field">
         <span class="lt__label" data-role="label-understanding">理解</span>
         <textarea class="lt__input lt__textarea" rows="3" data-field="understanding"></textarea>

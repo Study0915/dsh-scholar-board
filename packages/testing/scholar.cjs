@@ -159,7 +159,7 @@ async function scholarPass(page, check) {
     meta: document.querySelector('[data-field="meta"]')?.textContent ?? '',
     title: document.querySelector('[data-field="title"]')?.textContent ?? '',
   }))
-  check('文献追踪按默认分类画 arXiv', feedCard.title === '文献追踪' && feedCard.meta.startsWith('eess.SP'), `${feedCard.title} / ${feedCard.meta} / ${feedCard.state}`)
+  check('文献追踪按默认分类画 arXiv', feedCard.title === '文献追踪' && feedCard.meta.includes('cat:eess.SP'), `${feedCard.title} / ${feedCard.meta} / ${feedCard.state}`)
   check('文献追踪的三种状态之一', ['loading', 'empty', 'ready', 'failed'].includes(feedCard.state), feedCard.state)
 
   // 第四层：里程碑与阅读清单是空骨架，画的不是提交历史与会话列表。

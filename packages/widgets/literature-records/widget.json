@@ -5,8 +5,8 @@
     "en": "Literature"
   },
   "description": {
-    "zh": "按阅读阶段整理文献：标题、作者、期刊或会议、年份、来源地址、自己的理解与问题。列表可按待读、在读与已理解筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。",
-    "en": "Papers organised by reading stage: title, authors, venue, year, source link, your own understanding and questions. The list filters by to read, reading and understood, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict."
+    "zh": "按阅读阶段整理文献：标题、作者、期刊或会议、年份、DOI、arXiv id 与版本、稿件类型、来源地址、自己的理解与问题。阅读记录按条目记下实际读到的章节或页码、笔记、理解、疑问与待复现事项，疑问可转为行动项；预印本与正式稿可以互相关联。列表可按待读、在读与已理解筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。",
+    "en": "Papers organised by reading stage: title, authors, venue, year, DOI, arXiv id and version, paper type, source link, your own understanding and questions. Reading entries record the sections or pages actually read, notes, understanding, questions and items to reproduce; a question can become an action, and preprints can link to their published versions. The list filters by to read, reading and understood, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict."
   },
   "author": "dsh-scholar-board",
   "version": "0.1.0",
@@ -33,6 +33,7 @@
     "records-model.js",
     "copy.js",
     "view.js",
+    "reading-panel.js",
     "editor.js"
   ],
   "props": {
@@ -159,6 +160,126 @@
     "materials": {
       "zh": "{n} 份材料",
       "en": "{n} materials"
+    },
+    "readings": {
+      "zh": "{n} 条阅读记录",
+      "en": "{n} reading entries"
+    },
+    "format": {
+      "zh": "稿件类型",
+      "en": "Paper type"
+    },
+    "formatNone": {
+      "zh": "未填",
+      "en": "Not set"
+    },
+    "formatPreprint": {
+      "zh": "预印本",
+      "en": "Preprint"
+    },
+    "formatPublished": {
+      "zh": "正式发表",
+      "en": "Published"
+    },
+    "formatOther": {
+      "zh": "其他",
+      "en": "Other"
+    },
+    "doi": {
+      "zh": "DOI",
+      "en": "DOI"
+    },
+    "arxivId": {
+      "zh": "arXiv id",
+      "en": "arXiv id"
+    },
+    "arxivVersion": {
+      "zh": "arXiv 版本",
+      "en": "arXiv version"
+    },
+    "identifierError": {
+      "zh": "保存失败",
+      "en": "Save failed"
+    },
+    "readingBlock": {
+      "zh": "阅读记录",
+      "en": "Reading log"
+    },
+    "addReading": {
+      "zh": "新增阅读记录",
+      "en": "Add reading entry"
+    },
+    "readingHint": {
+      "zh": "记下实际读到的位置；阶段要自己改，读了几节不会自动算全文已读。",
+      "en": "Record where you actually read; change the stage yourself — reading a few sections does not make the whole paper understood."
+    },
+    "readingEmpty": {
+      "zh": "还没有阅读记录；点「新增阅读记录」记下实际读到的位置。",
+      "en": "No reading entries yet; add one to record where you actually read."
+    },
+    "readingLimit": {
+      "zh": "阅读记录最多 100 条。",
+      "en": "At most 100 reading entries."
+    },
+    "readingLocation": {
+      "zh": "章节、页码或公式",
+      "en": "Section, page or equation"
+    },
+    "readingDate": {
+      "zh": "日期",
+      "en": "Date"
+    },
+    "readingNote": {
+      "zh": "笔记",
+      "en": "Notes"
+    },
+    "readingUnderstanding": {
+      "zh": "我的理解",
+      "en": "My understanding"
+    },
+    "readingQuestions": {
+      "zh": "疑问",
+      "en": "Questions"
+    },
+    "readingReproduce": {
+      "zh": "待复现",
+      "en": "To reproduce"
+    },
+    "removeReading": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "convertReading": {
+      "zh": "转为行动项",
+      "en": "Create action"
+    },
+    "openReadingAction": {
+      "zh": "打开行动项",
+      "en": "Open action"
+    },
+    "readingQuestionRequired": {
+      "zh": "先在「疑问」里写要处理的问题，再转成行动项。",
+      "en": "Write the question to handle before creating an action."
+    },
+    "converting": {
+      "zh": "正在创建行动项…",
+      "en": "Creating action…"
+    },
+    "actionLinked": {
+      "zh": "已创建并关联行动项",
+      "en": "Action created and linked"
+    },
+    "readingActionFailed": {
+      "zh": "行动项操作失败",
+      "en": "Action operation failed"
+    },
+    "versionsTitle": {
+      "zh": "预印本与正式稿",
+      "en": "Preprint and published versions"
+    },
+    "versionsLimit": {
+      "zh": "版本关联最多 20 条。",
+      "en": "At most 20 version links."
     },
     "material": {
       "zh": "材料",

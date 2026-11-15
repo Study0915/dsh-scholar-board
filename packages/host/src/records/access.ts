@@ -49,7 +49,7 @@ const READ_INPUT = {
       additionalProperties: false,
       required: ['kind', 'id'],
       properties: {
-        kind: { enum: ['meeting', 'manuscript', 'topic'] },
+        kind: { enum: ['meeting', 'manuscript', 'topic', 'literature'] },
         id: { type: 'string', minLength: 1, maxLength: 64 },
       },
     },
@@ -112,7 +112,7 @@ function kindOf(instance: InstanceFace): RecordKind | undefined {
  */
 function readOf(store: RecordsStore, args: unknown): RecordsView {
   const body = isRecord(args) ? args : {}
-  const source = isRecord(body.source) && typeof body.source.id === 'string' && (body.source.kind === 'meeting' || body.source.kind === 'manuscript' || body.source.kind === 'topic')
+  const source = isRecord(body.source) && typeof body.source.id === 'string' && (body.source.kind === 'meeting' || body.source.kind === 'manuscript' || body.source.kind === 'topic' || body.source.kind === 'literature')
     ? { kind: body.source.kind, id: body.source.id } as const
     : undefined
   const query: RecordQuery = {

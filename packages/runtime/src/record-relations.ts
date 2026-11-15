@@ -16,6 +16,8 @@ export interface RecordRelationsOptions {
   onChange(refs: RecordRef[]): void
   /** 只允许选这些记录类型；省略时是所有类型。 */
   kinds?: readonly RecordKind[]
+  /** 这一节的标题；省略时是「关联与来源」。 */
+  title?: string
 }
 
 const names = ['组会', '行动项', '小论文', '文献', '研究', '毕业论文', '项目', '课程', '事务', '课题', '运行', '模板']
@@ -39,7 +41,7 @@ export function createRecordRelations(api: WidgetHandles & { readonly lang: stri
   else options.container.append(host)
   host.classList.add('w-record-relations')
   const title = document.createElement('h3')
-  title.textContent = label('关联与来源', 'Relations and sources')
+  title.textContent = options.title ?? label('关联与来源', 'Relations and sources')
   const selected = document.createElement('ul')
   const search = document.createElement('input')
   search.type = 'search'
