@@ -63,7 +63,17 @@ async function campusPass(page, check) {
     await frame.waitForSelector('.campus__item-title')
     check('沙箱独立脚本显示真实事项和超期文字', (await frame.locator('.campus').innerText()).includes('校园验收事项') && (await frame.locator('.campus').innerText()).match(/超期|Overdue/))
     await frame.locator('[data-item-id]').click()
-    check('卡面完成等待宿主确认', await waitFor(async () => (await content(instance.id)).instance.state.items[0].status === 'done', 10000))
+    const doneOnce = async () => (await content(instance.id)).instance.state.items[0].status === 'done'
+    let confirmed = await waitFor(doneOnce, 9000)
+    if (!confirmed) {
+      // 卡片在 8 秒内没等到宿主确认时会解除按钮禁用并提示重试；按钮仍禁用说明保存还在路上，不再点。
+      const retryable = await frame.locator('[data-item-id]').evaluate((button) => !button.disabled)
+      if (retryable) {
+        await frame.locator('[data-item-id]').click()
+        confirmed = await waitFor(doneOnce, 10000)
+      }
+    }
+    check('卡面完成等待宿主确认', confirmed)
     await frame.locator('[data-action="manage"]').click()
     await page.locator('[data-dsh-scholar-board-content-editor]').waitFor()
     await page.locator('[data-dsh-widget-campus-tab="appearance"]').click()

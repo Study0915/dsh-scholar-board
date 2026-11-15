@@ -1,8 +1,0 @@
-{
-  "group": "new",
-  "order": 14,
-  "at": "2026-11-15",
-  "external": true,
-  "zh": "新增实验模板：研究记录与运行记录可套用内置的信号处理、光检测与语音识别模板，也可新建、编辑与删除自己的模板。模板按输入、配置与指标列出字段，说明填写时机与单位；应用后按角色写入参数、配置、指标、种子、评估集合与环境，同名字段替换且空值跳过。方案与运行保存应用时的模板版本与取值，模板后续改名、改字段或删除都不会改变旧记录。个人模板就是第十二类记录 `template`，复用存储、配额、草稿、归档回收站、导出导入与备份；模板不参与关联，也不执行任何代码。记录类型、检索、导出导入与内置组件画廊一并支持模板。",
-  "en": "Adds experiment templates: research and run records can apply built-in signal-processing, optical-detection and speech-recognition templates, and users can create, edit and delete their own. A template lists fields as input, config or metric with units and when-to-fill hints; applying it writes parameters, config, metrics, seeds, evaluation set and environment by role, replaces same-name entries and skips empty values. Plans and runs store the template version and values captured at apply time, so renaming, editing or deleting a template never changes older records. Personal templates are the twelfth record kind, template, reusing storage, quota, drafts, archive and trash, export/import and backup; templates take part in no relations and execute nothing. Records, search, export/import and the built-in gallery now cover templates too."
-}

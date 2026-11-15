@@ -6,9 +6,11 @@
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.5.0] - 2026-11-15
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.5.0) | [English](#en-0.5.0)
+
+<h3 id="cn-0.5.0">新增功能</h3>
 
 - 看板多出第二种排列：整齐行列。卡片按保存的顺序逐行铺开，同一排的卡片等高，行列间距一致；期望的跨列数与高度存在看板上，像素坐标每次按当前窗口宽度与根字号现算，窗口变宽变窄都不用重新摆。看板数据格式升到版本 3，旧看板读出来仍是自由位置，新建的看板默认用整齐行列。下方菜单多一枚「排列模式」：一键在两种排法之间切换，第一次切到整齐时把屏幕上的阅读顺序存下来，再切回去还是那份自由位置。整齐模式里拖动是调整顺序，缩放横向改自己的跨列数、纵向把整行抬到同一档；卡片与组卡的增删会同步维护顺序。布局与排列共用一套修订号并发规则，两个窗口同时改时后到的提交收到 409 与当前快照。
 - 看板上可以直接创建与编辑卡片内容：下方菜单与组件库头部多了「创建卡片」，选一个模板（文本笔记、待办清单、常用链接、日期倒计时，或从组件库里挑任意组件）之后按组件自己声明的 schema 填内容，右边是真实的渲染预览，一次提交才建出实例。表单能编辑字符串、数字、布尔、枚举、日期、时刻、多层的对象与数组；数组项可以加、删、上下移动，表单不支持的写法给一个显式的 JSON 入口并说明原因。卡片设置里多了「编辑内容」，按读到的修订号保存，冲突时保留输入并给出重新读取与另存为新卡片两条路。宿主新增 `POST /boards/<id>/compose`、`GET|POST /instance/<id>/content` 与 `GET /library/<id>/form` 三条人工内容路由，请求体 128KiB，props、data 与 state 分别按 schema 校验，单卡状态、整板状态与握手消息的额度各报一次。
@@ -69,11 +71,12 @@
 
 ### 其他变更
 
+- 新增发布管线：计划任务完成并合入 main 后，自动把当前源码打成插件包并挂进草稿 Release；草稿由维护者确认后手工发布，小改进升 minor、巨大更新升 major。
 - 从 Nwflower/dsh-widget-board（MIT）分叉为独立插件 dsh-scholar-board：包名、子包 scope、插件行、样式类名与语义属性统一改名；安装改为 dsh plugin add github:Study0915/dsh-scholar-board。上游版权与许可声明完整保留，第三方依赖许可盘点补齐 Ajv、schemastery、semver、React，并为随组件目录带的 lunar-javascript 记上版本号，补入 sharp 与 schemastery 附带的传递依赖。
 - README 重排为功能表、记录机制、看板能力与安装入口，组件编写细节移到 docs/widgets.md。
 - package.json 补上 repository 与 homepage；根目录增加 screenshots.json，供市场展示与 README 一致的截图。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.5.0">New Features</h3>
 
 - The board gains a second arrangement: aligned rows. Cards flow row by row in a saved order; cards in the same row share one height and the row/column gaps match. Only the wanted column span and height tier are stored — pixel positions derive from the current window width and root font size, so resizing never asks you to re-arrange. The board format moves to version 3: existing boards stay free-positioned, new boards start aligned. The dock menu gains an arrangement toggle; switching to aligned captures the on-screen reading order once, and switching back restores the saved free positions. In aligned mode dragging reorders cards, horizontal resize changes the card's own span, vertical resize lifts the whole row one tier; adding or removing cards keeps the order intact. Layout and arrangement share one revision-based concurrency rule: a late submission from another window gets a 409 with the current snapshot.
 - Cards can be created and edited on the board: the dock menu and the library header gain "Create card", which picks a template (text note, to-do list, bookmarks, date countdown, or any widget from the library) and fills in what the widget's own schema declares, with a real rendered preview; the instance is written in one submit. The form edits strings, numbers, booleans, enums, dates, times, nested objects and arrays; array items can be added, removed and reordered, and schemas the form cannot render get an explicit JSON editor with the reason. The card settings gain "Edit content", which saves against the revision it read, keeps the input on conflict, and offers reload or save-as-new-card. The host gains three human content routes — `POST /boards/<id>/compose`, `GET|POST /instance/<id>/content` and `GET /library/<id>/form` — with a 128KiB body limit, per-schema checks for props, data and state, and separate reports for the single-card, whole-board and handshake budgets.
@@ -134,6 +137,7 @@
 
 ### Chores
 
+- Add a release pipeline that packages the plugin into a draft GitHub Release whenever a completed plan task lands on main. Publishing remains a manual maintainer decision, with minor bumps for small improvements and major bumps for large updates.
 - Forked from Nwflower/dsh-widget-board (MIT) as the independent plugin dsh-scholar-board: package name, workspace scope, profile row, CSS class names and semantic attributes renamed; install via dsh plugin add github:Study0915/dsh-scholar-board. Upstream copyright and license notices are kept intact, and the third-party inventory adds Ajv, schemastery, semver and React, pins the vendored lunar-javascript to its version, and lists the transitive packages that ship with sharp and schemastery.
 - The README is reorganised into a feature table, how records work, board capabilities and install entries; widget authoring details moved to docs/widgets.md.
 - package.json declares its repository and homepage; a root screenshots.json lists the same screenshots used by the README for storefront display.

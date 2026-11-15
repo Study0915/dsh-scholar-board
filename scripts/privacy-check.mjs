@@ -181,7 +181,10 @@ function scanCommit(root, commit, terms, allow) {
 }
 
 function scanStaged(root, terms, allow) {
-  const files = gitText(root, ['diff', '--cached', '--name-only', '-z']).split('\0').filter(Boolean)
+  const staged = gitText(root, ['diff', '--cached', '--name-only', '-z']).split('\0').filter(Boolean)
+  // 删除的文件在暂存区里没有内容，读它只会失败；发布时 docs/changes/ 整目录都会被删除。
+  const deleted = new Set(gitText(root, ['diff', '--cached', '--name-only', '--diff-filter=D', '-z']).split('\0').filter(Boolean))
+  const files = staged.filter((file) => !deleted.has(file))
   const findings = []
   const images = []
   for (const file of files) {
@@ -196,6 +199,7 @@ function scanStaged(root, terms, allow) {
     if (bytes.includes(0)) continue
     findings.push(...scanText(bytes.toString('utf8'), file, terms, allow))
   }
+  for (const file of deleted) findings.push(...checkPath(file, terms))
   const author = /^Study0915 <([^>]+)>/.exec(gitText(root, ['var', 'GIT_AUTHOR_IDENT']))
   const committer = /^Study0915 <([^>]+)>/.exec(gitText(root, ['var', 'GIT_COMMITTER_IDENT']))
   if (author === null || !NOREPLY.test(author[1])) findings.push({ file: '<staged>', line: 0, rule: 'commit-author' })

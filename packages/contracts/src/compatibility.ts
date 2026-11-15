@@ -10,7 +10,7 @@ import { WIDGET_BOARD_FEATURES, WIDGET_BOARD_SUPPORTED_API_VERSIONS } from './se
 
 /** 一份兼容表：组件与市场版本按它判定自己能不能装在这一份看板上。 */
 export interface BoardCompatibility {
-  /** 看板自己的版本，形如 `0.1.6`；与根 `package.json` 的 `version` 相同。 */
+  /** 看板自己的版本，形如 `0.5.0`；与根 `package.json` 的 `version` 相同。 */
   readonly boardVersion: string
   /** 服务面接受的注册版本，升序；与 `WIDGET_BOARD_SUPPORTED_API_VERSIONS` 是同一份。 */
   readonly serviceApiVersions: readonly number[]
@@ -22,7 +22,7 @@ export interface BoardCompatibility {
 
 /** 看板的兼容表；看板版本与 DSH 下限随根 `package.json` 一起改。 */
 export const BOARD_COMPATIBILITY: BoardCompatibility = Object.freeze({
-  boardVersion: '0.1.6',
+  boardVersion: '0.5.0',
   serviceApiVersions: WIDGET_BOARD_SUPPORTED_API_VERSIONS,
   features: WIDGET_BOARD_FEATURES,
   dsh: '>=0.2.1-rc.1',
