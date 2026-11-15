@@ -32,26 +32,24 @@
       current: function () { return app.baseline },
       onChange: function (refs) { app.related = refs; onInput() }
     })
-
-    function pad(value) { return value < 10 ? '0' + String(value) : String(value) }
-
-    /** 记录里的时间写成 datetime-local 认识的本地时间。 */
-    function timeValue(value) {
-      if (typeof value !== 'string' || value === '') return ''
-      var at = new Date(value)
-      if (isNaN(at.getTime())) return ''
-      return String(at.getFullYear()) + '-' + pad(at.getMonth() + 1) + '-' + pad(at.getDate()) + 'T' + pad(at.getHours()) + ':' + pad(at.getMinutes())
-    }
-
-    /** 输入框里的本地时间写成 UTC；空着就是未填，认不出来时告诉调用方。 */
-    function timeOut(input) {
-      var raw = typeof input.value === 'string' ? input.value : ''
-      if (raw === '') return { ok: true, value: null }
-      if (!pure.timeValid(raw)) return { ok: false, value: null }
-      var at = new Date(raw)
-      if (isNaN(at.getTime())) return { ok: false, value: null }
-      return { ok: true, value: at.toISOString() }
-    }
+    var templatePanel = nodes.template === null ? null : widget.createTemplatePanel({
+      container: nodes.template,
+      current: function () {
+        return widget.templateCurrent([app.config, app.metrics], { '种子': nodes.seedInput.value, '随机种子': nodes.seedInput.value, '评估集合': nodes.evaluationInput.value, '评价集合': nodes.evaluationInput.value, '环境': nodes.environmentInput.value })
+      },
+      onApply: function (snapshot, fields) {
+        var applied = widget.templateApplication(fields, widget.templateValuesOf(snapshot), { inputs: app.config, metrics: app.metrics })
+        app.config = applied.inputs
+        app.metrics = applied.metrics
+        if (typeof applied.seed === 'string') nodes.seedInput.value = applied.seed
+        if (typeof applied.evaluation === 'string') nodes.evaluationInput.value = applied.evaluation
+        if (typeof applied.environment === 'string') nodes.environmentInput.value = applied.environment
+        app.template = snapshot
+        renderEntries('config')
+        renderEntries('metrics')
+        onInput()
+      }
+    })
 
     function formOf() {
       return {
@@ -73,7 +71,8 @@
         results: app.results,
         artifacts: app.artifacts,
         failure: nodes.failure.value,
-        note: nodes.noteField.value
+        note: nodes.noteField.value,
+        template: app.template
       }
     }
 
@@ -98,7 +97,8 @@
         results: pure.resultRows(record),
         artifacts: Array.isArray(record.artifacts) ? record.artifacts : [],
         failure: record.failure,
-        note: record.note
+        note: record.note,
+        template: record.template
       }
     }
 
@@ -138,19 +138,20 @@
       fillPlanOptions(typeof form.plan === 'string' ? form.plan : '')
       nodes.repositoryInput.value = typeof form.repository === 'string' ? form.repository : ''
       nodes.commitInput.value = typeof form.commit === 'string' ? form.commit : ''
-      nodes.startedInput.value = timeValue(form.startedAt)
-      nodes.endedInput.value = timeValue(form.endedAt)
+      nodes.startedInput.value = pure.timeValue(form.startedAt)
+      nodes.endedInput.value = pure.timeValue(form.endedAt)
       nodes.environmentInput.value = typeof form.environment === 'string' ? form.environment : ''
       nodes.seedInput.value = typeof form.seed === 'string' ? form.seed : ''
       nodes.evaluationInput.value = typeof form.evaluation === 'string' ? form.evaluation : ''
       nodes.failure.value = typeof form.failure === 'string' ? form.failure : ''
       nodes.noteField.value = typeof form.note === 'string' ? form.note : ''
-      app.datasets = Array.isArray(form.datasets) ? form.datasets.map(copyRow) : []
-      app.checkpoints = Array.isArray(form.checkpoints) ? form.checkpoints.map(copyRow) : []
-      app.config = Array.isArray(form.config) ? form.config.map(copyRow) : []
-      app.metrics = Array.isArray(form.metrics) ? form.metrics.map(copyRow) : []
-      app.results = Array.isArray(form.results) ? form.results.map(copyResult) : []
-      app.artifacts = Array.isArray(form.artifacts) ? form.artifacts.map(copyRow) : []
+      app.datasets = Array.isArray(form.datasets) ? form.datasets.map(pure.copyRow) : []
+      app.checkpoints = Array.isArray(form.checkpoints) ? form.checkpoints.map(pure.copyRow) : []
+      app.config = Array.isArray(form.config) ? form.config.map(pure.copyRow) : []
+      app.metrics = Array.isArray(form.metrics) ? form.metrics.map(pure.copyRow) : []
+      app.results = Array.isArray(form.results) ? form.results.map(pure.copyResult) : []
+      app.artifacts = Array.isArray(form.artifacts) ? form.artifacts.map(pure.copyRow) : []
+      app.template = form.template !== null && typeof form.template === 'object' ? form.template : null
       renderDatasets()
       renderEntries('checkpoints')
       renderEntries('config')
@@ -163,16 +164,6 @@
       if (nodes.timeError !== null) nodes.timeError.textContent = ''
       ctx.setStatus('', 'neutral')
       if (nodes.detailHint !== null) nodes.detailHint.hidden = true
-    }
-
-    function copyRow(row) {
-      return row !== null && typeof row === 'object' ? Object.assign({}, row) : {}
-    }
-
-    function copyResult(result) {
-      var out = copyRow(result)
-      out.sources = pure.resultSourcesOf(result)
-      return out
     }
 
     function showDetail(record, focus) {
@@ -194,6 +185,7 @@
       if (nodes.duplicateButton !== null) nodes.duplicateButton.disabled = trashed
       nodes.detailHint.textContent = trashed ? t('trashRestoreHint') : ''
       nodes.detailHint.hidden = !trashed
+      if (nodes.template !== null) nodes.template.hidden = trashed
       if (focus === true) nodes.titleInput.focus()
     }
 
@@ -225,7 +217,7 @@
       app.draftId = null
       app.dirty = false
       app.saving = false
-      fillForm({ title: pure.newRunTitle(), status: 'planned', plan: '', repository: '', commit: '', datasets: [], checkpoints: [], config: [], metrics: [], environment: '', seed: '', evaluation: '', startedAt: '', endedAt: '', results: [], artifacts: [], failure: '', note: '' })
+      fillForm({ title: pure.newRunTitle(), status: 'planned', plan: '', repository: '', commit: '', datasets: [], checkpoints: [], config: [], metrics: [], environment: '', seed: '', evaluation: '', startedAt: '', endedAt: '', results: [], artifacts: [], failure: '', note: '', template: null })
       showDetail(null, true)
       void loadSources()
       restoreDraft('new').then(function (restored) {
@@ -345,8 +337,8 @@
         ctx.setStatus(t('entryInvalid'), 'error')
         return
       }
-      var started = timeOut(nodes.startedInput)
-      var ended = timeOut(nodes.endedInput)
+      var started = pure.timeOut(nodes.startedInput.value)
+      var ended = pure.timeOut(nodes.endedInput.value)
       if (!started.ok || !ended.ok) {
         nodes.timeError.textContent = t('timeInvalid')
         ctx.setStatus(t('timeInvalid'), 'error')
@@ -382,7 +374,8 @@
         results: results.length === 0 ? null : results,
         artifacts: app.artifacts.length === 0 ? null : app.artifacts,
         failure: nodes.failure.value.trim() === '' ? null : nodes.failure.value.trim(),
-        note: nodes.noteField.value.trim() === '' ? null : nodes.noteField.value.trim()
+        note: nodes.noteField.value.trim() === '' ? null : nodes.noteField.value.trim(),
+        template: app.template
       }
       var expected = app.baseline === null ? null : app.baseline.revision
       fields.related = relations.value().length ? relations.value() : null

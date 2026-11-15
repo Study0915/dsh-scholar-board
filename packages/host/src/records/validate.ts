@@ -19,8 +19,10 @@ import type {
   RunResult,
   RunStatus,
   StageEntry,
+  TemplateField,
+  TemplateSnapshot,
 } from '@dsh-scholar-board/contracts'
-import { RECORDS_FORMAT, RECORDS_LIMITS, RECORD_KINDS, isOpenableUrl } from '@dsh-scholar-board/contracts'
+import { RECORDS_FORMAT, RECORDS_LIMITS, RECORD_KINDS, RELATION_KINDS, TEMPLATE_FIELD_GROUPS, TEMPLATE_FIELD_TYPES, TEMPLATE_LIMITS, isOpenableUrl } from '@dsh-scholar-board/contracts'
 export { RECORD_KINDS } from '@dsh-scholar-board/contracts'
 export { FIGURE_KINDS, SUBMISSION_DECISIONS, REVISION_STATUSES } from './manuscript-validate'
 export { TOPIC_QUESTION_STATUSES } from './topic-validate'
@@ -58,28 +60,30 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   action: ['title', 'status', 'due', 'source', 'sourceEntry', 'related', 'blockedNote', 'doneNote', 'materials'],
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials', 'figures', 'submissions', 'revisions'],
   literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'related', 'materials'],
-  research: ['title', 'method', 'question', 'purpose', 'hypothesis', 'steps', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials'],
+  research: ['title', 'method', 'question', 'purpose', 'hypothesis', 'steps', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials', 'template'],
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
   project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
   course: ['title', 'term', 'code', 'teacher', 'schedule', 'notes', 'work', 'related', 'materials'],
   chore: ['title', 'category', 'status', 'due', 'note', 'related', 'materials'],
   topic: ['title', 'question', 'goal', 'hypothesis', 'judgment', 'nextStep', 'questions', 'related', 'materials'],
-  run: ['title', 'plan', 'status', 'code', 'datasets', 'checkpoints', 'config', 'environment', 'seed', 'evaluation', 'startedAt', 'endedAt', 'metrics', 'artifacts', 'failure', 'note', 'results', 'related', 'materials'],
+  run: ['title', 'plan', 'status', 'code', 'datasets', 'checkpoints', 'config', 'environment', 'seed', 'evaluation', 'startedAt', 'endedAt', 'metrics', 'artifacts', 'failure', 'note', 'results', 'related', 'materials', 'template'],
+  template: ['title', 'direction', 'fields'],
 }
 
-/** 每种记录允许指向的引用类型。 */
+/** 每种记录允许指向的引用类型；模板不参与关联。 */
 const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
-  meeting: RECORD_KINDS,
-  action: RECORD_KINDS,
-  manuscript: RECORD_KINDS,
-  literature: RECORD_KINDS,
-  research: RECORD_KINDS,
-  thesis: RECORD_KINDS,
-  project: RECORD_KINDS,
-  course: RECORD_KINDS,
-  chore: RECORD_KINDS,
-  topic: RECORD_KINDS,
-  run: RECORD_KINDS,
+  meeting: RELATION_KINDS,
+  action: RELATION_KINDS,
+  manuscript: RELATION_KINDS,
+  literature: RELATION_KINDS,
+  research: RELATION_KINDS,
+  thesis: RELATION_KINDS,
+  project: RELATION_KINDS,
+  course: RELATION_KINDS,
+  chore: RELATION_KINDS,
+  topic: RELATION_KINDS,
+  run: RELATION_KINDS,
+  template: [],
 }
 
 /**
@@ -335,6 +339,99 @@ function urlOf(value: unknown): string | null {
 }
 
 /**
+ * 一个模板字段：键在模板里唯一，类型与位置都只认列出的值。
+ *
+ * @param value - 外来值。
+ * @param at - 出错时指人。
+ * @returns 归一后的字段。
+ */
+function templateFieldOf(value: unknown, at: string): TemplateField {
+  if (!isRecord(value)) fail(`${at} 要写成 { key, label, type, group }`)
+  const length = (text: string): number => [...text].length
+  const key = textOf(value.key, `${at}.key`)
+  if (key === null || length(key) > TEMPLATE_LIMITS.keyLength) fail(`${at}.key 不合法`)
+  const label = titleOf(value.label, `${at}.label`)
+  if (length(label) > TEMPLATE_LIMITS.labelLength) fail(`${at}.label 最多 ${String(TEMPLATE_LIMITS.labelLength)} 个字符`)
+  if (!TEMPLATE_FIELD_TYPES.includes(value.type as TemplateField['type'])) fail(`${at}.type 只能是 ${TEMPLATE_FIELD_TYPES.join('、')}`)
+  if (!TEMPLATE_FIELD_GROUPS.includes(value.group as TemplateField['group'])) fail(`${at}.group 只能是 ${TEMPLATE_FIELD_GROUPS.join('、')}`)
+  const out: TemplateField = { key, label, type: value.type as TemplateField['type'], group: value.group as TemplateField['group'] }
+  if (value.unit !== undefined) {
+    const unit = textOf(value.unit, `${at}.unit`)
+    if (unit !== null) {
+      if (length(unit) > TEMPLATE_LIMITS.unitLength) fail(`${at}.unit 最多 ${String(TEMPLATE_LIMITS.unitLength)} 个字符`)
+      out.unit = unit
+    }
+  }
+  for (const part of ['note', 'when'] as const) {
+    if (value[part] === undefined) continue
+    const text = textOf(value[part], `${at}.${part}`)
+    if (text === null) continue
+    if (length(text) > TEMPLATE_LIMITS.noteLength) fail(`${at}.${part} 最多 ${String(TEMPLATE_LIMITS.noteLength)} 个字符`)
+    out[part] = text
+  }
+  if (value.options !== undefined) {
+    if (!Array.isArray(value.options)) fail(`${at}.options 要是数组`)
+    if (value.options.length > TEMPLATE_LIMITS.options) fail(`${at}.options 最多 ${String(TEMPLATE_LIMITS.options)} 项`)
+    const options: string[] = []
+    for (const option of value.options) {
+      const text = titleOf(option, `${at}.options`)
+      if (length(text) > TEMPLATE_LIMITS.optionLength) fail(`${at}.options 的选项太长`)
+      if (!options.includes(text)) options.push(text)
+    }
+    if (options.length > 0) out.options = options
+  }
+  return out
+}
+
+/**
+ * 一组模板字段；键在模板里唯一。
+ *
+ * @param value - 外来值。
+ * @returns 字段数组；`null` 表示清除。
+ */
+function templateFieldsOf(value: unknown): TemplateField[] | null {
+  if (value === null) return null
+  if (!Array.isArray(value)) fail('fields 要是数组')
+  if (value.length > TEMPLATE_LIMITS.fields) fail(`fields 最多 ${String(TEMPLATE_LIMITS.fields)} 项`)
+  const seen = new Set<string>()
+  return value.map((entry, index) => {
+    const field = templateFieldOf(entry, `fields[${String(index)}]`)
+    if (seen.has(field.key)) fail('fields 的 key 重复')
+    seen.add(field.key)
+    return field
+  })
+}
+
+/**
+ * 记录引用的模板与当时的值；模板后来改动或删除都不影响这份快照。
+ *
+ * @param value - 外来值。
+ * @returns 快照；`null` 表示清除。
+ */
+function templateSnapshotOf(value: unknown): TemplateSnapshot | null {
+  if (value === null) return null
+  if (!isRecord(value)) fail('template 要写成 { id, version, values }')
+  if (typeof value.id !== 'string' || value.id === '' || value.id.length > 64) fail('template.id 不合法')
+  if (!Number.isInteger(value.version) || (value.version as number) < 1) fail('template.version 要是正整数')
+  if (!Array.isArray(value.values)) fail('template.values 要是数组')
+  if (value.values.length > TEMPLATE_LIMITS.values) fail(`template.values 最多 ${String(TEMPLATE_LIMITS.values)} 项`)
+  const seen = new Set<string>()
+  const values = value.values.map((entry, index) => {
+    const at = `template.values[${String(index)}]`
+    if (!isRecord(entry)) fail(`${at} 要写成 { key, label, value }`)
+    if (typeof entry.key !== 'string' || entry.key === '' || entry.key.length > TEMPLATE_LIMITS.keyLength) fail(`${at}.key 不合法`)
+    if (seen.has(entry.key)) fail('template.values 的 key 重复')
+    seen.add(entry.key)
+    const label = titleOf(entry.label, `${at}.label`)
+    if ([...label].length > TEMPLATE_LIMITS.labelLength) fail(`${at}.label 太长`)
+    if (typeof entry.value !== 'string') fail(`${at}.value 要是文字`)
+    if ([...entry.value].length > TEMPLATE_LIMITS.valueLength) fail(`${at}.value 太长`)
+    return { key: entry.key, label, value: entry.value.trim() }
+  })
+  return { id: value.id, version: value.version as number, values }
+}
+
+/**
  * 一条记录的写入字段：建新与更新共用，更新时允许只给一部分。
  *
  * @param kind - 记录类型。
@@ -362,6 +459,13 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.purpose !== undefined) out.purpose = textOf(input.purpose, 'purpose')
   if (input.hypothesis !== undefined) out.hypothesis = textOf(input.hypothesis, 'hypothesis')
   if (input.steps !== undefined) out.steps = textOf(input.steps, 'steps')
+  if (input.direction !== undefined || (kind === 'template' && mode === 'create')) out.direction = titleOf(input.direction, 'direction')
+  if (input.fields !== undefined || (kind === 'template' && mode === 'create')) {
+    const fields = templateFieldsOf(input.fields)
+    if (fields === null || (kind === 'template' && mode === 'create' && fields.length === 0)) fail('模板至少需要一个字段')
+    out.fields = fields
+  }
+  if (input.template !== undefined) out.template = templateSnapshotOf(input.template)
   if (input.judgment !== undefined) out.judgment = textOf(input.judgment, 'judgment')
   if (input.nextStep !== undefined) out.nextStep = textOf(input.nextStep, 'nextStep')
   if (input.blockers !== undefined) out.blockers = textOf(input.blockers, 'blockers')
@@ -550,6 +654,27 @@ export function storedProblem(value: unknown): string | null {
   if (value.kind === 'topic') {
     const arraysProblem = topicArraysProblem(value)
     if (arraysProblem !== null) return arraysProblem
+  }
+  if (value.kind === 'template') {
+    if (typeof value.direction !== 'string' || value.direction.trim() === '') return '缺少方向'
+    if (!Array.isArray(value.fields) || value.fields.length === 0) return '缺少字段'
+    const keys = new Set<string>()
+    for (const entry of value.fields as unknown[]) {
+      if (!isRecord(entry) || typeof entry.key !== 'string' || entry.key === '' || typeof entry.label !== 'string' || entry.label === '') return '字段缺少键或名称'
+      if (keys.has(entry.key)) return '字段的键重复'
+      keys.add(entry.key)
+      if (!TEMPLATE_FIELD_TYPES.includes(entry.type as TemplateField['type'])) return '字段类型不认识'
+      if (!TEMPLATE_FIELD_GROUPS.includes(entry.group as TemplateField['group'])) return '字段位置不认识'
+    }
+  }
+  if ((value.kind === 'research' || value.kind === 'run') && value.template !== undefined) {
+    if (!isRecord(value.template)) return 'template 不合法'
+    if (typeof value.template.id !== 'string' || value.template.id === '') return 'template.id 不合法'
+    if (!Number.isInteger(value.template.version) || (value.template.version as number) < 1) return 'template.version 不合法'
+    if (!Array.isArray(value.template.values)) return 'template.values 不是数组'
+    for (const entry of value.template.values as unknown[]) {
+      if (!isRecord(entry) || typeof entry.key !== 'string' || entry.key === '' || typeof entry.label !== 'string' || typeof entry.value !== 'string') return 'template.values 不合法'
+    }
   }
   if (value.kind === 'run') {
     if (typeof value.status !== 'string' || !RUN_STATUSES.includes(value.status as RunStatus)) return 'status 不认识'

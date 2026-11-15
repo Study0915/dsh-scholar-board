@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ActionRecord, ChoreRecord, CourseRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ProjectRecord, ResearchRecord, RunRecord, ThesisRecord, TopicRecord } from '@dsh-scholar-board/contracts'
+import type { ActionRecord, ChoreRecord, CourseRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ProjectRecord, ResearchRecord, RunRecord, TemplateRecord, ThesisRecord, TopicRecord } from '@dsh-scholar-board/contracts'
 import { openDrafts } from '../src/drafts/store'
 import { exportRecords, importRecords, previewRecords, readRecordsPackage } from '../src/records/exchange'
 import { registerRecords } from '../src/records/access'
@@ -464,6 +464,59 @@ describe('记录存储', () => {
       results: [{ id: 'r1', kind: 'single', text: '字'.repeat(2001) }],
     }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(run({ related: [{ kind: 'unknown', id: 'x-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('模板也是记录：方向与字段定义落盘，方案与运行保存快照，模板改动不影响旧记录', async () => {
+    const { store } = await open()
+    const created = await store.create({
+      kind: 'template',
+      title: '自己改过的信号处理',
+      direction: '信号处理',
+      fields: [
+        { key: 'sampleRate', label: '采样率', type: 'number', group: 'input', unit: 'Hz' },
+        { key: 'ber', label: 'BER', type: 'number', group: 'metric', note: '按评估集合统计' },
+      ],
+    }, ACTOR)
+    const record = created.record as TemplateRecord
+    expect(record).toMatchObject({ kind: 'template', direction: '信号处理' })
+    expect(record.fields.map((field) => field.key)).toEqual(['sampleRate', 'ber'])
+    expect(store.view({ kind: 'template' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '评估集合' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const snapshot = {
+      id: record.id,
+      version: 1,
+      values: [
+        { key: 'sampleRate', label: '采样率', value: '2000' },
+        { key: 'ber', label: 'BER', value: '' },
+      ],
+    }
+    const plan = await store.create(research({ template: snapshot }), ACTOR)
+    expect((plan.record as ResearchRecord).template).toEqual(snapshot)
+    const runCreated = await store.create(run({ template: snapshot }), ACTOR)
+    expect((runCreated.record as RunRecord).template).toEqual(snapshot)
+    expect(store.view({ search: '采样率' }).records).toHaveLength(3)
+
+    const edited = await store.update(record.id, 1, {
+      fields: [{ key: 'sampleRate', label: '采样率', type: 'number', group: 'input', unit: 'kHz' }],
+    }, ACTOR)
+    expect((edited.record as TemplateRecord).fields).toEqual([{ key: 'sampleRate', label: '采样率', type: 'number', group: 'input', unit: 'kHz' }])
+    const kept = store.view({ ids: [plan.record.id], includeArchived: true, includeTrashed: true }).records[0] as ResearchRecord
+    expect(kept.template).toEqual(snapshot)
+
+    await expect(store.create({ kind: 'template', title: '缺方向', fields: [{ key: 'a', label: '甲', type: 'text', group: 'input' }] }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({ kind: 'template', title: '缺字段', direction: '信号处理' }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({
+      kind: 'template', title: '重复键', direction: '信号处理',
+      fields: [{ key: 'a', label: '甲', type: 'text', group: 'input' }, { key: 'a', label: '乙', type: 'text', group: 'input' }],
+    }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({
+      kind: 'template', title: '坏类型', direction: '信号处理',
+      fields: [{ key: 'a', label: '甲', type: 'formula', group: 'input' }],
+    }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ template: { id: 't1', version: 0, values: [] } }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ template: { id: 't1', version: 1, values: [{ key: 'a', label: '甲' }] } }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(meeting('模板不能当关联目标'), ACTOR).then(() => store.create(research({ related: [{ kind: 'template', id: record.id }] }), ACTOR))).rejects.toMatchObject({ status: 400 })
   })
 
   it('课题带目标、假设、判断与问题条目，行动项按来源条目幂等创建，搜索也看问题与判断', async () => {

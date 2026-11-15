@@ -2,7 +2,7 @@
 import type { DomainRecord, ResearchEntry, ManuscriptFigure, RevisionItem, SubmissionRound, CourseWork, MaterialRef, ProjectCommunication, ProjectDeliverable, ProjectIssue, ProjectTask, ThesisChapter, ThesisExperiment, ThesisMilestone, ThesisResult } from '@dsh-scholar-board/contracts'
 
 /** 搜索和展示时要读的文本字段。 */
-const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'goal', 'purpose', 'hypothesis', 'steps', 'judgment', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'evaluation', 'failure', 'conclusion', 'code', 'teacher', 'schedule', 'notes', 'note', 'category'] as const
+const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'goal', 'purpose', 'hypothesis', 'steps', 'judgment', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'evaluation', 'failure', 'conclusion', 'code', 'teacher', 'schedule', 'notes', 'note', 'category', 'direction'] as const
 
 /**
  * 一条记录的搜索文本：标题与全部短文本字段，材料标题也进来。
@@ -56,6 +56,20 @@ export function searchTextOf(record: DomainRecord): string {
       if (typeof result?.text === 'string') parts.push(result.text)
       if (typeof result?.method === 'string') parts.push(result.method)
       if (typeof result?.dispersion === 'string') parts.push(result.dispersion)
+    }
+  }
+  if (Array.isArray(entry.fields)) {
+    for (const field of entry.fields as { label?: unknown, note?: unknown, when?: unknown, options?: unknown }[]) {
+      if (typeof field?.label === 'string') parts.push(field.label)
+      if (typeof field?.note === 'string') parts.push(field.note)
+      if (typeof field?.when === 'string') parts.push(field.when)
+      if (Array.isArray(field?.options)) parts.push(...field.options.filter((option): option is string => typeof option === 'string'))
+    }
+  }
+  if (entry.template !== null && typeof entry.template === 'object' && Array.isArray((entry.template as { values?: unknown }).values)) {
+    for (const value of (entry.template as { values: { label?: unknown, value?: unknown }[] }).values) {
+      if (typeof value?.label === 'string') parts.push(value.label)
+      if (typeof value?.value === 'string') parts.push(value.value)
     }
   }
   for (const figure of (Array.isArray(entry.figures) ? entry.figures : []) as ManuscriptFigure[]) {

@@ -564,6 +564,31 @@ button, input, select, textarea { font-family: inherit; }
 .w-record-relations__filters input { flex: 1 1 120px; }
 .w-record-relations p { font-size: var(--w-type-caption); color: var(--w-color-muted); }
 
+/* 实验模板面板（S13）：折叠栏、字段清单与编辑对话框；运行卡与论文卡共用。 */
+.w-template { margin-block: var(--w-space-lg, 16px); min-width: 0; }
+.w-template > summary { cursor: pointer; font-weight: 600; }
+.w-template__bar { display: flex; flex-wrap: wrap; gap: var(--w-space-sm, 8px); margin-block: var(--w-space-sm, 8px); }
+.w-template__bar select { flex: 1 1 140px; min-width: 0; }
+.w-template button, .w-template input, .w-template select {
+  box-sizing: border-box; max-width: 100%; min-width: 0; padding: var(--w-space-sm, 8px);
+  border: 1px solid var(--w-color-border); border-radius: var(--w-radius-sm, 6px);
+  background: var(--w-color-bg); color: var(--w-color-fg); font: inherit;
+}
+.w-template button { cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+.w-template button:disabled { cursor: default; opacity: .6; }
+.w-template__status { margin: 0; font-size: var(--w-type-caption); color: var(--w-color-muted); overflow-wrap: anywhere; }
+.w-template__status[data-tone="error"] { color: var(--w-tone-danger); }
+.w-template__fields { display: grid; gap: var(--w-space-sm, 8px); margin-block: var(--w-space-sm, 8px); }
+.w-template__field { display: flex; align-items: baseline; gap: var(--w-space-sm, 8px); min-width: 0; overflow-wrap: anywhere; }
+.w-template__field input:not([type="checkbox"]) { flex: 1 1 100px; }
+.w-template__field em { font-size: var(--w-type-caption); color: var(--w-color-muted); }
+.w-template__meta { display: grid; gap: var(--w-space-sm, 8px); margin-block: var(--w-space-sm, 8px); }
+.w-template__edit { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--w-space-sm, 8px); padding-block: var(--w-space-sm, 8px); border-block-end: 1px solid var(--w-color-border); }
+.w-template__dialog { max-width: min(40rem, 92vw); border: 1px solid var(--w-color-border); border-radius: var(--w-radius-md, 10px); background: var(--w-color-bg); color: var(--w-color-fg); }
+.w-template__dialog h3 { margin-block: 0 var(--w-space-sm, 8px); font: inherit; font-weight: 600; }
+.w-template__actions { display: flex; flex-wrap: wrap; gap: var(--w-space-sm, 8px); margin-top: var(--w-space-md, 12px); }
+.w-template__confirm { font-weight: 600; }
+
 @media (max-width: 320px), (max-height: 320px) {
   :root[data-box-width] .t-data { padding: var(--w-space-md, 12px); }
   :root[data-box-width] .t-data__title { font-size: var(--w-type-body, 14px); }

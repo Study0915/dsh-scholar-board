@@ -363,7 +363,6 @@
   /** 新建运行的默认标题：运行加上当前时刻。 */
   function newRunTitle(now) {
     var at = typeof now === 'number' ? new Date(now) : new Date()
-    function pad(value) { return value < 10 ? '0' + String(value) : String(value) }
     return '运行 ' + at.getFullYear() + '-' + pad(at.getMonth() + 1) + '-' + pad(at.getDate()) + ' ' + pad(at.getHours()) + ':' + pad(at.getMinutes())
   }
 
@@ -402,6 +401,39 @@
     return out
   }
 
+  /** 两位补零。 */
+  function pad(value) { return value < 10 ? '0' + String(value) : String(value) }
+
+  /** 时间写成 datetime-local 认识的本地时间。 */
+  function timeValue(value) {
+    if (typeof value !== 'string' || value === '') return ''
+    var at = new Date(value)
+    if (isNaN(at.getTime())) return ''
+    return String(at.getFullYear()) + '-' + pad(at.getMonth() + 1) + '-' + pad(at.getDate()) + 'T' + pad(at.getHours()) + ':' + pad(at.getMinutes())
+  }
+
+  /** 本地时间写成 UTC；空着就是未填，认不出来时告诉调用方。 */
+  function timeOut(raw) {
+    var text = typeof raw === 'string' ? raw : ''
+    if (text === '') return { ok: true, value: null }
+    if (!timeValid(text)) return { ok: false, value: null }
+    var at = new Date(text)
+    if (isNaN(at.getTime())) return { ok: false, value: null }
+    return { ok: true, value: at.toISOString() }
+  }
+
+  /** 表单行的一份浅拷贝。 */
+  function copyRow(row) {
+    return row !== null && typeof row === 'object' ? Object.assign({}, row) : {}
+  }
+
+  /** 结果行连同来源一起拷贝。 */
+  function copyResult(result) {
+    var out = copyRow(result)
+    out.sources = resultSourcesOf(result)
+    return out
+  }
+
   root.RunRecords = {
     KIND: KIND,
     STATUSES: STATUSES,
@@ -437,6 +469,10 @@
     daysLeft: daysLeft,
     timeValid: timeValid,
     timeLine: timeLine,
+    timeValue: timeValue,
+    timeOut: timeOut,
+    copyRow: copyRow,
+    copyResult: copyResult,
     viewRows: viewRows,
     cleanEntries: cleanEntries,
     cleanDatasets: cleanDatasets,
