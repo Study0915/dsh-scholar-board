@@ -28,7 +28,7 @@
 | A · S11 | 课题、假设、问题与行动项 | S10 | 已实现并通过完整验收（2026-11-15）；[PR #13](https://github.com/Study0915/dsh-scholar-board/pull/13) 合并于 `6c5dffa` | [科研流程](scholar-research-workflow.md#s11-课题与问题) |
 | A · S12 | 方案与独立运行、配置与结果来源 | S11 | 已实现并通过完整验收（2026-11-15） | [科研流程](scholar-research-workflow.md#s12-研究方案与运行) |
 | A · S13 | 通信专业与个人模板 | S12 | 已实现并通过完整验收（2026-11-15） | [科研流程](scholar-research-workflow.md#s13-通信专业模板) |
-| A · S14 | 比较口径、图表与结论证据 | S13 | 已实现并通过完整验收（2026-11-15） | [科研流程](scholar-research-workflow.md#s14-比较与图表证据) |
+| A · S14 | 比较口径、图表与结论证据 | S13 | 已实现并通过完整验收（2026-11-15）；[PR #16](https://github.com/Study0915/dsh-scholar-board/pull/16) 合并于 `1c8c34e` | [科研流程](scholar-research-workflow.md#s14-比较与图表证据) |
 | B · S15 | 文献阅读位置、标识、候选去重与检索条件 | S14 | 未实施 | [文献与论文](scholar-literature-workflow.md#s15-阅读与检索) |
 | B · S16 | DOI、Zotero 只读和本地材料引用 | S15 | 未实施 | [文献与论文](scholar-literature-workflow.md#s16-外部文献与材料) |
 | B · S17 | 修回、投稿检查表与章节成果 | S16 | 未实施 | [文献与论文](scholar-literature-workflow.md#s17-投稿修回与毕业论文) |
