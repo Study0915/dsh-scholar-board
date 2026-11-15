@@ -287,7 +287,7 @@ describe('记录存储', () => {
     await expect(store.create(literature({ stage: 'read' }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(literature({ year: 999 }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(literature({ url: 'javascript:alert(1)' }), ACTOR)).rejects.toMatchObject({ status: 400 })
-    await expect(store.create(literature({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(literature({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).resolves.toMatchObject({ record: { related: [{ kind: 'meeting', id: 'meeting-1' }] } })
   })
 
   it('研究记录带做法、环境、种子与带单位的参数指标，搜索也看参数与结论', async () => {
@@ -316,7 +316,7 @@ describe('记录存储', () => {
     await expect(store.create(research({ method: 'field' }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(research({ parameters: [{ name: 'snr' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(research({ metrics: [{ name: 'ber', value: '1e-3', unit: 'x'.repeat(33) }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
-    await expect(store.create(research({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).resolves.toMatchObject({ record: { related: [{ kind: 'meeting', id: 'meeting-1' }] } })
   })
 
   it('毕业论文带章节、成果来源、待补实验与可配置的学位节点，搜索也看章节与节点', async () => {
@@ -362,7 +362,7 @@ describe('记录存储', () => {
     await expect(store.create(thesis({ results: [{ id: 'x1', kind: 'meeting', recordId: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(thesis({ experiments: [{ id: 'e1', title: '补基线', status: 'blocked' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(thesis({ milestones: [{ id: 'm1', label: 'x'.repeat(61), status: 'todo' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
-    await expect(store.create(thesis({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(thesis({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).resolves.toMatchObject({ record: { related: [{ kind: 'meeting', id: 'meeting-1' }] } })
   })
 
   it('横向项目带需求摘要、负责事项、交付物版本、沟通结论、验收节点与问题，搜索也看这些内容', async () => {
@@ -401,7 +401,7 @@ describe('记录存储', () => {
     await expect(store.create(project({ deliverables: [{ id: 'd1', name: '代码包', status: 'draft' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(project({ issues: [{ id: 'i1', title: '范围待确认', status: 'closed' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(project({ milestones: [{ id: 'm1', label: 'x'.repeat(61), status: 'todo' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
-    await expect(store.create(project({ related: [{ kind: 'research', id: 'research-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ related: [{ kind: 'research', id: 'research-1' }] }), ACTOR)).resolves.toMatchObject({ record: { related: [{ kind: 'research', id: 'research-1' }] } })
     await expect(store.create(project({ amount: '100000' }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
@@ -451,7 +451,7 @@ describe('记录存储', () => {
     await expect(store.create(course({ work: [{ id: 'w1', kind: 'exam', title: '期末', status: 'blocked' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(course({ work: [{ id: 'w1', kind: 'exam', title: ' ', status: 'todo' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(course({ work: [{ id: 'w1', kind: 'exam', title: '期末', status: 'todo', due: { kind: 'date', date: '2026-11-31', timeZone: 'Asia/Shanghai' } }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
-    await expect(store.create(course({ related: [{ kind: 'research', id: 'research-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(course({ related: [{ kind: 'research', id: 'research-1' }] }), ACTOR)).resolves.toMatchObject({ record: { related: [{ kind: 'research', id: 'research-1' }] } })
     await expect(store.create(course({ credits: 3 }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 

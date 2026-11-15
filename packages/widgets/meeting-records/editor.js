@@ -26,6 +26,10 @@
     var WRITE = 'widget-board:records.write'
     var DRAFT = 'widget-board:records.draft'
     var draftTimer = null
+    var relations = widget.createRecordRelations({ container: nodes.detail,
+      current: function () { return app.baseline },
+      onChange: function (refs) { app.related = refs; onInput() }
+    })
     /** 组会之外的那几块：来源、生成的行动项、上次会议遗留与两个对话框。 */
     var extra = {
       derive: ctx.card.querySelector('[data-action="derive"]'),
@@ -199,6 +203,7 @@
     }
 
     function fillForm(form) {
+      relations.load(Array.isArray(form.related) ? form.related : app.related)
       nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
       nodes.dateInput.value = typeof form.date === 'string' ? form.date : ''
       nodes.topics.value = typeof form.topics === 'string' ? form.topics : ''
@@ -246,6 +251,7 @@
     }
 
     function openRecord(record) {
+      app.related = Array.isArray(record.related) ? record.related.slice() : []
       app.editing = true
       app.baseline = record
       app.draftId = null
@@ -283,6 +289,7 @@
     }
 
     function openNew() {
+      app.related = []
       app.editing = true
       app.baseline = null
       app.draftId = null
@@ -344,6 +351,7 @@
 
     function formOf() {
       return {
+        related: relations.value(),
         title: nodes.titleInput.value,
         date: nodes.dateInput.value,
         topics: nodes.topics.value,
@@ -391,6 +399,7 @@
         if (draft === null || typeof draft !== 'object' || draft.form === null || typeof draft.form !== 'object') return false
         app.draftId = id
         var form = draft.form
+        if (Array.isArray(form.related)) { app.related = form.related; relations.load(form.related) }
         nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
         nodes.dateInput.value = typeof form.date === 'string' ? form.date : ''
         nodes.topics.value = typeof form.topics === 'string' ? form.topics : ''
@@ -423,13 +432,14 @@
         materials: app.materials.length === 0 ? null : app.materials
       }
       var expected = app.baseline === null ? null : app.baseline.revision
+      fields.related = relations.value().length ? relations.value() : null
       var creating = app.baseline === null
       app.saving = true
       nodes.saveButton.disabled = true
       nodes.saveButton.textContent = t('saving')
       ctx.setStatus(t('saving'), 'neutral')
       var request = creating
-        ? widget.call(WRITE, { op: 'create', record: { kind: pure.KIND, title: fields.title, date: fields.date, topics: fields.topics, feedback: fields.feedback, openQuestions: fields.openQuestions, materials: fields.materials, derivedFrom: app.derivedFrom } })
+        ? widget.call(WRITE, { op: 'create', record: { kind: pure.KIND, ...fields, derivedFrom: app.derivedFrom } })
         : widget.call(WRITE, { op: 'update', id: app.baseline.id, expectedRevision: expected, patch: { ...fields, derivedFrom: app.derivedFrom } })
       request.then(function (result) {
         app.saving = false
@@ -511,6 +521,7 @@
       if (latest === null || typeof latest !== 'object') return
       removeDraft(app.baseline === null ? 'new' : app.baseline.id, app.draftId)
       app.baseline = latest
+      app.related = Array.isArray(latest.related) ? latest.related.slice() : []
       app.pendingLatest = null
       app.materials = Array.isArray(latest.materials) ? latest.materials.slice() : []
       fillForm({

@@ -19,9 +19,12 @@ import { capabilityFaceOf } from './capability-face'
 import { installInspector, problemsOf } from './inspect'
 import { installMotionTemplates } from './motion'
 import { readMedia } from './media/read'
+import { createRecordRelations } from './record-relations'
+import type { RecordRelations, RecordRelationsOptions } from './record-relations'
 
 /** 组件的公共接口，写在编写指南里的那一份。 */
 export interface WidgetApi extends WidgetHandles {
+  createRecordRelations(options: RecordRelationsOptions): RecordRelations
   readMedia(ref: string, options?: { signal?: AbortSignal }): Promise<Blob>
   /** 当前的像素盒与尺寸族；握手之前是 null。 */
   readonly size: WidgetSize | null
@@ -259,6 +262,7 @@ function subscribe<T>(list: Array<(value: T) => void>, handler: (value: T) => vo
 /** 装好 `window.widget`。 */
 function install(): void {
   const api: WidgetApi = {
+    createRecordRelations: options => createRecordRelations(api, options),
     readMedia: async (ref, options) => await readMedia(api.call, ref, options?.signal === undefined ? mediaLifetime.signal : AbortSignal.any([mediaLifetime.signal, options.signal])),
     get size() { return size },
     get lang() { return lang },

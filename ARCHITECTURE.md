@@ -8,7 +8,7 @@
 
 ## 共享领域记录
 
-`packages/contracts/src/records.ts` 定义记录、查询、修订与容量；`packages/host/src/records/` 负责校验、串行原子写入、查询、能力和导入导出。宿主在 `records.json` 保存权威记录，组件通过 `widget-board:records` 数据源与 `records.read` / `records.write` / `records.draft` 能力访问。反向引用从前向引用计算；删除卡片不删除记录，归档与回收站改变记录生命周期。
+`packages/contracts/src/records.ts` 定义记录、查询、修订与容量；`packages/host/src/records/` 负责校验、串行原子写入、查询、能力和导入导出。宿主在 `records.json` 保存权威记录，组件通过 `widget-board:records` 数据源与 `records.read` / `records.write` / `records.draft` / `records.open` 能力访问。反向引用从前向引用计算；删除卡片不删除记录，归档与回收站改变记录生命周期。
 
 `packages/widgets/` 的记录卡编辑短内容、保存草稿并处理修订冲突；`packages/client/src/records-exchange.tsx` 提供 `.dshrecords` 备份入口。看板 `.dshboard` 与记录备份分开，当前材料只保存 http/https 引用，不复制正文文件。现有容量和格式继续有效，新字段与新类型必须同时更新校验、查询、备份重映射和回归。
 

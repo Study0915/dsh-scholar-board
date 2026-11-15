@@ -16,7 +16,8 @@ import type {
   ResearchMethod,
   StageEntry,
 } from '@dsh-scholar-board/contracts'
-import { RECORDS_FORMAT, RECORDS_LIMITS, isOpenableUrl } from '@dsh-scholar-board/contracts'
+import { RECORDS_FORMAT, RECORDS_LIMITS, RECORD_KINDS, isOpenableUrl } from '@dsh-scholar-board/contracts'
+export { RECORD_KINDS } from '@dsh-scholar-board/contracts'
 export { FIGURE_KINDS, SUBMISSION_DECISIONS, REVISION_STATUSES } from './manuscript-validate'
 export { searchTextOf } from './search'
 import { figuresOf, submissionsOf, revisionsOf, manuscriptArraysProblem } from './manuscript-validate'
@@ -32,9 +33,6 @@ import {
   projectTasksOf,
 } from './project-validate'
 import { CHORE_STATUSES, categoryOf, choreStatusOf, courseArraysProblem, courseTermOf, courseWorkOf } from './study-validate'
-
-/** 九种记录。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore']
 
 /** 行动项的五个状态。 */
 export const ACTION_STATUSES: readonly ActionStatus[] = ['todo', 'doing', 'blocked', 'done', 'cancelled']
@@ -58,20 +56,20 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
   project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
   course: ['title', 'term', 'code', 'teacher', 'schedule', 'notes', 'work', 'related', 'materials'],
-  chore: ['title', 'category', 'status', 'due', 'note', 'materials'],
+  chore: ['title', 'category', 'status', 'due', 'note', 'related', 'materials'],
 }
 
 /** 每种记录允许指向的引用类型。 */
 const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
-  meeting: ['manuscript'],
-  action: ['meeting', 'manuscript'],
-  manuscript: ['meeting', 'action'],
-  literature: ['manuscript'],
-  research: ['manuscript'],
-  thesis: ['action'],
-  project: ['meeting', 'action', 'manuscript'],
-  course: ['meeting', 'action', 'manuscript'],
-  chore: [],
+  meeting: RECORD_KINDS,
+  action: RECORD_KINDS,
+  manuscript: RECORD_KINDS,
+  literature: RECORD_KINDS,
+  research: RECORD_KINDS,
+  thesis: RECORD_KINDS,
+  project: RECORD_KINDS,
+  course: RECORD_KINDS,
+  chore: RECORD_KINDS,
 }
 
 /**
@@ -329,6 +327,7 @@ export function assertRecordWritable(record: DomainRecord): void {
 export function storedProblem(value: unknown): string | null {
   if (!isRecord(value)) return '不是对象'
   if (typeof value.id !== 'string' || value.id === '') return '缺少 id'
+  if (Array.isArray(value.related) && value.related.some(ref => isRecord(ref) && ref.id === value.id)) return '记录不能关联自身'
   if (typeof value.kind !== 'string' || !RECORD_KINDS.includes(value.kind as RecordKind)) return 'kind 不认识'
   if (value.schemaVersion !== RECORDS_FORMAT) return `schemaVersion 是 ${String(value.schemaVersion)}`
   if (!Number.isInteger(value.revision) || (value.revision as number) < 1) return 'revision 不合法'

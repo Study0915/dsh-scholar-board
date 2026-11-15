@@ -31,6 +31,7 @@ import { CARD_CLIP_RADIUS } from './card-shell'
 import { isChinese, t } from './copy'
 import { CardEditorDialog } from './editor'
 import { useBoardDialogs } from './board-dialogs'
+import { RecordNavigator } from './record-navigator'
 import { BoardDock } from './dock'
 import { frameHostOf } from './page-frames'
 import { FLIP_GROUP_ENTRY } from './group'
@@ -582,6 +583,7 @@ export function BoardPage({ context }: BoardPageProps): ReactNode {
           onDelete={onDeleteBoard}
         />
         {body}
+        <RecordNavigator anchor={shellRef.current} />
         <div ref={boardsRef} className="dsh-scholar-board__boards">
           {activeBoard === null
             ? null

@@ -1,0 +1,16 @@
+.dsh-scholar-board__record-layer { position: fixed; z-index: 130; pointer-events: none; }
+.dsh-scholar-board__record-backdrop { position: absolute; inset: 0; pointer-events: auto; background: rgb(0 0 0 / 35%); }
+.dsh-scholar-board__record-panel {
+  position: absolute; inset: var(--w-space-lg); max-width: 880px; margin: auto; display: flex; flex-direction: column;
+  border: 1px solid var(--dsw-alias-border-l1); border-radius: var(--w-radius-card); pointer-events: auto;
+  background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); outline-offset: 2px;
+}
+.dsh-scholar-board__record-panel header { display: flex; align-items: center; justify-content: space-between; gap: var(--w-space-sm); padding: var(--w-space-lg); border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.dsh-scholar-board__record-panel header div { display: flex; gap: var(--w-space-sm); }
+.dsh-scholar-board__record-body { overflow: auto; min-height: 0; padding: var(--w-space-lg); overflow-wrap: anywhere; }
+.dsh-scholar-board__record-body dl > div { margin-bottom: var(--w-space-lg); }
+.dsh-scholar-board__record-body dt { font-size: var(--w-type-caption); color: var(--dsw-alias-label-secondary); }
+.dsh-scholar-board__record-body dd { margin: var(--w-space-sm) 0 0; white-space: pre-wrap; }
+.dsh-scholar-board__record-panel button { padding: var(--w-space-sm); max-width: 100%; border: 1px solid var(--dsw-alias-border-l1); border-radius: var(--w-radius-card); background: transparent; color: inherit; font: inherit; text-align: start; overflow-wrap: anywhere; cursor: pointer; }
+.dsh-scholar-board__record-body li { margin-bottom: var(--w-space-sm); }
+@media (max-width: 480px) { .dsh-scholar-board__record-panel { inset: var(--w-space-sm); } }

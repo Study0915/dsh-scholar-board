@@ -40,6 +40,7 @@ const { metricsPass } = require('./metrics.cjs')
 const { sharePass } = require('./share.cjs')
 const { scholarPass } = require('./scholar.cjs')
 const { dataCardsPass, prepareCardsProbe } = require('./data-cards.cjs')
+const { recordRelationsPass } = require('./record-relations.cjs')
 
 /** 插件自己画的东西，只用这些标记找节点。 */
 const PANEL_ICON = 'svg.dsh-scholar-board__icon'
@@ -723,6 +724,8 @@ start({ home, extras: [join(__dirname, 'fixtures', 'provider'), join(__dirname, 
     await reducedMotionPass(reduced.page, { check })
     const errors = reduced.problems.filter((problem) => problem.startsWith('error:') || problem.startsWith('pageerror:'))
     check('减弱动效下控制台没有错误', errors.length === 0, errors.join(' / '))
+    // 关联场景会新建一块看板并切回原看板；排在会删光全部看板的看板管理之前。
+    await recordRelationsPass(opened.page, check)
     // 看板管理会删光全部看板（最后一块删完的样子也要看），排在所有需要卡片与布局的场景之后。
     await boardManagementPass(opened.page, { check })
     await overflowPass(opened.page, { check })

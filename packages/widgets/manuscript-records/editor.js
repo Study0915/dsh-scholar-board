@@ -25,6 +25,10 @@
     var WRITE = 'widget-board:records.write'
     var DRAFT = 'widget-board:records.draft'
     var draftTimer = null
+    var relations = widget.createRecordRelations({ container: nodes.detail,
+      current: function () { return app.baseline },
+      onChange: function (refs) { app.related = refs; onInput() }
+    })
 
     /** 两个选择框的候选：最近会议与活跃行动项。 */
     var candidates = { meetings: [], actions: [] }
@@ -55,6 +59,7 @@
     }
 
     function fillForm(form) {
+      relations.load(Array.isArray(form.related) ? form.related : app.related)
       nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
       nodes.question.value = typeof form.question === 'string' ? form.question : ''
       nodes.stageNote.value = typeof form.stageNote === 'string' ? form.stageNote : ''
@@ -337,7 +342,7 @@
         target: nodes.target.value,
         due: nodes.dueInput.value,
         materials: app.materials,
-        related: app.related,
+        related: relations.value(),
         figures: app.figures,
         submissions: app.submissions,
         revisions: app.revisions
@@ -443,6 +448,7 @@
       }
       if (changedStage && nodes.stageNote.value.trim() !== '') fields.stageNote = nodes.stageNote.value.trim()
       var expected = app.baseline === null ? null : app.baseline.revision
+      fields.related = relations.value().length ? relations.value() : null
       var creating = app.baseline === null
       app.saving = true
       nodes.saveButton.disabled = true

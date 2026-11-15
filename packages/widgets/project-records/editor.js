@@ -26,6 +26,10 @@
     var WRITE = 'widget-board:records.write'
     var DRAFT = 'widget-board:records.draft'
     var draftTimer = null
+    var relations = widget.createRecordRelations({ container: nodes.detail,
+      current: function () { return app.baseline },
+      onChange: function (refs) { app.related = refs; onInput() }
+    })
 
     function formOf() {
       return {
@@ -36,12 +40,13 @@
         communications: app.communications,
         milestones: app.milestones,
         issues: app.issues,
-        related: app.related,
+        related: relations.value(),
         materials: app.materials
       }
     }
 
     function fillForm(form) {
+      relations.load(Array.isArray(form.related) ? form.related : app.related)
       nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
       nodes.summary.value = typeof form.summary === 'string' ? form.summary : ''
       rows.fill(form)
@@ -78,6 +83,7 @@
     }
 
     function openRecord(record) {
+      app.related = Array.isArray(record.related) ? record.related.slice() : []
       app.editing = true
       app.baseline = record
       app.draftId = null
@@ -92,6 +98,7 @@
     }
 
     function openNew() {
+      app.related = []
       app.editing = true
       app.baseline = null
       app.draftId = null
@@ -245,6 +252,7 @@
         materials: cleaned.materials
       }
       var expected = app.baseline === null ? null : app.baseline.revision
+      fields.related = relations.value().length ? relations.value() : null
       var creating = app.baseline === null
       app.saving = true
       nodes.saveButton.disabled = true
@@ -327,6 +335,7 @@
       if (latest === null || typeof latest !== 'object') return
       removeDraft(app.baseline === null ? 'new' : app.baseline.id, app.draftId)
       app.baseline = latest
+      app.related = Array.isArray(latest.related) ? latest.related.slice() : []
       app.pendingLatest = null
       fillForm(latest)
       app.dirty = false

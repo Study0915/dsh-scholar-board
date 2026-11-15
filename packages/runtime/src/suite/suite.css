@@ -548,6 +548,22 @@ button, input, select, textarea { font-family: inherit; }
 }
 
 /* 已确认的紧凑排版以实际盒子为准；short 高度档不能代替 320px 边界。 */
+.w-record-relations { margin-block: var(--w-space-lg); min-width: 0; }
+.w-record-relations h3 { font: inherit; font-weight: 600; }
+.w-record-relations ul { margin: var(--w-space-sm) 0; padding: 0; list-style: none; }
+.w-record-relations li { display: flex; align-items: center; justify-content: space-between; gap: var(--w-space-sm); margin-block: var(--w-space-sm); overflow-wrap: anywhere; }
+.w-record-relations label { display: flex; align-items: center; gap: var(--w-space-sm); min-width: 0; }
+.w-record-relations button, .w-record-relations input, .w-record-relations select {
+  box-sizing: border-box; max-width: 100%; min-width: 0; padding: var(--w-space-sm);
+  border: 1px solid var(--w-color-border); border-radius: var(--w-radius-sm, 6px);
+  background: var(--w-color-bg); color: var(--w-color-fg); font: inherit;
+}
+.w-record-relations button { cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+.w-record-relations button:disabled { cursor: default; opacity: .6; }
+.w-record-relations__filters { display: flex; flex-wrap: wrap; gap: var(--w-space-sm); margin-top: var(--w-space-sm); }
+.w-record-relations__filters input { flex: 1 1 120px; }
+.w-record-relations p { font-size: var(--w-type-caption); color: var(--w-color-muted); }
+
 @media (max-width: 320px), (max-height: 320px) {
   :root[data-box-width] .t-data { padding: var(--w-space-md, 12px); }
   :root[data-box-width] .t-data__title { font-size: var(--w-type-body, 14px); }

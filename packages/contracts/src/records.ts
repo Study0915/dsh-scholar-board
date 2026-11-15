@@ -14,6 +14,7 @@ export const RECORDS_PROVIDER = 'widget-board'
 export const RECORDS_READ_CAPABILITY = 'records.read'
 export const RECORDS_WRITE_CAPABILITY = 'records.write'
 export const RECORDS_DRAFT_CAPABILITY = 'records.draft'
+export const RECORDS_OPEN_CAPABILITY = 'records.open'
 export const RECORDS_SOURCE = 'records'
 
 /** 容量与字段上限；用户 2026-11-10 确认的一万条、16 MiB 与三十天回收站。 */
@@ -48,6 +49,9 @@ export const RECORDS_LIMITS = {
 
 /** 领域记录的九种类型。 */
 export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore'
+
+/** 记录类型的唯一列表，校验、筛选和关系查询共用。 */
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore']
 
 /** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
 export type LiteratureStage = 'queued' | 'reading' | 'understood'
@@ -381,6 +385,7 @@ export interface ChoreRecord extends RecordBase {
   status: ChoreStatus
   due?: Due
   note?: string
+  related?: RecordRef[]
   materials?: MaterialRef[]
 }
 
@@ -402,6 +407,8 @@ export interface RecordsView {
   quota: RecordsQuota
   total: number
   truncated: boolean
+  /** 本页实际给出的记录之后的位置；受条数或字节限制时可继续读。 */
+  nextOffset?: number
 }
 
 /** 读记录时能给的筛选条件；不给条件时是全部活跃记录。 */
@@ -411,6 +418,9 @@ export interface RecordQuery {
   includeArchived?: boolean
   includeTrashed?: boolean
   search?: string
+  offset?: number
+  /** 找到直接引用该记录的对象，不预先双写反向列表。 */
+  references?: RecordRef
   /** 只看来源指向某条记录的行动项：反向引用由宿主现算，不双写。 */
   source?: { kind: 'meeting' | 'manuscript', id: string }
 }

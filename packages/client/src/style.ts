@@ -6,6 +6,7 @@ import composer from './composer.css'
 import management from './board-management/management.css'
 import dock from './dock.css'
 import editor from './editor.css'
+import recordNavigator from './record-navigator.css'
 import editorPanels from './editor-panels.css'
 import inline from './inline.css'
 import library from './library.css'
@@ -28,7 +29,7 @@ export function mountStyle(): () => void {
   const element = document.createElement('style')
   element.dataset.plugin = PACKAGE_NAME
   element.dataset.pluginCss = 'widget-board'
-  element.textContent = `${sheet}\n${visual}`
+  element.textContent = `${sheet}\n${recordNavigator}\n${visual}`
   document.head.append(element)
   return () => element.remove()
 }

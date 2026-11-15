@@ -16,7 +16,7 @@ import type {
   RecordsQuota,
   RecordsView,
 } from '@dsh-scholar-board/contracts'
-import { RECORDS_FORMAT, RECORDS_LIMITS, RECORDS_PAGE } from '@dsh-scholar-board/contracts'
+import { RECORDS_FORMAT, RECORDS_LIMITS, RECORDS_PAGE, recordReferences } from '@dsh-scholar-board/contracts'
 import { createWriteQueue, writeJsonFile } from '../disk'
 import { isRecord } from '../guards'
 import { Refusal } from '../refusal'
@@ -207,6 +207,7 @@ export async function openRecords(file: string, options: { now?: () => number, l
     return records.filter((record) => {
       if (query.kind !== undefined && record.kind !== query.kind) return false
       if (ids !== undefined && !ids.has(record.id)) return false
+      if (query.references !== undefined && !recordReferences(record).some(ref => ref.kind === query.references?.kind && ref.id === query.references.id)) return false
       if (query.source !== undefined) {
         if (record.kind !== 'action') return false
         const source = record.source
@@ -217,7 +218,7 @@ export async function openRecords(file: string, options: { now?: () => number, l
       if (!trashed && record.archived && query.includeArchived !== true) return false
       if (search !== undefined && search !== '' && !searchTextOf(record).includes(search)) return false
       return true
-    }).sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+    }).sort((left, right) => right.updatedAt.localeCompare(left.updatedAt) || left.id.localeCompare(right.id))
   }
 
   const checkSize = (record: DomainRecord): void => {
@@ -229,18 +230,20 @@ export async function openRecords(file: string, options: { now?: () => number, l
   return {
     file,
     view(query = {}) {
+      const offset = query.offset ?? 0
+      if (!Number.isInteger(offset) || offset < 0) throw new Refusal(400, 'offset 要是非负整数')
       const all = filtered(query)
       const page: DomainRecord[] = []
       let used = 0
       let truncated = false
-      for (const record of all) {
+      for (const record of all.slice(offset)) {
         if (page.length >= RECORDS_PAGE.max) { truncated = true; break }
         const size = recordBytes(record)
         if (page.length > 0 && used + size > RECORDS_PAGE.bytes) { truncated = true; break }
         page.push(record)
         used += size
       }
-      return { records: page, quota: quota(), total: all.length, truncated }
+      return { records: page, quota: quota(), total: all.length, truncated, ...(truncated ? { nextOffset: offset + page.length } : {}) }
     },
     snapshot(query = {}) {
       return filtered(query)

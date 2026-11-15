@@ -15,6 +15,8 @@ import type {
 } from '@dsh-scholar-board/contracts'
 import {
   RECORDS_DRAFT_CAPABILITY,
+  RECORDS_OPEN_CAPABILITY,
+  RECORD_KINDS,
   RECORDS_PROVIDER,
   RECORDS_READ_CAPABILITY,
   RECORDS_SOURCE,
@@ -37,6 +39,11 @@ const READ_INPUT = {
     includeArchived: { type: 'boolean' },
     includeTrashed: { type: 'boolean' },
     search: { type: 'string', maxLength: RECORDS_LIMITS.searchLength },
+    offset: { type: 'integer', minimum: 0, maximum: RECORDS_LIMITS.records },
+    references: {
+      type: 'object', additionalProperties: false, required: ['kind', 'id'],
+      properties: { kind: { enum: RECORD_KINDS }, id: { type: 'string', minLength: 1, maxLength: 64 } },
+    },
     source: {
       type: 'object',
       additionalProperties: false,
@@ -112,6 +119,9 @@ function readOf(store: RecordsStore, args: unknown): RecordsView {
     ...(body.includeArchived === true ? { includeArchived: true } : {}),
     ...(body.includeTrashed === true ? { includeTrashed: true } : {}),
     ...(typeof body.search === 'string' ? { search: body.search } : {}),
+    ...(typeof body.offset === 'number' ? { offset: body.offset } : {}),
+    ...(isRecord(body.references) && typeof body.references.id === 'string' && RECORD_KINDS.includes(body.references.kind as RecordKind)
+      ? { references: { kind: body.references.kind as RecordKind, id: body.references.id } } : {}),
     ...(source === undefined ? {} : { source }),
   }
   return store.view(query)
@@ -269,16 +279,21 @@ function draftCapability(drafts: DraftStore): CapabilityRegistration {
  * @returns 数据源注册项。
  */
 export function recordsSource(store: RecordsStore): DataSourceRegistration {
+  // 旧组件的 data schema 可能拒绝额外字段；分页游标仅由按需读能力返回。
+  const sourceView = (kind: RecordKind | undefined): RecordsView => {
+    const { nextOffset: _nextOffset, ...view } = store.view({ kind })
+    return view
+  }
   return {
     apiVersion: WIDGET_BOARD_API_VERSION,
     provider: RECORDS_PROVIDER,
     id: RECORDS_SOURCE,
     read(instance) {
-      return store.view({ kind: kindOf(instance) })
+      return sourceView(kindOf(instance))
     },
     subscribe(instance, emit) {
       const kind = kindOf(instance)
-      const push = (): void => { emit(store.view({ kind })) }
+      const push = (): void => { emit(sourceView(kind)) }
       push()
       return store.onChange(push)
     },
@@ -298,6 +313,18 @@ export function registerRecords(sources: Registries, store: RecordsStore, drafts
     sources.registerCapability(readCapability(store)),
     sources.registerCapability(writeCapability(store)),
     sources.registerCapability(draftCapability(drafts)),
+    sources.registerCapability({
+      apiVersion: WIDGET_BOARD_API_VERSION,
+      provider: RECORDS_PROVIDER,
+      id: RECORDS_OPEN_CAPABILITY,
+      title: { zh: '打开记录来源', en: 'Open record details' },
+      description: { zh: '在看板页打开记录详情；目标无需已添加卡片。', en: 'Opens record details on the board page without requiring a target card.' },
+      input: {
+        type: 'object', additionalProperties: false, required: ['kind', 'id'],
+        properties: { kind: { enum: RECORD_KINDS }, id: { type: 'string', minLength: 1, maxLength: 64 } },
+      },
+      call() { throw new Refusal(409, '记录详情需要打开看板页面') },
+    }),
     sources.registerDataSource(recordsSource(store)),
   ]
   return () => {

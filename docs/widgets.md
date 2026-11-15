@@ -42,6 +42,8 @@ vendor/         可选，随组件发布的第三方库（各自的许可照原�
 
 要网上的数据就写 `source: "http"` 并在 `request` 里给出地址；地址里的 `{名字}` 在每次读取时换成卡片 props 或 props schema 的默认值，主机必须列进 `permissions.hosts`。返回的 JSON 原样交给卡片。`request.format` 写 `"atom"` 时改读 Atom 接口：宿主把 XML 解析成对象，属性带 `@_` 前缀，`entry`、`author`、`link` 与 `category` 一律是数组；根元素必须是 Atom 命名空间下的 `feed`，带 `DOCTYPE` 的文档拒绝，不写 `format` 时按 JSON 读。内置的「文献追踪」卡按这个方式订阅 arXiv 分类：分类与条数在卡片设置里填，一行一篇，点一行打开 abs 页。
 
+记录卡声明 `widget-board:records.read`、`widget-board:records.write`、`widget-board:records.draft` 与 `widget-board:records.open` 后，可用运行时提供的 `widget.createRecordRelations({ container, current, onChange })` 安装统一关联字段：`current()` 返回正在编辑的记录（含 `id`、`kind`，回收站里带 `deletedAt`），`onChange(refs)` 把 `{ kind, id }` 数组交给组件的草稿与保存流程。返回的 `value()`、`load(refs)`、`refresh()` 与 `dispose()` 负责读取、恢复与释放；选择器自己搜索、筛选和解析来源标题，组件只负责把值写回记录。`records.open` 由看板页接住，目标记录不必先有卡片；组件不在看板页时调用会得到可见的失败说明。
+
 内置的「最近 Token 用量」卡绑定插件注册的 `widget-board:session.usage` 数据源：卡片可见时它先推一份当下的快照，之后每来一条带用量的会话事件再推一份，另有一条 10 秒的节奏；卡片离开视口就停，卡片自己也不计时。改它的 `scope` 会按新窗口退订重订。「今天」与「全部」把 dsh-usage 记下的历史用量与本插件启动之后的事件合在一起，标题旁标出「历史 dsh-usage」；dsh-usage 没装或读不出来时保留实时读数与空态，标成「历史未接入」或「历史不可用」，不拿零值冒充历史。「所选会话」不合并历史，标成「仅实时」。历史只给今天与全部的合计和四项分项，最近一次调用与走势始终来自实时事件：这段时间只有历史用量时，卡片照旧显示总量与分项，不显示最近一次调用。
 
 ## 本地图片

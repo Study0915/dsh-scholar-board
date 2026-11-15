@@ -196,6 +196,7 @@ describe('样例与清单', () => {
       'widget-board:records.read',
       'widget-board:records.write',
       'widget-board:records.draft',
+      'widget-board:records.open',
     ])
     expect(manifest.scripts).toContain('research-model.js')
     expect(Object.keys(manifest.text).sort()).toEqual(Object.keys(copy).sort())
