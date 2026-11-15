@@ -28,6 +28,7 @@ export { FIGURE_KINDS, SUBMISSION_DECISIONS, REVISION_STATUSES } from './manuscr
 export { TOPIC_QUESTION_STATUSES } from './topic-validate'
 export { searchTextOf } from './search'
 import { figuresOf, submissionsOf, revisionsOf, manuscriptArraysProblem } from './manuscript-validate'
+import { evidenceOf, evidenceProblem, evidenceTextOf } from './evidence-validate'
 import { isRecord } from '../guards'
 import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
 import { chaptersOf, experimentsOf, thesisArraysProblem, thesisMilestonesOf, thesisResultsOf } from './thesis-validate'
@@ -60,7 +61,7 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   action: ['title', 'status', 'due', 'source', 'sourceEntry', 'related', 'blockedNote', 'doneNote', 'materials'],
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials', 'figures', 'submissions', 'revisions'],
   literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'related', 'materials'],
-  research: ['title', 'method', 'question', 'purpose', 'hypothesis', 'steps', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials', 'template'],
+  research: ['title', 'method', 'question', 'purpose', 'hypothesis', 'steps', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'conclusionBasis', 'conclusionScope', 'conclusionEvidence', 'related', 'materials', 'template'],
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
   project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
   course: ['title', 'term', 'code', 'teacher', 'schedule', 'notes', 'work', 'related', 'materials'],
@@ -487,6 +488,9 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.config !== undefined) out.config = entriesOf(input.config, 'config')
   if (input.metrics !== undefined) out.metrics = entriesOf(input.metrics, 'metrics')
   if (input.conclusion !== undefined) out.conclusion = textOf(input.conclusion, 'conclusion')
+  if (input.conclusionBasis !== undefined) out.conclusionBasis = evidenceTextOf(input.conclusionBasis, 'conclusionBasis')
+  if (input.conclusionScope !== undefined) out.conclusionScope = evidenceTextOf(input.conclusionScope, 'conclusionScope')
+  if (input.conclusionEvidence !== undefined) out.conclusionEvidence = evidenceOf(input.conclusionEvidence, 'conclusionEvidence')
   if (input.blockedNote !== undefined) out.blockedNote = textOf(input.blockedNote, 'blockedNote')
   if (input.doneNote !== undefined) out.doneNote = textOf(input.doneNote, 'doneNote')
   if (input.related !== undefined) out.related = refsOf(input.related, 'related', REFERRABLE[kind])
@@ -609,6 +613,8 @@ export function storedProblem(value: unknown): string | null {
   if (value.kind === 'literature' && (typeof value.stage !== 'string' || !LITERATURE_STAGES.includes(value.stage as LiteratureStage))) return 'stage 不认识'
   if (value.kind === 'research') {
     if (typeof value.method !== 'string' || !RESEARCH_METHODS.includes(value.method as ResearchMethod)) return 'method 不认识'
+    const evidence = evidenceProblem(value.conclusionEvidence)
+    if (evidence !== null) return evidence
     for (const field of ['parameters', 'metrics'] as const) {
       const entries = value[field]
       if (entries === undefined) continue

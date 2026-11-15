@@ -1,0 +1,80 @@
+<div class="t-data rc" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker">口径、指标与差值</p>
+      <h2 class="t-data__title" data-field="title">运行比较</h2>
+    </div>
+    <button class="rc__primary t-pressable" type="button" data-action="choose">选择运行</button>
+  </header>
+
+  <p class="rc__banner" data-role="banner" role="status" hidden></p>
+
+  <div class="t-data__scroll rc__body">
+    <section class="rc__section rc__selected-wrap" data-role="selected-wrap" hidden>
+      <h3 class="rc__section-title" data-role="label-selected">已选运行</h3>
+      <ul class="rc__selected" data-role="selected"></ul>
+      <p class="rc__hint" data-role="selected-hint"></p>
+    </section>
+
+    <section class="rc__section rc__confirm" data-role="confirm-wrap" hidden>
+      <h3 class="rc__section-title" data-role="label-confirm">确认同口径</h3>
+      <label class="rc__check">
+        <input type="checkbox" data-role="confirm" />
+        <span data-role="label-confirm-text"></span>
+      </label>
+      <label class="rc__field">
+        <span class="rc__label" data-role="label-direction">差值方向</span>
+        <select data-role="direction">
+          <option value="target-minus-baseline">其他方案减基线</option>
+          <option value="baseline-minus-target">基线减其他方案</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="rc__section" data-role="conditions-wrap" hidden>
+      <h3 class="rc__section-title" data-role="label-conditions">口径</h3>
+      <p class="rc__hint" data-role="conditions-hint"></p>
+      <div class="rc__table-wrap">
+        <table class="rc__table" data-role="conditions">
+          <thead data-role="conditions-head"></thead>
+          <tbody data-role="conditions-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="rc__section" data-role="metrics-wrap" hidden>
+      <h3 class="rc__section-title" data-role="label-metrics">指标</h3>
+      <p class="rc__hint" data-role="metrics-hint"></p>
+      <div class="rc__table-wrap">
+        <table class="rc__table" data-role="metrics">
+          <thead data-role="metrics-head"></thead>
+          <tbody data-role="metrics-body"></tbody>
+        </table>
+      </div>
+      <p class="rc__empty" data-role="metrics-empty" hidden></p>
+    </section>
+
+    <p class="rc__empty" data-role="empty" hidden></p>
+    <div class="rc__note-wrap">
+      <p class="t-data__empty rc__note" data-role="note">正在读取运行…</p>
+      <button class="rc__ghost rc__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <dialog class="rc__dialog" data-role="pick-dialog">
+    <h3 class="rc__dialog-title" data-role="pick-title">选择运行</h3>
+    <p class="rc__hint" data-role="pick-hint"></p>
+    <div class="rc__filters">
+      <input class="rc__input" type="search" data-role="search" placeholder="搜索运行" autocomplete="off" />
+      <button class="rc__ghost" type="button" data-action="pick-search">查找</button>
+    </div>
+    <ul class="rc__candidates" data-role="candidates"></ul>
+    <p class="rc__hint" data-role="pick-status" role="status"></p>
+    <button class="rc__ghost" type="button" data-action="pick-more" hidden>读取更多</button>
+    <div class="rc__dialog-actions">
+      <button class="rc__primary" type="button" data-action="pick-done">完成</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

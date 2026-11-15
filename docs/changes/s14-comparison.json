@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 15,
+  "at": "2026-11-15",
+  "external": true,
+  "zh": "新增运行比较视图与结论证据。运行比较选两到八条运行并标记基线、消融或其他方案，逐行对照数据划分、环境与预处理、配置与训练预算、检查点、种子、评估集合、代码来源与统计方法；不同与未知分别标出，只有用户确认同口径、数值和单位一致时才按指定方向给出差值，单位不换算、多组种子均值不当单次值、零基线不给相对提升，也不排名。研究记录的结论补充依据、适用边界与结论证据：证据引用记录类型、id 和引用时的修订号，可选到条目、材料与依据摘要，来源被修改后显示「来源已更新」而冻结的修订号不变，来源缺失、归档与回收站分别标记。稿件图表可引用对应运行、记录数据材料、写明绘图代码仓库与提交，并补充结论说明；图表编号保留原形，不因排序自动重编号。记录契约、反向引用、检索、导出导入与内置组件画廊同步覆盖新字段与新卡片。",
+  "en": "Adds a run comparison view and conclusion evidence. Run comparison takes two to eight runs marked baseline, ablation or other and lines them up on data splits, environment and preprocessing, configuration and budget, checkpoints, seeds, evaluation sets, code source and statistical method, marking differences and unknowns separately. A delta in the chosen direction is shown only after the user confirms the protocol, values and units match; units are never converted, multi-seed means are not treated as single values, zero baselines get no relative change, and nothing is ranked. Research conclusions now carry a basis, an applicable scope and evidence: each evidence item cites a record kind, id and the revision captured at citation, optionally an entry, a material and a basis summary; when the source has changed the detail shows \"source updated\" while the frozen revision stays, and missing, archived and trashed sources are marked separately. Manuscript figures can reference their runs, record data materials, name the plot repository and commit, and add a conclusion note; figure labels keep their original form and are never renumbered by sorting. The record contract, reverse references, search, export/import and the built-in gallery all cover the new fields and card."
+}

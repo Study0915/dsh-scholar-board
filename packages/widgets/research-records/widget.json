@@ -5,8 +5,8 @@
     "en": "Research notes"
   },
   "description": {
-    "zh": "记下一次推导、仿真或实验：研究问题、目的、假设、步骤、环境、随机种子、参数与指标（带单位）、结论和结果材料。同一套方案下的运行会列在详情里，也能一键新建一条计划中的运行去运行记录卡继续填写。列表按做法筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。缺失的内容显示「未知」，这里只记录不执行实验程序。",
-    "en": "Records a derivation, simulation or experiment: research question, purpose, hypothesis, steps, environment, seeds, parameters and metrics with units, conclusion and result materials. Runs that use this note as their plan are listed in the detail, and New run creates a planned run to continue on the run records card. The list filters by method, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. Missing content shows as unknown, and nothing is executed here."
+    "zh": "记下一次推导、仿真或实验：研究问题、目的、假设、步骤、环境、随机种子、参数与指标（带单位）、结论、依据与适用边界，并引用记录、条目或材料作为证据。同一套方案下的运行会列在详情里，也能一键新建一条计划中的运行去运行记录卡继续填写。列表按做法筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。缺失的内容显示「未知」，这里只记录不执行实验程序。",
+    "en": "Records a derivation, simulation or experiment: research question, purpose, hypothesis, steps, environment, seeds, parameters and metrics with units, conclusion with basis and scope, and evidence cited from records, entries or materials. Runs that use this note as their plan are listed in the detail, and New run creates a planned run to continue on the run records card. The list filters by method, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. Missing content shows as unknown, and nothing is executed here."
   },
   "author": "dsh-scholar-board",
   "version": "0.1.0",
@@ -33,6 +33,7 @@
     "research-model.js",
     "copy.js",
     "view.js",
+    "evidence-editor.js",
     "editor.js"
   ],
   "props": {
@@ -327,6 +328,166 @@
     "conclusionHint": {
       "zh": "结论与材料只是记录，不执行实验程序。",
       "en": "Conclusions and materials are recorded only; nothing is executed."
+    },
+    "conclusionBasis": {
+      "zh": "结论依据",
+      "en": "Basis"
+    },
+    "conclusionBasisHint": {
+      "zh": "写下支撑结论的推导、数据或运行；留空时显示未知。",
+      "en": "Record the derivation, data or runs behind the conclusion; an empty field shows as unknown."
+    },
+    "conclusionScope": {
+      "zh": "适用边界",
+      "en": "Scope"
+    },
+    "conclusionScopeHint": {
+      "zh": "写明条件、数据集合与不适用的情况。",
+      "en": "State the conditions, datasets and cases where it does not apply."
+    },
+    "evidence": {
+      "zh": "结论证据",
+      "en": "Conclusion evidence"
+    },
+    "evidenceHint": {
+      "zh": "引用记录、条目或材料并冻结引用时的版本；来源改过后会提示「来源已更新」。",
+      "en": "Cite records, entries or materials and freeze the revision at citation time; later changes show as source updated."
+    },
+    "evidenceEmpty": {
+      "zh": "还没有引用证据。",
+      "en": "No evidence cited yet."
+    },
+    "evidenceSearch": {
+      "zh": "搜索要引用的记录",
+      "en": "Search records to cite"
+    },
+    "evidenceFind": {
+      "zh": "查找",
+      "en": "Find"
+    },
+    "evidenceMore": {
+      "zh": "读取下一页",
+      "en": "Load next page"
+    },
+    "evidenceAddHint": {
+      "zh": "勾选即引用当前版本。",
+      "en": "Checking a record cites its current revision."
+    },
+    "evidenceNoMatch": {
+      "zh": "没有匹配记录",
+      "en": "No matching records"
+    },
+    "evidenceLoading": {
+      "zh": "读取中…",
+      "en": "Loading…"
+    },
+    "evidenceLimit": {
+      "zh": "证据引用最多 50 条。",
+      "en": "At most 50 evidence citations."
+    },
+    "evidenceInvalid": {
+      "zh": "证据引用不完整或重复；每条要选一条记录，且同一条记录只能引用一次。",
+      "en": "Evidence is incomplete or repeated; each citation needs a record, and one record can only be cited once."
+    },
+    "evidenceUpdated": {
+      "zh": "来源已更新",
+      "en": "Source updated"
+    },
+    "evidenceTrash": {
+      "zh": "回收站",
+      "en": "Trash"
+    },
+    "evidenceArchived": {
+      "zh": "已归档",
+      "en": "Archived"
+    },
+    "evidenceMissing": {
+      "zh": "来源缺失",
+      "en": "Source missing"
+    },
+    "evidenceRevision": {
+      "zh": "引用时修订 {n}",
+      "en": "Revision {n} at citation"
+    },
+    "evidenceSummary": {
+      "zh": "依据摘要（可选）",
+      "en": "Basis summary (optional)"
+    },
+    "evidenceEntry": {
+      "zh": "条目（可选）",
+      "en": "Entry (optional)"
+    },
+    "evidenceMaterial": {
+      "zh": "材料（可选）",
+      "en": "Material (optional)"
+    },
+    "evidenceNone": {
+      "zh": "不指定",
+      "en": "Not specified"
+    },
+    "evidenceRemove": {
+      "zh": "移除引用",
+      "en": "Remove citation"
+    },
+    "evidenceReadFailed": {
+      "zh": "证据来源读取失败，引用仍保留",
+      "en": "Evidence sources could not be read; citations are retained"
+    },
+    "evidenceOpen": {
+      "zh": "查看",
+      "en": "View"
+    },
+    "evidenceCount": {
+      "zh": "{n} 条证据",
+      "en": "{n} evidence"
+    },
+    "kindMeeting": {
+      "zh": "组会",
+      "en": "Meeting"
+    },
+    "kindAction": {
+      "zh": "行动项",
+      "en": "Action"
+    },
+    "kindManuscript": {
+      "zh": "小论文",
+      "en": "Manuscript"
+    },
+    "kindLiterature": {
+      "zh": "文献",
+      "en": "Literature"
+    },
+    "kindResearch": {
+      "zh": "研究",
+      "en": "Research"
+    },
+    "kindThesis": {
+      "zh": "毕业论文",
+      "en": "Thesis"
+    },
+    "kindProject": {
+      "zh": "项目",
+      "en": "Project"
+    },
+    "kindCourse": {
+      "zh": "课程",
+      "en": "Course"
+    },
+    "kindChore": {
+      "zh": "事务",
+      "en": "Chore"
+    },
+    "kindTopic": {
+      "zh": "课题",
+      "en": "Topic"
+    },
+    "kindRun": {
+      "zh": "运行",
+      "en": "Run"
+    },
+    "kindTemplate": {
+      "zh": "模板",
+      "en": "Template"
     },
     "close": {
       "zh": "关闭",

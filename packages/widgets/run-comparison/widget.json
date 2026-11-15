@@ -1,0 +1,353 @@
+{
+  "id": "run-comparison",
+  "title": {
+    "zh": "运行比较",
+    "en": "Run comparison"
+  },
+  "description": {
+    "zh": "选两到八条运行并标记基线、消融或其他方案，逐行对照数据划分、环境与预处理、配置与训练预算、检查点、种子、评估集合、代码来源与统计方法；不同与未知分别标出。只有确认同口径、数值和单位一致时才给出指定方向的差值，单位不换算、多组种子不当单次值、零基线不给相对变化，也不排名。",
+    "en": "Pick two to eight runs and mark baseline, ablation or other; compare datasets, environment and preprocessing, configuration and budget, checkpoints, seeds, evaluation sets, code source and statistical method, with differences and unknowns marked. A delta in the chosen direction appears only after you confirm the protocol, values and units match; units are never converted, multi-seed means are not treated as single values, zero baselines get no relative change, and nothing is ranked."
+  },
+  "author": "dsh-scholar-board",
+  "version": "0.1.0",
+  "sizes": [
+    "m",
+    "l"
+  ],
+  "source": "widget-board:records",
+  "capabilities": [
+    "widget-board:records.read",
+    "widget-board:records.open"
+  ],
+  "defaultBox": {
+    "w": 2,
+    "h": 30
+  },
+  "minBox": {
+    "w": 1,
+    "h": 16
+  },
+  "scripts": [
+    "compare-model.js",
+    "copy.js",
+    "main.js"
+  ],
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string",
+        "maxLength": 80
+      },
+      "kicker": {
+        "type": "string",
+        "maxLength": 40
+      }
+    }
+  },
+  "data": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "records": {
+        "type": "array",
+        "maxItems": 200,
+        "items": {
+          "type": "object"
+        }
+      },
+      "quota": {
+        "type": "object"
+      },
+      "total": {
+        "type": "number"
+      },
+      "truncated": {
+        "type": "boolean"
+      }
+    }
+  },
+  "text": {
+    "title": {
+      "zh": "运行比较",
+      "en": "Run comparison"
+    },
+    "kicker": {
+      "zh": "口径、指标与差值",
+      "en": "Protocol, metrics and deltas"
+    },
+    "choose": {
+      "zh": "选择运行",
+      "en": "Choose runs"
+    },
+    "change": {
+      "zh": "调整选择",
+      "en": "Adjust selection"
+    },
+    "loading": {
+      "zh": "正在读取运行…",
+      "en": "Reading runs…"
+    },
+    "failed": {
+      "zh": "读取失败",
+      "en": "Runs unavailable"
+    },
+    "retry": {
+      "zh": "重试",
+      "en": "Retry"
+    },
+    "empty": {
+      "zh": "还没有运行记录；先在运行记录卡里记一次运行。",
+      "en": "No run records yet; record a run in the Run records card first."
+    },
+    "hint": {
+      "zh": "选两到八条运行，标出一条基线，再确认口径是否相同。",
+      "en": "Pick two to eight runs, mark one baseline, then confirm whether the protocol is the same."
+    },
+    "selected": {
+      "zh": "已选 {n} 条运行",
+      "en": "{n} runs selected"
+    },
+    "role": {
+      "zh": "角色",
+      "en": "Role"
+    },
+    "roleBaseline": {
+      "zh": "基线",
+      "en": "Baseline"
+    },
+    "roleAblation": {
+      "zh": "消融",
+      "en": "Ablation"
+    },
+    "roleOther": {
+      "zh": "其他方案",
+      "en": "Other"
+    },
+    "remove": {
+      "zh": "移除",
+      "en": "Remove"
+    },
+    "missingRun": {
+      "zh": "来源缺失",
+      "en": "Source missing"
+    },
+    "trashedRun": {
+      "zh": "已在回收站",
+      "en": "In trash"
+    },
+    "archivedRun": {
+      "zh": "已归档",
+      "en": "Archived"
+    },
+    "needBaseline": {
+      "zh": "差值需要一条基线。",
+      "en": "Deltas need one baseline."
+    },
+    "limitReached": {
+      "zh": "一次最多比较八条运行。",
+      "en": "Compare at most eight runs at once."
+    },
+    "conditions": {
+      "zh": "口径",
+      "en": "Protocol"
+    },
+    "conditionsHint": {
+      "zh": "不同的行会标出来；缺字段的运行显示未知。",
+      "en": "Differences are marked; a run missing a field shows unknown."
+    },
+    "metrics": {
+      "zh": "指标",
+      "en": "Metrics"
+    },
+    "metricsHint": {
+      "zh": "指标保持名称、单位与定义；文字值不参与差值。",
+      "en": "Metrics keep name, unit and definition; text values get no delta."
+    },
+    "noMetrics": {
+      "zh": "所选运行没有可比较的指标。",
+      "en": "The selected runs have no metrics to compare."
+    },
+    "same": {
+      "zh": "一致",
+      "en": "Same"
+    },
+    "different": {
+      "zh": "不同",
+      "en": "Different"
+    },
+    "unknown": {
+      "zh": "未知",
+      "en": "Unknown"
+    },
+    "comparable": {
+      "zh": "可比",
+      "en": "Comparable"
+    },
+    "textValue": {
+      "zh": "文字值",
+      "en": "Text value"
+    },
+    "sourceMissing": {
+      "zh": "来源已缺失",
+      "en": "Source missing"
+    },
+    "notRecorded": {
+      "zh": "未记录",
+      "en": "Not recorded"
+    },
+    "unknownValue": {
+      "zh": "未知",
+      "en": "Unknown"
+    },
+    "dimPlan": {
+      "zh": "研究方案",
+      "en": "Research plan"
+    },
+    "dimDatasets": {
+      "zh": "数据与划分",
+      "en": "Datasets and splits"
+    },
+    "dimEnvironment": {
+      "zh": "环境与信道/预处理",
+      "en": "Environment, channel and preprocessing"
+    },
+    "dimConfig": {
+      "zh": "配置与训练预算",
+      "en": "Configuration and budget"
+    },
+    "dimCheckpoints": {
+      "zh": "检查点",
+      "en": "Checkpoints"
+    },
+    "dimSeed": {
+      "zh": "随机种子",
+      "en": "Seeds"
+    },
+    "dimEvaluation": {
+      "zh": "评估与校准集合",
+      "en": "Evaluation and calibration sets"
+    },
+    "dimCode": {
+      "zh": "代码来源",
+      "en": "Code source"
+    },
+    "dimStatistics": {
+      "zh": "统计方法",
+      "en": "Statistical method"
+    },
+    "confirmTitle": {
+      "zh": "确认同口径",
+      "en": "Confirm the protocol"
+    },
+    "confirmLabel": {
+      "zh": "我确认这些运行的数据划分、配置、指标定义与单位相同，差值仅用于同一口径。",
+      "en": "I confirm these runs share datasets, configuration, metric definitions and units; deltas apply only within one protocol."
+    },
+    "direction": {
+      "zh": "差值方向",
+      "en": "Delta direction"
+    },
+    "directionTarget": {
+      "zh": "其他方案减基线",
+      "en": "Other minus baseline"
+    },
+    "directionBaseline": {
+      "zh": "基线减其他方案",
+      "en": "Baseline minus other"
+    },
+    "delta": {
+      "zh": "差值",
+      "en": "Delta"
+    },
+    "deltaUnconfirmed": {
+      "zh": "先勾选上面的确认，才算差值。",
+      "en": "Tick the confirmation above before deltas are computed."
+    },
+    "deltaNoBaseline": {
+      "zh": "没有基线。",
+      "en": "No baseline."
+    },
+    "deltaUnit": {
+      "zh": "单位或定义不同，不计算差值。",
+      "en": "Units or definitions differ; no delta."
+    },
+    "deltaDefinition": {
+      "zh": "指标定义不同，不计算差值。",
+      "en": "Metric definitions differ; no delta."
+    },
+    "deltaMissing": {
+      "zh": "有运行没填这个指标。",
+      "en": "One run does not record this metric."
+    },
+    "deltaText": {
+      "zh": "文字值不计算差值。",
+      "en": "Text values get no delta."
+    },
+    "deltaAggregate": {
+      "zh": "包含多组种子的汇总，不当成单次值。",
+      "en": "Aggregates or multi-seed runs are not treated as single values."
+    },
+    "deltaStatistics": {
+      "zh": "统计方法未知，不计算差值。",
+      "en": "The statistical method is unknown; no delta."
+    },
+    "zeroBaseline": {
+      "zh": "基线为零，不给相对变化。",
+      "en": "Zero baseline; no relative change."
+    },
+    "relative": {
+      "zh": "相对 {value}",
+      "en": "Relative {value}"
+    },
+    "differenceValue": {
+      "zh": "差值 {value} {unit}",
+      "en": "Delta {value} {unit}"
+    },
+    "search": {
+      "zh": "搜索运行标题、环境与指标",
+      "en": "Search run titles, environments and metrics"
+    },
+    "searchLabel": {
+      "zh": "搜索运行",
+      "en": "Search runs"
+    },
+    "loadMore": {
+      "zh": "读取更多",
+      "en": "Load more"
+    },
+    "done": {
+      "zh": "完成",
+      "en": "Done"
+    },
+    "close": {
+      "zh": "关闭",
+      "en": "Close"
+    },
+    "noMatches": {
+      "zh": "没有匹配的运行。",
+      "en": "No matching runs."
+    },
+    "sampleNote": {
+      "zh": "样例：两条运行的口径与差值。",
+      "en": "Sample: protocol and deltas for two runs."
+    },
+    "sampleBaseline": {
+      "zh": "基线 · 种子 11",
+      "en": "Baseline · seed 11"
+    },
+    "sampleAblation": {
+      "zh": "消融 · 去量化",
+      "en": "Ablation · no quantization"
+    },
+    "selectHint": {
+      "zh": "列表只列运行；来源缺失时保留 id，可以重新选。",
+      "en": "Only runs are listed; a missing source keeps its id so you can reselect it."
+    },
+    "roleLabel": {
+      "zh": "这条运行的角色",
+      "en": "Role of this run"
+    }
+  }
+}

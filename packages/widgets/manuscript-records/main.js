@@ -465,8 +465,29 @@
     nodes.figures.addEventListener('click', function (event) {
       var target = event.target
       if (!(target instanceof Element)) return
-      var remove = target.closest('[data-action="remove-figure"]')
-      if (remove !== null) editor.removeFigure(remove.getAttribute('data-figure'))
+      var open = target.closest('.ms__material-open')
+      if (open !== null && typeof open.dataset.url === 'string' && live && typeof widget.open === 'function') {
+        widget.open(open.dataset.url)
+        return
+      }
+      var run = target.closest('[data-action="open-figure-run"]')
+      if (run !== null) {
+        editor.openFigureRun(run.getAttribute('data-run'))
+        return
+      }
+      var action = target.closest('[data-action]')
+      if (action === null) return
+      var name = action.getAttribute('data-action')
+      var figureId = action.getAttribute('data-figure')
+      if (name === 'remove-figure') editor.removeFigure(figureId)
+      else if (name === 'remove-figure-run') editor.removeFigureRun(figureId, action.getAttribute('data-run'))
+      else if (name === 'remove-figure-material') editor.removeFigureMaterial(figureId, action.getAttribute('data-material'))
+      else if (name === 'add-figure-material') {
+        var row = action.closest('.ms__deep-row')
+        var url = row !== null ? row.querySelector('[data-field="figure-material-url"]') : null
+        var title = row !== null ? row.querySelector('[data-field="figure-material-title"]') : null
+        editor.addFigureMaterial(figureId, url !== null ? url.value : '', title !== null ? title.value : '')
+      }
     })
   }
   if (nodes.submissions !== null) {

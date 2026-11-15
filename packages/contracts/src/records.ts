@@ -32,6 +32,8 @@ export const RECORDS_LIMITS = {
   unitLength: 32,
   stageHistory: 200,
   figures: 100,
+  figureRuns: 20,
+  evidence: 50,
   submissions: 50,
   revisions: 200,
   figureLabelLength: 32,
@@ -84,7 +86,13 @@ export interface StageEntry {
   note?: string
 }
 
-/** 图表目录里的一行：图或表、编号、标题与证据材料。 */
+/** 图表的绘图代码来源；仓库与提交都允许未知。 */
+export interface PlotCode {
+  repository?: string
+  commit?: string
+}
+
+/** 图表目录里的一行：图或表、编号、标题、来源运行、材料、绘图代码与结论说明。 */
 export type FigureKind = 'figure' | 'table'
 
 export interface ManuscriptFigure {
@@ -93,7 +101,24 @@ export interface ManuscriptFigure {
   label: string
   title: string
   note?: string
+  runs?: RecordRef[]
+  plot?: PlotCode
+  conclusion?: string
   materials?: MaterialRef[]
+}
+
+/**
+ * 结论依据的一条引用：记录类型、id 与引用时的修订号；条目与材料可选。
+ *
+ * `revision` 是引用那一刻记录自己的修订号；详情读取当前记录后与它比较，不同就提示来源已更新。
+ */
+export interface EvidenceRef {
+  kind: RecordKind
+  id: string
+  revision: number
+  entryId?: string
+  materialId?: string
+  summary?: string
 }
 
 /** 一轮投稿的结果；拒稿、撤稿与转投都留在这里，旧轮次不删。 */
@@ -229,6 +254,9 @@ export interface ResearchRecord extends RecordBase {
   parameters?: ResearchEntry[]
   metrics?: ResearchEntry[]
   conclusion?: string
+  conclusionBasis?: string
+  conclusionScope?: string
+  conclusionEvidence?: EvidenceRef[]
   related?: RecordRef[]
   materials?: MaterialRef[]
   template?: TemplateSnapshot
