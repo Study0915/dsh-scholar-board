@@ -25,7 +25,7 @@
 |---|---|---|---|---|
 | A · S09 | 同步云端、更新 AGENTS、架构、现状与任务说明 | S00–S08 | 文档及检查完成；指纹已按本次授权登记 | 本页、[云端流程](cloud-environment.md) |
 | A · S10 | 统一关联选择、反向引用、跨卡片详情与返回 | S09 | 已实现并通过完整验收；用户已确认浅深色显示（2026-11-15） | [科研流程](scholar-research-workflow.md#s10-统一关联与导航) |
-| A · S11 | 课题、假设、问题与行动项 | S10 | 已实现并通过完整验收（2026-11-15）；PR 待合并 | [科研流程](scholar-research-workflow.md#s11-课题与问题) |
+| A · S11 | 课题、假设、问题与行动项 | S10 | 已实现并通过完整验收（2026-11-15）；[PR #13](https://github.com/Study0915/dsh-scholar-board/pull/13) 合并于 `6c5dffa` | [科研流程](scholar-research-workflow.md#s11-课题与问题) |
 | A · S12 | 方案与独立运行、配置与结果来源 | S11 | 未实施 | [科研流程](scholar-research-workflow.md#s12-研究方案与运行) |
 | A · S13 | 通信专业与个人模板 | S12 | 未实施 | [科研流程](scholar-research-workflow.md#s13-通信专业模板) |
 | A · S14 | 比较口径、图表与结论证据 | S13 | 未实施 | [科研流程](scholar-research-workflow.md#s14-比较与图表证据) |
