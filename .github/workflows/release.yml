@@ -1,0 +1,141 @@
+name: Release
+
+# 发布管线：每完成一项 PLAN-scholar 计划任务，把当前源码打成插件包，挂进**草稿** GitHub Release。
+#
+# 触发：push 到 main 时，把上一个发布标签与本次提交里的任务表比一遍，只有出现新完成的任务才打包；
+# workflow_dispatch 可手动打包（按 bump 升版本或指定版本号）。
+# 版本节奏按用户的规划：minor（1.1、1.2……）是小改进，major（1.0、2.0……）是巨大更新，patch 修缺陷。
+# 草稿只有仓库维护者能看见；真正的发布必须由用户手工确认，或在手动触发时显式传 publish=true。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 指定版本号（留空按 bump 计算）
+        required: false
+        type: string
+      bump:
+        description: 版本提升方式
+        required: false
+        type: choice
+        options: [auto, minor, major, patch]
+        default: auto
+      publish:
+        description: 创建后立即发布（需要用户明确许可）
+        required: false
+        type: boolean
+        default: false
+
+# 同一时间只准备一次发布；进行中的那一次不因为后来的推送被打断。
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: 找上一个发布标签与新完成的任务
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          BASE=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT" = push ]; then
+            if [ -z "$BASE" ]; then
+              node scripts/plan-status.mjs > plan.json
+            else
+              node scripts/plan-status.mjs --new-since "$BASE" > plan.json
+            fi
+            NEW=$(node -e "const p=require('./plan.json');console.log(p.newlyCompleted.join('、'))")
+            echo "new=$NEW" >> "$GITHUB_OUTPUT"
+            if [ -z "$NEW" ]; then
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              echo "没有新完成的计划任务，这次推送不打包。" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+              echo "新完成的计划任务：$NEW" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "手动触发，直接准备发布。" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: 计算版本
+        id: version
+        if: steps.plan.outputs.skip != 'true'
+        env:
+          WANTED: ${{ inputs.version }}
+          BUMP: ${{ inputs.bump || 'auto' }}
+        run: |
+          if [ -n "$WANTED" ]; then
+            RELEASE_VERSION=$(node scripts/release.mjs --version "$WANTED" --print-version)
+          elif [ "$BUMP" = auto ]; then
+            RELEASE_VERSION=$(node scripts/release.mjs --print-version)
+          else
+            RELEASE_VERSION=$(node scripts/release.mjs --bump "$BUMP" --print-version)
+          fi
+          echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "准备发布 v$RELEASE_VERSION。" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 已有同版本草稿时不再重复创建
+        id: draft
+        if: steps.plan.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          EXISTS=$(gh api "repos/${{ github.repository }}/releases?per_page=100" --jq ".[] | select(.draft == true and .tag_name == \"$TAG\") | .tag_name" | head -1)
+          if [ -n "$EXISTS" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "草稿 $TAG 已经存在，等它发布之后再准备下一版。" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 打包
+        if: steps.plan.outputs.skip != 'true' && steps.draft.outputs.skip != 'true'
+        env:
+          NEW: ${{ steps.plan.outputs.new }}
+        run: |
+          node scripts/release.mjs --version "${{ steps.version.outputs.version }}" --out release \
+            --note-zh "计划任务 ${NEW} 完成，本次发布包含该阶段改动。" \
+            --note-en "Plan task ${NEW} completed; this release packages the stage changes."
+
+      - name: 打包后的完整检查
+        if: steps.plan.outputs.skip != 'true' && steps.draft.outputs.skip != 'true'
+        run: node scripts/verify.mjs --no-smoke
+
+      - name: 创建草稿 Release
+        if: steps.plan.outputs.skip != 'true' && steps.draft.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" \
+            --draft \
+            --title "v${{ steps.version.outputs.version }}" \
+            --notes-file release/notes.md \
+            --target "$GITHUB_SHA" \
+            "release/dsh-scholar-board-${{ steps.version.outputs.version }}.tgz"
+
+      - name: 发布草稿（只在手动触发并明确要求时）
+        if: github.event_name == 'workflow_dispatch' && inputs.publish && steps.plan.outputs.skip != 'true' && steps.draft.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "v${{ steps.version.outputs.version }}" --draft=false

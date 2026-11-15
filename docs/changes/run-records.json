@@ -1,8 +1,0 @@
-{
-  "group": "new",
-  "order": 13,
-  "at": "2026-11-15",
-  "external": true,
-  "zh": "新增「运行记录」卡与第十一类记录 `run`：按研究方案记录状态、代码仓库与提交、数据集及划分版本、检查点、实际配置、环境、种子、评估集合、起止时间、观测指标、产物与失败原因。每条结果区分单次运行与统计汇总，汇总可引用来源运行并写明方法、样本数与离散度，没有原运行时可显式标记手工汇总；单次结果与汇总的口径分开保存，不编造种子。研究卡补充目的、假设与步骤，并列出以它为方案的运行，可一键新建一条计划中的运行；复制为计划不带结果、状态、时间与产物。记录类型、检索、导出导入、配额、关联选择器与内置组件画廊一并支持运行记录。",
-  "en": "Adds the Runs card and an eleventh record kind, run: record a run against a research plan with status, code repository and commit, datasets with splits and versions, checkpoints, actual config, environment, seeds, evaluation set, start and end times, observed metrics, artifacts and failure reason. Each result is either a single run or an aggregate; an aggregate can cite source runs together with method, sample size and dispersion, and a manual aggregate is marked explicitly when no run can be cited; single and aggregate scopes are stored separately, and seeds are never invented. Research notes gain purpose, hypothesis and steps, list runs that use them as the plan, and can create a planned run in one click; duplicating a plan copies no results, status, times or artifacts. Records, search, export/import, quota, the relation picker and the built-in gallery now cover runs too."
-}

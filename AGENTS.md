@@ -124,6 +124,8 @@
 | `npm run docs:check` | 提交的 ADR 索引与决策文件不一致时失败；云端任务跑这一条 |
 | `npm run changelog` | 把 docs/changes/ 里待发布的条目组装成 CHANGELOG.md 的 [Unreleased] 段 |
 | `npm run changelog:check` | 提交的 `[Unreleased]` 段与 `docs/changes/` 不一致时失败；云端任务跑这一条 |
+| `npm run plan:status` | 读 PLAN-scholar 的任务表，给出每项是否完成，以及相对某个提交新完成了哪些 |
+| `npm run release` | 把当前源码打成可发布的插件包：写版本、收 CHANGELOG、构建、封装 tarball 与发布说明 |
 | `npm run agents` | 从 `package.json` 与每个脚本自己的头部写出这张表 |
 | `npm run agents:check` | AGENTS.md 的命令表与 `package.json` 不一致时失败；云端任务跑这一条 |
 | `npm run verify` | 测试的唯一入口 |
@@ -143,3 +145,7 @@
 - 按已有用户授权保存阶段版本；本地先核对工作区 guard 的实际分支与远端规则。云端 Waker 按 [docs/cloud-environment.md](docs/cloud-environment.md) 在产品仓库执行分支/PR 流程，合并前 CI 必须通过。阶段保存不代表完整验收或公开发布已获批准。
 - 每次推送公共仓库前运行隐私检查；真实姓名、手机号、个人邮箱、个人目录路径、凭据不得进入仓库；GitHub 用户名与 noreply 邮箱除外；私有词表由运行环境提供，不入库。
 - `lib/` 是构建产物，从不提交（D2）。
+
+### 发布管线
+
+`Release` 工作流在计划任务完成并合入 main 后打包：比较上一个 `v*` 标签与本次提交里的任务表，只有出现新完成的任务才升版本、收 CHANGELOG、构建、封装 tarball，并创建**草稿** Release。版本按用户规划：minor（1.1、1.2……）是小改进，major（1.0、2.0……）是巨大更新，patch 修缺陷。草稿的发布由用户确认；工作流只在手动触发并显式传 `publish=true` 时解除草稿。本地用 `npm run release -- --version <版本>` 准备同样的产物，不推送、不打标签。
