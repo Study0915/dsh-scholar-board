@@ -2,7 +2,7 @@
 import type { DomainRecord, ResearchEntry, ManuscriptFigure, RevisionItem, SubmissionRound, CourseWork, MaterialRef, ProjectCommunication, ProjectDeliverable, ProjectIssue, ProjectTask, ThesisChapter, ThesisExperiment, ThesisMilestone, ThesisResult } from '@dsh-scholar-board/contracts'
 
 /** 搜索和展示时要读的文本字段。 */
-const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion', 'code', 'teacher', 'schedule', 'notes', 'note', 'category'] as const
+const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'goal', 'hypothesis', 'judgment', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion', 'code', 'teacher', 'schedule', 'notes', 'note', 'category'] as const
 
 /**
  * 一条记录的搜索文本：标题与全部短文本字段，材料标题也进来。
@@ -99,6 +99,9 @@ export function searchTextOf(record: DomainRecord): string {
     for (const material of Array.isArray(work?.materials) ? work.materials : []) {
       if (typeof material?.title === 'string') parts.push(material.title)
     }
+  }
+  for (const question of (Array.isArray(entry.questions) ? entry.questions : []) as { text?: unknown }[]) {
+    if (typeof question?.text === 'string') parts.push(question.text)
   }
   return parts.join('\n').toLowerCase()
 }

@@ -44,14 +44,16 @@ export const RECORDS_LIMITS = {
   courseWork: 100,
   termLabelLength: 40,
   categoryLength: 40,
+  topicQuestions: 100,
+  topicQuestionText: 2000,
   searchLength: 200,
 } as const
 
-/** 领域记录的九种类型。 */
-export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore'
+/** 领域记录的十种类型。 */
+export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore' | 'topic'
 
 /** 记录类型的唯一列表，校验、筛选和关系查询共用。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore']
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore', 'topic']
 
 /** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
 export type LiteratureStage = 'queued' | 'reading' | 'understood'
@@ -155,13 +157,14 @@ export interface MeetingRecord extends RecordBase {
   derivedFrom?: string
 }
 
-/** 行动项。 */
+/** 行动项。`source.kind` 为 `topic` 时，`sourceEntry` 指向课题里的问题条目。 */
 export interface ActionRecord extends RecordBase {
   kind: 'action'
   title: string
   status: ActionStatus
   due?: Due
   source?: RecordRef
+  sourceEntry?: string
   related?: RecordRef[]
   blockedNote?: string
   doneNote?: string
@@ -389,8 +392,33 @@ export interface ChoreRecord extends RecordBase {
   materials?: MaterialRef[]
 }
 
+/** 课题里一个问题的状态：待解、调查中、已解决；解决与否由用户判断。 */
+export type TopicQuestionStatus = 'open' | 'investigating' | 'resolved'
+
+/** 课题里的一个问题条目；转成行动项后保留条目的稳定 id。 */
+export interface TopicQuestion {
+  id: string
+  text: string
+  status: TopicQuestionStatus
+  actionId?: string
+}
+
+/** 研究课题：问题、目标、假设、当前判断、下一步与待解问题。 */
+export interface TopicRecord extends RecordBase {
+  kind: 'topic'
+  title: string
+  question?: string
+  goal?: string
+  hypothesis?: string
+  judgment?: string
+  nextStep?: string
+  questions?: TopicQuestion[]
+  related?: RecordRef[]
+  materials?: MaterialRef[]
+}
+
 /** 一条领域记录。 */
-export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord | CourseRecord | ChoreRecord
+export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord | CourseRecord | ChoreRecord | TopicRecord
 
 /** 工作区当前的用量；到九成时 `warning` 为真，到顶阻止新建。 */
 export interface RecordsQuota {
@@ -422,7 +450,7 @@ export interface RecordQuery {
   /** 找到直接引用该记录的对象，不预先双写反向列表。 */
   references?: RecordRef
   /** 只看来源指向某条记录的行动项：反向引用由宿主现算，不双写。 */
-  source?: { kind: 'meeting' | 'manuscript', id: string }
+  source?: { kind: 'meeting' | 'manuscript' | 'topic', id: string }
 }
 
 /** 一次读取最多给出多少条，以及序列化后的字节预算：消息上限 320 KB，留出余量。 */

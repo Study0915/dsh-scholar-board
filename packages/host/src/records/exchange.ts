@@ -111,7 +111,7 @@ export function readRecordsPackage(bytes: Buffer): RecordsPackage {
  */
 export function previewRecords(bytes: Buffer): ImportPreview {
   const pkg = readRecordsPackage(bytes)
-  const byKind: Record<RecordKind, number> = { meeting: 0, action: 0, manuscript: 0, literature: 0, research: 0, thesis: 0, project: 0, course: 0, chore: 0 }
+  const byKind: Record<RecordKind, number> = { meeting: 0, action: 0, manuscript: 0, literature: 0, research: 0, thesis: 0, project: 0, course: 0, chore: 0, topic: 0 }
   let active = 0
   let archived = 0
   let trashed = 0
@@ -151,7 +151,7 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
   for (const record of pkg.records) mapping.set(record.id, randomUUID())
   const at = new Date(now).toISOString()
   const remapped = pkg.records.map((record) => {
-    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string }
+    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string, questions?: { actionId?: string }[] }
     copy.id = mapping.get(record.id) as string
     copy.revision = 1
     copy.updatedAt = at
@@ -164,6 +164,11 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
     }
     if (typeof copy.derivedFrom === 'string') {
       copy.derivedFrom = mapping.get(copy.derivedFrom) ?? copy.derivedFrom
+    }
+    if (Array.isArray(copy.questions)) {
+      for (const question of copy.questions) {
+        if (typeof question.actionId === 'string') question.actionId = mapping.get(question.actionId) ?? question.actionId
+      }
     }
     return copy as DomainRecord
   })

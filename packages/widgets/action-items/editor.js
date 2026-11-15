@@ -67,7 +67,8 @@
         return
       }
       var source = record.source
-      nodes.source.textContent = t('source') + '：' + (source.kind === 'meeting' ? '…' : String(source.kind))
+      var kindLabel = source.kind === 'meeting' ? t('sourceMeeting') : source.kind === 'manuscript' ? t('sourceManuscript') : t('sourceTopic')
+      nodes.source.textContent = t('source') + '：' + kindLabel + '…'
       nodes.source.dataset.tone = 'open'
       if (!live) return
       widget.call(READ, { ids: [source.id], includeTrashed: true, includeArchived: true }).then(function (result) {
@@ -79,8 +80,10 @@
           return
         }
         var trashed = typeof found.deletedAt === 'string'
-        nodes.source.textContent = t('source') + '：' + found.title + (trashed ? '（' + t('sourceTrashed') + '）' : '')
-        nodes.source.dataset.tone = trashed ? 'error' : 'open'
+        var entryMissing = source.kind === 'topic' && typeof record.sourceEntry === 'string'
+          && !(Array.isArray(found.questions) && found.questions.some(function (question) { return question !== null && typeof question === 'object' && question.id === record.sourceEntry }))
+        nodes.source.textContent = t('source') + '：' + found.title + (entryMissing ? '（' + t('sourceEntryMissing') + '）' : '') + (trashed ? '（' + t('sourceTrashed') + '）' : '')
+        nodes.source.dataset.tone = trashed || entryMissing ? 'error' : 'open'
       }, function () {
         if (app.baseline !== record) return
         nodes.source.textContent = t('source') + '：' + t('sourceMissing')

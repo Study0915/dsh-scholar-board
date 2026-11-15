@@ -1,0 +1,157 @@
+{
+  "id": "topic-records",
+  "title": {
+    "zh": "研究课题",
+    "en": "Research topics"
+  },
+  "description": {
+    "zh": "记下正在追的课题：研究问题、目标、假设、当前判断与下一步，把问题拆成带状态的小问，并为小问建行动项。问题解决与行动项完成分开记录；列表按范围筛选也能搜索、归档与移入回收站，详情直接编辑并在输入时自动存草稿。",
+    "en": "Records the topic you are chasing: question, goal, hypothesis, current judgement and next step, split into question entries with status, and create actions for them. Resolving a question and completing an action are recorded separately; the list filters by scope, searches, archives and trashes, and the detail edits in place with drafts while you type."
+  },
+  "author": "dsh-scholar-board",
+  "version": "0.1.0",
+  "sizes": [
+    "m",
+    "l"
+  ],
+  "source": "widget-board:records",
+  "capabilities": [
+    "widget-board:records.read",
+    "widget-board:records.write",
+    "widget-board:records.draft",
+    "widget-board:records.open"
+  ],
+  "defaultBox": {
+    "w": 2,
+    "h": 28
+  },
+  "minBox": {
+    "w": 1,
+    "h": 16
+  },
+  "scripts": [
+    "topic-model.js",
+    "copy.js",
+    "view.js",
+    "editor.js"
+  ],
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string",
+        "maxLength": 80
+      },
+      "kicker": {
+        "type": "string",
+        "maxLength": 40
+      }
+    }
+  },
+  "data": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "records": {
+        "type": "array",
+        "maxItems": 200,
+        "items": {
+          "type": "object"
+        }
+      },
+      "quota": {
+        "type": "object"
+      },
+      "total": {
+        "type": "number"
+      },
+      "truncated": {
+        "type": "boolean"
+      }
+    }
+  },
+  "text": {
+    "title": { "zh": "研究课题", "en": "Research topics" },
+    "kicker": { "zh": "问题、假设与下一步", "en": "Questions, hypotheses and next steps" },
+    "new": { "zh": "新建", "en": "New" },
+    "search": { "zh": "搜索标题、问题、目标、假设与判断", "en": "Search titles, questions, goals, hypotheses and judgements" },
+    "active": { "zh": "活跃", "en": "Active" },
+    "archived": { "zh": "归档", "en": "Archived" },
+    "trash": { "zh": "回收站", "en": "Trash" },
+    "loading": { "zh": "正在读取记录…", "en": "Reading records…" },
+    "failed": { "zh": "读取失败", "en": "Records unavailable" },
+    "retry": { "zh": "重试", "en": "Retry" },
+    "emptyActive": { "zh": "还没有课题；点「新建」记下正在追的问题。", "en": "No topics yet; use New to record the question you are chasing." },
+    "emptyArchived": { "zh": "没有归档的课题。", "en": "No archived topics." },
+    "emptyTrash": { "zh": "回收站是空的。移入回收站的记录三十天后自动清除。", "en": "The trash is empty. Trashed records are cleared after thirty days." },
+    "emptySearch": { "zh": "没有匹配的记录。", "en": "No matching records." },
+    "truncated": { "zh": "只列出最近 {n} 条，共 {total} 条；用搜索找更早的记录。", "en": "Showing the latest {n} of {total}; search for older records." },
+    "quotaWarning": { "zh": "记录已用到 {percent}%，先整理归档或回收站。", "en": "Records use {percent}% of the limit; tidy the archive or trash." },
+    "unknown": { "zh": "未知", "en": "Unknown" },
+    "materials": { "zh": "{n} 份材料", "en": "{n} materials" },
+    "material": { "zh": "课题材料", "en": "Topic materials" },
+    "materialUrl": { "zh": "https://…", "en": "https://…" },
+    "materialTitle": { "zh": "链接说明", "en": "Link title" },
+    "addMaterial": { "zh": "添加", "en": "Add" },
+    "removeMaterial": { "zh": "移除", "en": "Remove" },
+    "materialInvalid": { "zh": "材料地址只收 http/https 的完整地址，说明不能为空。", "en": "Material links must be complete http/https addresses with a title." },
+    "fieldTitle": { "zh": "课题", "en": "Topic" },
+    "question": { "zh": "研究问题", "en": "Research question" },
+    "questionHint": { "zh": "一句话写清要回答什么；问题条目可以拆成待解小问。", "en": "State what you want to answer; split it into question entries below." },
+    "goal": { "zh": "目标", "en": "Goal" },
+    "hypothesis": { "zh": "假设", "en": "Hypothesis" },
+    "judgment": { "zh": "当前判断", "en": "Current judgement" },
+    "nextStep": { "zh": "下一步", "en": "Next step" },
+    "questions": { "zh": "问题条目", "en": "Questions" },
+    "addQuestion": { "zh": "添加问题", "en": "Add question" },
+    "questionText": { "zh": "问题内容", "en": "Question" },
+    "questionStatus": { "zh": "问题状态", "en": "Question status" },
+    "questionOpen": { "zh": "待解", "en": "Open" },
+    "questionInvestigating": { "zh": "调查中", "en": "Investigating" },
+    "questionResolved": { "zh": "已解决", "en": "Resolved" },
+    "removeQuestion": { "zh": "移除", "en": "Remove" },
+    "convertAction": { "zh": "转为行动项", "en": "Create action" },
+    "openAction": { "zh": "打开行动项", "en": "Open action" },
+    "actionMissing": { "zh": "行动项缺失，重新创建", "en": "Action missing; create again" },
+    "retryAction": { "zh": "重新创建行动项", "en": "Create action again" },
+    "converting": { "zh": "正在创建行动项…", "en": "Creating action…" },
+    "actionLinked": { "zh": "已创建并关联行动项", "en": "Action created and linked" },
+    "actionUndone": { "zh": "已关联行动项", "en": "Action linked" },
+    "questionActionHint": { "zh": "关闭问题与完成行动项分别记录：行动项完成不会自动把问题标为已解决。", "en": "Closing a question and completing an action are recorded separately: a done action does not resolve the question." },
+    "noQuestions": { "zh": "还没有问题条目；可以先保存课题，再逐条拆小问。", "en": "No question entries yet; save the topic first, then split it into smaller questions." },
+    "invalidQuestions": { "zh": "问题内容不能是空的；每条不超过 2000 字。", "en": "Question text cannot be empty; each entry stays within 2000 characters." },
+    "questionSaveFirst": { "zh": "先保存课题，再为问题创建行动项。", "en": "Save the topic before creating an action for a question." },
+    "close": { "zh": "关闭", "en": "Close" },
+    "save": { "zh": "保存", "en": "Save" },
+    "saving": { "zh": "保存中…", "en": "Saving…" },
+    "saved": { "zh": "已保存", "en": "Saved" },
+    "saveFailed": { "zh": "保存失败", "en": "Save failed" },
+    "draftSaved": { "zh": "草稿已存", "en": "Draft kept" },
+    "draftRestored": { "zh": "已恢复上次未保存的内容。", "en": "Restored the unsaved draft." },
+    "archive": { "zh": "归档", "en": "Archive" },
+    "restore": { "zh": "恢复", "en": "Restore" },
+    "trashAction": { "zh": "移入回收站", "en": "Move to trash" },
+    "deletedIn": { "zh": "{n} 天后自动清除", "en": "Cleared in {n} days" },
+    "unsavedClose": { "zh": "还有没保存的修改；关闭后草稿会保留。", "en": "There are unsaved changes; closing keeps the draft." },
+    "keepEditing": { "zh": "继续编辑", "en": "Keep editing" },
+    "closeKeepDraft": { "zh": "关闭并保留草稿", "en": "Close and keep draft" },
+    "conflict": { "zh": "这条记录在别处更新过，保存被拒绝。可以载入最新的内容，或继续用你的编辑。", "en": "This record changed elsewhere and the save was rejected. Load the latest content, or continue with your edits." },
+    "loadLatest": { "zh": "载入最新（放弃本地修改）", "en": "Load latest (discard local edits)" },
+    "recordMissing": { "zh": "这条记录已经不在了。", "en": "This record no longer exists." },
+    "trashRestoreHint": { "zh": "回收站里的记录三十天后自动清除；先恢复再编辑。", "en": "Trashed records are cleared after thirty days; restore before editing." },
+    "titleRequired": { "zh": "课题标题不能是空的。", "en": "The topic title is required." },
+    "openQuestions": { "zh": "{n} 个待解问题", "en": "{n} open questions" },
+    "linkedActions": { "zh": "{n} 个行动项", "en": "{n} actions" },
+    "relatedCount": { "zh": "{n} 条关联", "en": "{n} links" },
+    "actionTodo": { "zh": "行动项待办", "en": "Action to do" },
+    "actionDoing": { "zh": "行动项进行中", "en": "Action doing" },
+    "actionBlocked": { "zh": "行动项受阻", "en": "Action blocked" },
+    "actionDone": { "zh": "行动项已完成", "en": "Action done" },
+    "actionCancelled": { "zh": "行动项已取消", "en": "Action cancelled" },
+    "actionUnknown": { "zh": "行动项状态未知", "en": "Action status unknown" },
+    "sourceMissing": { "zh": "来源缺失", "en": "Source missing" },
+    "archivedTag": { "zh": "已归档", "en": "Archived" },
+    "trashedTag": { "zh": "回收站", "en": "Trash" }
+  }
+}

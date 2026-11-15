@@ -13,6 +13,11 @@ export function recordReferences(record: DomainRecord): RecordRef[] {
   if (record.kind === 'thesis') {
     for (const result of record.results ?? []) refs.push({ kind: result.kind, id: result.recordId })
   }
+  if (record.kind === 'topic') {
+    for (const question of record.questions ?? []) {
+      if (question.actionId !== undefined) refs.push({ kind: 'action', id: question.actionId })
+    }
+  }
   const seen = new Set<string>()
   return refs.filter(ref => {
     const key = `${ref.kind}:${ref.id}`

@@ -16,7 +16,7 @@ import type {
   RecordsQuota,
   RecordsView,
 } from '@dsh-scholar-board/contracts'
-import { RECORDS_FORMAT, RECORDS_LIMITS, RECORDS_PAGE, recordReferences } from '@dsh-scholar-board/contracts'
+import { RECORDS_FORMAT, RECORDS_LIMITS, RECORDS_PAGE, RECORD_KINDS, recordReferences } from '@dsh-scholar-board/contracts'
 import { createWriteQueue, writeJsonFile } from '../disk'
 import { isRecord } from '../guards'
 import { Refusal } from '../refusal'
@@ -268,12 +268,20 @@ export async function openRecords(file: string, options: { now?: () => number, l
     },
     async create(input, actor) {
       return await mutate(() => {
-        if (!isRecord(input) || typeof input.kind !== 'string' || !['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore'].includes(input.kind)) {
-          throw new Refusal(400, '新记录要写明 kind：meeting、action、manuscript、literature、research、thesis、project、course 或 chore')
+        if (!isRecord(input) || typeof input.kind !== 'string' || !RECORD_KINDS.includes(input.kind as RecordKind)) {
+          throw new Refusal(400, `新记录要写明 kind：${RECORD_KINDS.join('、')}`)
         }
         const kind = input.kind as RecordKind
         const { kind: _ignored, ...fieldsInput } = input
         const fields = normalizeInput(kind, fieldsInput, 'create')
+        // 课题问题重复转行动项时回到同一事项：按来源与条目 id 找回已有的那条，不再新建。
+        if (kind === 'action' && isRecord(fields.source) && fields.source.kind === 'topic' && typeof fields.sourceEntry === 'string') {
+          const sourceId = fields.source.id as string
+          const sourceEntry = fields.sourceEntry
+          const existing = records.find((record) => record.kind === 'action' && record.deletedAt === undefined
+            && record.source?.kind === 'topic' && record.source.id === sourceId && record.sourceEntry === sourceEntry)
+          if (existing !== undefined) return { next: records, result: { record: existing, revision: existing.revision } }
+        }
         const at = new Date(now()).toISOString()
         const base = {
           id: randomUUID(),

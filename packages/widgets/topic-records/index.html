@@ -1,0 +1,107 @@
+<div class="t-data tp" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">研究课题</h2>
+    </div>
+    <div class="tp__head-aside">
+      <span class="t-data__meta tp__count" data-field="count"></span>
+      <button class="tp__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="tp__toolbar">
+    <div class="tp__tabs" role="tablist" aria-label="记录范围">
+      <button class="tp__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="tp__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="tp__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <input class="tp__search" type="search" data-role="search" aria-label="搜索课题" placeholder="搜索标题、问题、目标、假设与判断" />
+  </div>
+
+  <div class="tp__body">
+    <div class="t-data__scroll tp__list" data-role="list" hidden></div>
+    <div class="tp__note-wrap">
+      <p class="t-data__empty tp__note" data-role="note">正在读取记录…</p>
+      <button class="tp__ghost tp__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="tp__detail" data-role="detail" hidden aria-label="课题详情">
+    <div class="tp__detail-head">
+      <button class="tp__ghost tp__back" type="button" data-action="back">返回</button>
+      <span class="tp__state" data-role="detail-state"></span>
+      <span class="tp__spacer"></span>
+      <button class="tp__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="tp__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="tp__ghost tp__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll tp__detail-body">
+      <p class="tp__hint" data-role="detail-hint" hidden></p>
+      <label class="tp__field">
+        <span class="tp__label" data-role="label-title">课题</span>
+        <input class="tp__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <label class="tp__field">
+        <span class="tp__label" data-role="label-question">研究问题</span>
+        <textarea class="tp__input tp__textarea" rows="2" data-field="question"></textarea>
+      </label>
+      <p class="tp__note-line" data-role="question-hint"></p>
+      <label class="tp__field">
+        <span class="tp__label" data-role="label-goal">目标</span>
+        <textarea class="tp__input tp__textarea" rows="2" data-field="goal"></textarea>
+      </label>
+      <label class="tp__field">
+        <span class="tp__label" data-role="label-hypothesis">假设</span>
+        <textarea class="tp__input tp__textarea" rows="2" data-field="hypothesis"></textarea>
+      </label>
+      <label class="tp__field">
+        <span class="tp__label" data-role="label-judgment">当前判断</span>
+        <textarea class="tp__input tp__textarea" rows="2" data-field="judgment"></textarea>
+      </label>
+      <label class="tp__field">
+        <span class="tp__label" data-role="label-next-step">下一步</span>
+        <textarea class="tp__input tp__textarea" rows="2" data-field="next-step"></textarea>
+      </label>
+      <fieldset class="tp__questions">
+        <legend class="tp__label" data-role="label-questions">问题条目</legend>
+        <ul class="tp__question-list" data-role="questions"></ul>
+        <button class="tp__ghost" type="button" data-action="add-question">添加问题</button>
+        <p class="tp__error" data-role="question-error" role="status"></p>
+        <p class="tp__note-line" data-role="action-hint"></p>
+      </fieldset>
+      <fieldset class="tp__materials">
+        <legend class="tp__label" data-role="label-materials">课题材料</legend>
+        <ul class="tp__material-list" data-role="materials"></ul>
+        <div class="tp__material-add">
+          <input class="tp__input" type="url" data-field="material-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="tp__input" type="text" data-field="material-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="tp__ghost" type="button" data-action="add-material">添加</button>
+        </div>
+        <p class="tp__error" data-role="material-error" role="status"></p>
+      </fieldset>
+      <div class="tp__detail-actions">
+        <button class="tp__primary" type="button" data-action="save">保存</button>
+        <button class="tp__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="tp__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="tp__dialog-actions">
+      <button class="tp__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="tp__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="tp__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="tp__dialog-actions">
+      <button class="tp__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="tp__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

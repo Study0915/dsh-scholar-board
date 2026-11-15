@@ -9,6 +9,7 @@ import { isChinese } from './copy'
 interface Entry { ref: RecordRef, caller: string, scroll: number }
 const labels: Record<string, string> = {
   title: '标题', topics: '汇报要点', feedback: '反馈', openQuestions: '未决问题', question: '研究问题',
+  goal: '目标', hypothesis: '假设', judgment: '当前判断', text: '内容', actionId: '行动项',
   nextStep: '下一步', blockers: '阻碍', blockedNote: '阻碍说明', doneNote: '完成说明', authors: '作者', venue: '刊会',
   year: '年份', understanding: '个人理解', questions: '问题', environment: '环境', seed: '随机种子', conclusion: '结论',
   summary: '需求摘要', notes: '笔记', note: '说明', category: '类别', teacher: '教师', schedule: '课次', code: '课程编号',
