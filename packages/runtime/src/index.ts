@@ -9,6 +9,9 @@ import type {
   InspectionReport,
   MotionLevel,
   ParentMessage,
+  ResearchEntry,
+  TemplateField,
+  TemplateSnapshot,
   WidgetHandles,
   WidgetMessage,
   WidgetSize,
@@ -21,10 +24,21 @@ import { installMotionTemplates } from './motion'
 import { readMedia } from './media/read'
 import { createRecordRelations } from './record-relations'
 import type { RecordRelations, RecordRelationsOptions } from './record-relations'
+import { createTemplatePanel } from './template-panel'
+import type { TemplatePanel, TemplatePanelOptions } from './template-panel'
+import { templateApplication, templateCurrent, templateValuesOf } from './template-apply'
+import type { TemplateApplication } from './template-apply'
 
 /** 组件的公共接口，写在编写指南里的那一份。 */
 export interface WidgetApi extends WidgetHandles {
   createRecordRelations(options: RecordRelationsOptions): RecordRelations
+  createTemplatePanel(options: TemplatePanelOptions): TemplatePanel
+  /** 模板字段落进记录：输入项、观测项与种子 / 评估集合 / 环境。 */
+  templateApplication(fields: readonly TemplateField[], current: Record<string, string>, existing?: { inputs?: readonly ResearchEntry[]; metrics?: readonly ResearchEntry[] }): TemplateApplication
+  /** 记录里已有的值，按显示名索引。 */
+  templateCurrent(lists: readonly (readonly ResearchEntry[])[], extras?: Record<string, string>): Record<string, string>
+  /** 应用时快照里的值，按显示名索引。 */
+  templateValuesOf(snapshot: TemplateSnapshot): Record<string, string>
   readMedia(ref: string, options?: { signal?: AbortSignal }): Promise<Blob>
   /** 当前的像素盒与尺寸族；握手之前是 null。 */
   readonly size: WidgetSize | null
@@ -263,6 +277,10 @@ function subscribe<T>(list: Array<(value: T) => void>, handler: (value: T) => vo
 function install(): void {
   const api: WidgetApi = {
     createRecordRelations: options => createRecordRelations(api, options),
+    createTemplatePanel: options => createTemplatePanel(api, options),
+    templateApplication,
+    templateCurrent,
+    templateValuesOf,
     readMedia: async (ref, options) => await readMedia(api.call, ref, options?.signal === undefined ? mediaLifetime.signal : AbortSignal.any([mediaLifetime.signal, options.signal])),
     get size() { return size },
     get lang() { return lang },

@@ -1,5 +1,5 @@
 import type { RecordKind, RecordRef, RecordsView, WidgetHandles } from '@dsh-scholar-board/contracts'
-import { RECORD_KINDS, RECORDS_LIMITS } from '@dsh-scholar-board/contracts'
+import { RELATION_KINDS, RECORDS_LIMITS } from '@dsh-scholar-board/contracts'
 
 /** 编辑器里的关联字段，随原表单一起保存和恢复草稿。 */
 export interface RecordRelations {
@@ -18,8 +18,8 @@ export interface RecordRelationsOptions {
   kinds?: readonly RecordKind[]
 }
 
-const names = ['组会', '行动项', '小论文', '文献', '研究', '毕业论文', '项目', '课程', '事务', '课题', '运行']
-const english = ['Meeting', 'Action', 'Manuscript', 'Literature', 'Research', 'Thesis', 'Project', 'Course', 'Chore', 'Topic', 'Run']
+const names = ['组会', '行动项', '小论文', '文献', '研究', '毕业论文', '项目', '课程', '事务', '课题', '运行', '模板']
+const english = ['Meeting', 'Action', 'Manuscript', 'Literature', 'Research', 'Thesis', 'Project', 'Course', 'Chore', 'Topic', 'Run', 'Template']
 
 /**
  * 安装统一关联选择器；所有宿主读取集中在这里，用户组件也可使用。
@@ -51,9 +51,9 @@ export function createRecordRelations(api: WidgetHandles & { readonly lang: stri
   all.value = ''
   all.textContent = label('全部类型', 'All types')
   kind.append(all)
-  const allowed = options.kinds ?? RECORD_KINDS
+  const allowed = options.kinds ?? RELATION_KINDS
   for (const id of allowed) {
-    const index = RECORD_KINDS.indexOf(id)
+    const index = RELATION_KINDS.indexOf(id)
     if (index < 0) continue
     const option = document.createElement('option')
     option.value = id
@@ -217,7 +217,7 @@ export function createRecordRelations(api: WidgetHandles & { readonly lang: stri
       cache.clear()
       const seen = new Set<string>()
       refs = (Array.isArray(value) ? value : []).filter((ref): ref is RecordRef => {
-        if (!ref || !RECORD_KINDS.includes(ref.kind) || typeof ref.id !== 'string') return false
+        if (!ref || !RELATION_KINDS.includes(ref.kind) || typeof ref.id !== 'string') return false
         if (!allowed.includes(ref.kind)) return false
         if (seen.has(key(ref))) return false
         seen.add(key(ref))

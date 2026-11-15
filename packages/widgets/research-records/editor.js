@@ -32,6 +32,30 @@
       current: function () { return app.baseline },
       onChange: function (refs) { app.related = refs; onInput() }
     })
+    var templatePanel = nodes.template === null ? null : widget.createTemplatePanel({
+      container: nodes.template,
+      current: templateValues,
+      manage: true,
+      onApply: applyTemplate
+    })
+
+    /** 记录里已有的值，按显示名索引；预览据此默认保留同名值。 */
+    function templateValues() {
+      return widget.templateCurrent([app.parameters, app.metrics], { '种子': nodes.seedInput.value, '随机种子': nodes.seedInput.value, '环境': nodes.environmentInput.value })
+    }
+
+    /** 应用模板：输入项进参数、观测项进指标，种子与环境落到各自的输入框。 */
+    function applyTemplate(snapshot, fields) {
+      var applied = widget.templateApplication(fields, widget.templateValuesOf(snapshot), { inputs: app.parameters, metrics: app.metrics })
+      app.parameters = applied.inputs
+      app.metrics = applied.metrics
+      if (typeof applied.seed === 'string') nodes.seedInput.value = applied.seed
+      if (typeof applied.environment === 'string') nodes.environmentInput.value = applied.environment
+      app.template = snapshot
+      renderEntries('parameters')
+      renderEntries('metrics')
+      onInput()
+    }
 
     function formOf() {
       return {
@@ -47,7 +71,8 @@
         parameters: app.parameters,
         metrics: app.metrics,
         conclusion: nodes.conclusion.value,
-        materials: app.materials
+        materials: app.materials,
+        template: app.template
       }
     }
 
@@ -64,6 +89,7 @@
       nodes.conclusion.value = typeof form.conclusion === 'string' ? form.conclusion : ''
       app.parameters = Array.isArray(form.parameters) ? form.parameters.slice() : []
       app.metrics = Array.isArray(form.metrics) ? form.metrics.slice() : []
+      app.template = form.template !== null && typeof form.template === 'object' ? form.template : null
       renderEntries('parameters')
       renderEntries('metrics')
       if (nodes.entryError !== null) nodes.entryError.textContent = ''
@@ -83,6 +109,7 @@
       nodes.restoreAction.hidden = record === null || (!trashed && record.archived !== true)
       nodes.trashAction.hidden = record === null || trashed
       if (nodes.planRuns !== null) nodes.planRuns.hidden = record === null
+      if (nodes.template !== null) nodes.template.hidden = trashed
       var fields = [nodes.titleInput, nodes.methodInput, nodes.question, nodes.purpose, nodes.hypothesis, nodes.steps, nodes.environmentInput, nodes.seedInput, nodes.conclusion, nodes.materialUrl, nodes.materialTitle]
       for (var at = 0; at < fields.length; at += 1) fields[at].disabled = trashed
       var buttons = [ctx.card.querySelector('[data-action="add-material"]'), ctx.card.querySelector('[data-action="add-parameter"]'), ctx.card.querySelector('[data-action="add-metric"]')]
@@ -123,7 +150,8 @@
         seed: record.seed,
         parameters: pure.entriesOf(record, 'parameters'),
         metrics: pure.entriesOf(record, 'metrics'),
-        conclusion: record.conclusion
+        conclusion: record.conclusion,
+        template: record.template
       })
       showDetail(record, true)
       restoreDraft(record.id).then(function (restored) {
@@ -139,7 +167,7 @@
       app.dirty = false
       app.saving = false
       app.materials = []
-      fillForm({ title: '', method: 'simulation', question: '', purpose: '', hypothesis: '', steps: '', environment: '', seed: '', parameters: [], metrics: [], conclusion: '' })
+      fillForm({ title: '', method: 'simulation', question: '', purpose: '', hypothesis: '', steps: '', environment: '', seed: '', parameters: [], metrics: [], conclusion: '', template: null })
       showDetail(null, true)
       restoreDraft('new').then(function (restored) {
         if (restored) ctx.setStatus(t('draftRestored'), 'neutral')
@@ -240,6 +268,7 @@
         renderEntries('parameters')
         renderEntries('metrics')
         app.materials = Array.isArray(form.materials) ? form.materials : []
+        app.template = form.template !== null && typeof form.template === 'object' ? form.template : null
         renderMaterials()
         app.dirty = true
         return true
@@ -277,7 +306,8 @@
         parameters: parameters.length === 0 ? null : parameters,
         metrics: metrics.length === 0 ? null : metrics,
         conclusion: nodes.conclusion.value.trim() === '' ? null : nodes.conclusion.value.trim(),
-        materials: app.materials.length === 0 ? null : app.materials
+        materials: app.materials.length === 0 ? null : app.materials,
+        template: app.template
       }
       var expected = app.baseline === null ? null : app.baseline.revision
       fields.related = relations.value().length ? relations.value() : null

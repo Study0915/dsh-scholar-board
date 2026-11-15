@@ -5,6 +5,7 @@
  * 完整规格在 `docs/scholar-records-spec.md`。
  */
 import type { Due } from './campus'
+import type { TemplateRecord, TemplateSnapshot } from './templates'
 
 /** 记录存储的格式版本；读盘时不认识的版本保留原文件并报错。 */
 export const RECORDS_FORMAT = 1
@@ -55,11 +56,14 @@ export const RECORDS_LIMITS = {
   searchLength: 200,
 } as const
 
-/** 领域记录的十一种类型。 */
-export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore' | 'topic' | 'run'
+/** 领域记录的十二种类型；`template` 只由模板面板读写，不出现在关联选择器里。 */
+export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore' | 'topic' | 'run' | 'template'
 
 /** 记录类型的唯一列表，校验、筛选和关系查询共用。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore', 'topic', 'run']
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore', 'topic', 'run', 'template']
+
+/** 可以互相引用的记录类型；模板不是可关联的对象。 */
+export const RELATION_KINDS: readonly RecordKind[] = RECORD_KINDS.filter(kind => kind !== 'template')
 
 /** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
 export type LiteratureStage = 'queued' | 'reading' | 'understood'
@@ -227,6 +231,7 @@ export interface ResearchRecord extends RecordBase {
   conclusion?: string
   related?: RecordRef[]
   materials?: MaterialRef[]
+  template?: TemplateSnapshot
 }
 
 /** 运行状态；由用户或以后明确接入的数据源维护，这里不执行程序。 */
@@ -280,6 +285,7 @@ export interface RunRecord extends RecordBase {
   results?: RunResult[]
   related?: RecordRef[]
   materials?: MaterialRef[]
+  template?: TemplateSnapshot
 }
 
 /** 毕业论文的一章；状态由用户推进，不按页数或百分比推断。 */
@@ -481,7 +487,7 @@ export interface TopicRecord extends RecordBase {
 }
 
 /** 一条领域记录。 */
-export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord | CourseRecord | ChoreRecord | TopicRecord | RunRecord
+export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord | CourseRecord | ChoreRecord | TopicRecord | RunRecord | TemplateRecord
 
 /** 工作区当前的用量；到九成时 `warning` 为真，到顶阻止新建。 */
 export interface RecordsQuota {
