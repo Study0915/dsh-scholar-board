@@ -39,6 +39,32 @@ describe('地址模板', () => {
     expect(requestUrlOf(manifest(), {})).toBe('https://api.open-meteo.com/v1/forecast?latitude=39.9042&longitude=116.4074')
   })
 
+  it('默认值里的占位符按 props 再展开一层，换过分类也读得到', () => {
+    const subscription = manifest({
+      request: { url: 'https://export.arxiv.org/api/query?search_query={query}&max_results={limit}' },
+      props: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', default: 'cat:{category}' },
+          category: { type: 'string', default: 'eess.SP' },
+          limit: { type: 'integer', default: 8 },
+        },
+      },
+      permissions: { hosts: ['export.arxiv.org'] },
+    })
+    expect(requestUrlOf(subscription, {})).toBe('https://export.arxiv.org/api/query?search_query=cat%3Aeess.SP&max_results=8')
+    expect(requestUrlOf(subscription, { category: 'physics.optics' })).toBe('https://export.arxiv.org/api/query?search_query=cat%3Aphysics.optics&max_results=8')
+    expect(requestUrlOf(subscription, { query: 'cat:cs.LG' })).toBe('https://export.arxiv.org/api/query?search_query=cat%3Acs.LG&max_results=8')
+  })
+
+  it('默认值里引用不存在的占位符时照样报错', () => {
+    const broken = manifest({
+      request: { url: 'https://api.open-meteo.com/v1/forecast?q={query}' },
+      props: { type: 'object', properties: { query: { type: 'string', default: 'cat:{missing}' } } },
+    })
+    expect(() => requestUrlOf(broken, {})).toThrow(/\{missing\}/)
+  })
+
   it('props 里的值覆盖默认值，字符串按 URL 编码', () => {
     const custom = manifest({
       request: { url: 'https://api.open-meteo.com/v1/search?q={q}' },

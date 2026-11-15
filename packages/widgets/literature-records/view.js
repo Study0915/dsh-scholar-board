@@ -52,6 +52,10 @@
     }
     var tags = document.createElement('span')
     tags.className = 'lt__tags'
+    var identifier = model.identifierLine(record)
+    if (identifier !== '') tags.appendChild(tagOf(identifier, 'identifier'))
+    var readings = model.readingOf(record).length
+    if (readings > 0) tags.appendChild(tagOf(text.fill(text.t('readings'), { n: readings }), 'reading'))
     var materials = Array.isArray(record.materials) ? record.materials.length : 0
     if (materials > 0) tags.appendChild(tagOf(text.fill(text.t('materials'), { n: materials }), 'material'))
     var left = model.daysLeft(record)

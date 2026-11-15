@@ -582,3 +582,106 @@
 :root[data-box-width="narrow"] .lt__pair .lt__field:last-child {
   width: auto;
 }
+
+/* DOI 比年份长：这一对里右边的框放开，左边的稿件类型收窄。 */
+.lt__pair--doi .lt__field:first-child {
+  flex: none;
+  width: 104px;
+}
+
+.lt__pair--doi .lt__field:last-child {
+  flex: 1;
+  width: auto;
+}
+
+.lt__tag[data-tone="identifier"] {
+  background: color-mix(in srgb, var(--w-color-fg, #0b1016) 4%, transparent);
+  color: var(--w-color-muted, #6b7684);
+}
+
+/* 阅读记录：一条一张小卡，位置与日期一行，四个文字格两列，疑问的按钮靠右。 */
+.lt__reading-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-xs, 4px);
+  min-width: 0;
+}
+
+.lt__reading-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--w-space-sm, 8px);
+}
+
+.lt__reading-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-sm, 8px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lt__reading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-xs, 4px);
+  padding: var(--w-space-sm, 8px);
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 90%, transparent);
+  border-radius: var(--w-radius-sm, 8px);
+  background: color-mix(in srgb, var(--w-color-fg, #0b1016) 2%, transparent);
+}
+
+.lt__reading-row-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.lt__reading-row-head [data-part="location"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.lt__reading-row-head [data-part="date"] {
+  flex: none;
+  width: 136px;
+}
+
+.lt__reading-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.lt__reading-area {
+  min-height: 38px;
+  resize: vertical;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.lt__reading-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.lt__reading-remove {
+  flex: none;
+}
+
+:root[data-box-width="narrow"] .lt__reading-fields {
+  grid-template-columns: 1fr;
+}
+
+:root[data-box-width="narrow"] .lt__reading-row-head {
+  flex-wrap: wrap;
+}
+
+:root[data-box-width="narrow"] .lt__reading-row-head [data-part="date"] {
+  width: auto;
+  flex: 1 1 136px;
+}

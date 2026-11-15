@@ -4,7 +4,10 @@
       <p class="t-data__kicker" data-field="kicker"></p>
       <h2 class="t-data__title" data-field="title">文献追踪</h2>
     </div>
-    <span class="t-data__meta" data-field="meta"></span>
+    <div class="paper-feed-card__head-actions">
+      <span class="t-data__meta" data-field="meta"></span>
+      <button class="paper-feed-card__add-all" type="button" data-action="add-all">全部加入</button>
+    </div>
   </header>
   <div class="t-data__body">
     <div class="t-data__scroll paper-feed-card__list" data-role="list">
@@ -12,4 +15,18 @@
       <p class="t-data__empty paper-feed-card__empty" data-role="empty">读取 arXiv…</p>
     </div>
   </div>
+  <p class="paper-feed-card__status" data-role="status" role="status" hidden></p>
+  <dialog class="paper-feed-card__dialog" data-role="preview">
+    <h3 class="paper-feed-card__dialog-title" data-role="preview-title">可能重复</h3>
+    <p class="paper-feed-card__dialog-reason" data-role="preview-reason"></p>
+    <ul class="paper-feed-card__diff" data-role="preview-fields"></ul>
+    <p class="paper-feed-card__hint" data-role="preview-hint"></p>
+    <div class="paper-feed-card__dialog-actions">
+      <button type="button" data-action="preview-close">取消</button>
+      <button type="button" data-action="preview-keep">保留现有</button>
+      <button type="button" data-action="preview-supplement">补充缺失字段</button>
+      <button type="button" data-action="preview-version">建立版本关系</button>
+      <button type="button" data-action="preview-add">仍要加入</button>
+    </div>
+  </dialog>
 </div>

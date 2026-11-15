@@ -29,11 +29,24 @@ interface PaperFeedApi {
   dateOf(entry: unknown): string
   categoryOf(props: unknown): string
   limitOf(props: unknown): number
+  queryOf(props: unknown): string
+  sourceOf(props: unknown): string
+  nameOf(props: unknown): string
+  subscriptionKey(props: unknown): string
+  normalizeDoi(value: unknown): string
+  arxivMainId(value: unknown): string
+  arxivVersionOf(value: unknown): string
+  doiOf(entry: unknown): string
+  arxivOf(entry: unknown): { id: string, version: string }
+  titleSimilar(left: unknown, right: unknown): boolean
   rowsOf(data: unknown, props: unknown): Row[]
   stateOf(state: { data: unknown, failed: boolean, rowCount: number }): string
   yearOfDate(date: unknown): number | null
   recordOf(row: unknown): Record<string, unknown> | null
   alreadyAdded(records: unknown, url: unknown): boolean
+  duplicatesOf(records: unknown, row: unknown): Array<{ reason: string, record: Record<string, unknown> }>
+  comparisonOf(record: unknown, row: unknown): Array<{ label: string, current: string, next: string, missing: boolean }>
+  missingPatchOf(record: unknown, row: unknown): Record<string, unknown>
 }
 
 const api = (globalThis as unknown as { PaperFeed: PaperFeedApi }).PaperFeed
@@ -164,6 +177,9 @@ describe('加入工作台', () => {
       stage: 'queued',
       authors: 'Alice, Bob',
       year: 2026,
+      arxivId: '2611.08850',
+      arxivVersion: 'v1',
+      format: 'preprint',
     })
     expect(api.recordOf({ title: 'A Paper', url: 'https://evil.example/x', openable: false })).toBeNull()
     expect(api.recordOf({ title: '  ', url: 'https://arxiv.org/abs/1' })).toBeNull()
@@ -177,6 +193,126 @@ describe('加入工作台', () => {
     expect(api.alreadyAdded([{ url, deletedAt: '2026-11-01T00:00:00.000Z' }], url)).toBe(false)
     expect(api.alreadyAdded([{ url: 'https://arxiv.org/abs/2' }], url)).toBe(false)
     expect(api.alreadyAdded(null, url)).toBe(false)
+  })
+})
+
+describe('订阅', () => {
+  it('查询条件优先用 query，留空时按分类组成 cat:<分类>', () => {
+    expect(api.queryOf({ query: 'cat:cs.LG' })).toBe('cat:cs.LG')
+    expect(api.queryOf({ query: '  ' })).toBe('cat:eess.SP')
+    expect(api.queryOf({ query: '', category: 'physics.optics' })).toBe('cat:physics.optics')
+    expect(api.queryOf({ category: 'cat:cs.AI' })).toBe('cat:cs.AI')
+    expect(api.queryOf({})).toBe(`cat:${api.DEFAULT_CATEGORY}`)
+  })
+
+  it('名称去掉两边空白，来源现在只有 arXiv', () => {
+    expect(api.nameOf({ name: '  信号处理新稿  ' })).toBe('信号处理新稿')
+    expect(api.nameOf({ name: 42 })).toBe('')
+    expect(api.sourceOf({ source: 'arxiv' })).toBe('arxiv')
+    expect(api.sourceOf({ source: 'other' })).toBe('arxiv')
+  })
+
+  it('换订阅只看来源与查询条件', () => {
+    expect(api.subscriptionKey({ query: 'cat:cs.LG' })).toBe(api.subscriptionKey({ query: 'cat:cs.LG', title: '另一个标题' }))
+    expect(api.subscriptionKey({ query: 'cat:cs.LG' })).not.toBe(api.subscriptionKey({ query: 'cat:cs.AI' }))
+  })
+})
+
+describe('查重', () => {
+  it('DOI 去掉地址前缀、doi: 前缀与大小写', () => {
+    expect(api.normalizeDoi('https://doi.org/10.1000/XYZ')).toBe('10.1000/xyz')
+    expect(api.normalizeDoi('doi: 10.1000/XYZ.')).toBe('10.1000/xyz')
+    expect(api.normalizeDoi('  10.1000/xyz  ')).toBe('10.1000/xyz')
+    expect(api.normalizeDoi('not-a-doi')).toBe('')
+    expect(api.normalizeDoi(null)).toBe('')
+  })
+
+  it('arXiv 主 id 去掉网址前缀、.pdf 与版本号', () => {
+    expect(api.arxivMainId('https://arxiv.org/abs/2401.12345v2')).toBe('2401.12345')
+    expect(api.arxivMainId('https://arxiv.org/pdf/2401.12345v2.pdf')).toBe('2401.12345')
+    expect(api.arxivMainId('https://arxiv.org/abs/2401.12345?context=cs')).toBe('2401.12345')
+    expect(api.arxivMainId('hep-th/9901001v2')).toBe('hep-th/9901001')
+    expect(api.arxivMainId('2401.12345')).toBe('2401.12345')
+    expect(api.arxivMainId('nope')).toBe('')
+  })
+
+  it('arXiv 版本号单独读出来，地址里没有时是空串', () => {
+    expect(api.arxivVersionOf('https://arxiv.org/abs/2401.12345v2')).toBe('v2')
+    expect(api.arxivVersionOf('https://arxiv.org/pdf/2401.12345v3.pdf')).toBe('v3')
+    expect(api.arxivVersionOf('https://arxiv.org/abs/2401.12345')).toBe('')
+  })
+
+  it('条目里的 DOI 先看 arxiv:doi，再看 doi', () => {
+    expect(api.doiOf({ 'arxiv:doi': '10.1000/xyz' })).toBe('10.1000/xyz')
+    expect(api.doiOf({ doi: '10.1000/abc' })).toBe('10.1000/abc')
+    expect(api.doiOf({})).toBe('')
+  })
+
+  it('条目里的 arXiv id 与版本：先看 id，再看链接', () => {
+    expect(api.arxivOf({ id: 'http://arxiv.org/abs/2401.12345v4' })).toEqual({ id: '2401.12345', version: 'v4' })
+    expect(api.arxivOf(entry())).toEqual({ id: '2611.08850', version: 'v1' })
+    expect(api.arxivOf({})).toEqual({ id: '', version: '' })
+  })
+
+  it('DOI 相同、arXiv 主 id 相同、地址相同都算确定重复', () => {
+    const paper = { title: 'A Paper', url: 'https://arxiv.org/abs/2401.12345v2', doi: '10.1000/xyz', arxivId: '2401.12345' }
+    expect(api.duplicatesOf([{ id: '1', doi: '10.1000/XYZ' }], paper).map((match) => match.reason)).toEqual(['doi'])
+    expect(api.duplicatesOf([{ id: '2', arxivId: '2401.12345v1' }], paper).map((match) => match.reason)).toEqual(['arxiv'])
+    expect(api.duplicatesOf([{ id: '3', url: 'https://arxiv.org/abs/2401.12345v1' }], paper).map((match) => match.reason)).toEqual(['url'])
+  })
+
+  it('标题相近只作候选，够短或差得远的标题不算', () => {
+    const paper = { title: 'Sparse Array Interpolation for Wideband Angular Estimation', url: 'https://arxiv.org/abs/2401.12345v2' }
+    const similar = [{ id: '4', title: 'Sparse array interpolation for wideband angular estimation.' }]
+    expect(api.duplicatesOf(similar, paper).map((match) => match.reason)).toEqual(['title'])
+    expect(api.duplicatesOf([{ id: '5', title: 'Deep Learning for Weather Forecasting' }], paper)).toEqual([])
+    expect(api.duplicatesOf([{ id: '6', title: 'Sparse Arrays' }], paper)).toEqual([])
+  })
+
+  it('回收站里的不算重复，归档的仍然算', () => {
+    const paper = { title: 'A Paper', url: 'https://arxiv.org/abs/2401.12345v2' }
+    expect(api.duplicatesOf([{ id: '7', url: paper.url, archived: true }], paper)).toHaveLength(1)
+    expect(api.duplicatesOf([{ id: '8', url: paper.url, deletedAt: '2026-11-01T00:00:00.000Z' }], paper)).toEqual([])
+    expect(api.duplicatesOf(null, paper)).toEqual([])
+  })
+})
+
+describe('重复预览', () => {
+  const paper = {
+    title: 'Sparse Array Interpolation for Wideband Angular Estimation',
+    authors: 'Mei Lin',
+    venue: 'arXiv',
+    year: 2026,
+    doi: '10.1000/xyz',
+    arxivId: '2611.08701',
+    arxivVersion: 'v2',
+    url: 'https://arxiv.org/abs/2611.08701v2',
+    format: 'preprint',
+  }
+
+  it('逐项对比两边字段，只有订阅这一边有值时标成缺失', () => {
+    const record = { title: paper.title, url: paper.url, authors: 'Mei Lin' }
+    const rows = api.comparisonOf(record, paper)
+    const byLabel = new Map(rows.map((row) => [row.label, row]))
+    expect(byLabel.get('fieldDoi')).toMatchObject({ current: '', next: '10.1000/xyz', missing: true })
+    expect(byLabel.get('fieldYear')).toMatchObject({ current: '', next: '2026', missing: true })
+    expect(byLabel.get('fieldTitle')).toMatchObject({ current: paper.title, next: paper.title, missing: false })
+  })
+
+  it('补字段只补现有记录缺的，标题与地址不动', () => {
+    const record = { title: paper.title, url: paper.url, authors: 'Mei Lin' }
+    expect(api.missingPatchOf(record, paper)).toEqual({
+      venue: 'arXiv',
+      year: 2026,
+      doi: '10.1000/xyz',
+      arxivId: '2611.08701',
+      arxivVersion: 'v2',
+      format: 'preprint',
+    })
+    expect(api.missingPatchOf({ ...record, venue: 'arXiv', year: 2025, doi: '10.1000/other', format: 'published' }, paper)).toEqual({
+      arxivId: '2611.08701',
+      arxivVersion: 'v2',
+    })
   })
 })
 

@@ -131,7 +131,9 @@ async function recordRelationsPass(page, check, options = {}) {
     const surface = await frameOf(page, `[data-instance="${id}"] iframe`)
     await surface.locator(`[data-id="${record.id}"]`).first().click()
     const editor = surface.locator('[data-role="detail"]')
+    // 文献编辑器另有「其他版本」一节；这里要的是通用的「关联与来源」。
     const relations = editor.locator('.w-record-relations')
+      .filter({ has: surface.getByRole('heading', { name: '关联与来源', exact: true }) })
     await relations.locator('input[type="search"]').fill('Synthetic second reference')
     await relations.getByLabel('Synthetic second reference', { exact: true }).check()
     await editor.locator('[data-action="save"]').click()

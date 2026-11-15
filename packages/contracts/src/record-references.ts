@@ -24,6 +24,9 @@ export function recordReferences(record: DomainRecord): RecordRef[] {
       for (const source of result.sources ?? []) refs.push({ kind: 'run', id: source })
     }
   }
+  if (record.kind === 'literature') {
+    for (const version of record.versions ?? []) refs.push(version)
+  }
   if (record.kind === 'research') {
     for (const evidence of record.conclusionEvidence ?? []) refs.push({ kind: evidence.kind, id: evidence.id })
   }

@@ -274,12 +274,15 @@ export async function openRecords(file: string, options: { now?: () => number, l
         const kind = input.kind as RecordKind
         const { kind: _ignored, ...fieldsInput } = input
         const fields = normalizeInput(kind, fieldsInput, 'create')
-        // 课题问题重复转行动项时回到同一事项：按来源与条目 id 找回已有的那条，不再新建。
-        if (kind === 'action' && isRecord(fields.source) && fields.source.kind === 'topic' && typeof fields.sourceEntry === 'string') {
+        // 课题问题或阅读疑问重复转行动项时回到同一事项：按来源与条目 id 找回已有的那条，不再新建。
+        if (kind === 'action' && isRecord(fields.source)
+          && (fields.source.kind === 'topic' || fields.source.kind === 'literature')
+          && typeof fields.sourceEntry === 'string') {
           const sourceId = fields.source.id as string
+          const sourceIdKind = fields.source.kind
           const sourceEntry = fields.sourceEntry
           const existing = records.find((record) => record.kind === 'action' && record.deletedAt === undefined
-            && record.source?.kind === 'topic' && record.source.id === sourceId && record.sourceEntry === sourceEntry)
+            && record.source?.kind === sourceIdKind && record.source.id === sourceId && record.sourceEntry === sourceEntry)
           if (existing !== undefined) return { next: records, result: { record: existing, revision: existing.revision } }
         }
         const at = new Date(now()).toISOString()
