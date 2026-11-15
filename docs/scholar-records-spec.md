@@ -50,11 +50,11 @@
 | topics | string | 否 | 汇报要点，短文本 Markdown |
 | feedback | string | 否 | 讨论反馈 |
 | openQuestions | string | 否 | 未决问题 |
-| related | `Ref[]` | 否 | 十种现有类型互指（S11） |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
 | materials | `MaterialRef[]` | 否 | 材料引用 |
 | derivedFrom | record id | 否 | 从上次记录准备新提纲时保留来源 |
 
-`related` 可指向十种现有类型（S11）。会议可同时关联多篇稿件。从反馈创建行动项时，行动项的 `source` 指向本会议 id。
+`related` 可指向十一种现有类型（S11）。会议可同时关联多篇稿件。从反馈创建行动项时，行动项的 `source` 指向本会议 id。
 
 ### 行动项 action
 
@@ -65,7 +65,7 @@
 | due | date 或 instant | 否 | 可选期限，无期限不倒计时 |
 | source | `{ kind:'meeting'\|'manuscript'\|'topic', id }` | 否 | 生成来源 |
 | sourceEntry | string ≤64 | 否 | 来源是课题时必填，指向问题条目的 id |
-| related | `Ref[]` | 否 | 十种现有类型互指（S11） |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
 | blockedNote | string | 否 | 阻碍说明 |
 | doneNote | string | 否 | 完成说明 |
 | materials | `MaterialRef[]` | 否 | 完成时附的结果材料 |
@@ -86,7 +86,7 @@
 | blockers | string | 否 | 阻碍 |
 | target | string | 否 | 目标期刊或会议 |
 | due | date 或 instant | 否 | 可选投稿期限 |
-| related | `Ref[]` | 否 | 十种现有类型互指（S11） |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
 | materials | `MaterialRef[]` | 否 | 正文与代码材料 |
 | figures | `ManuscriptFigure[]` | 否 | 图表目录 |
 | submissions | `SubmissionRound[]` | 否 | 投稿轮次 |
@@ -116,12 +116,12 @@ S05 补齐。文献记录的是「我读到了什么、读懂了什么」，不�
 | stage | 枚举 | 是 | 待读 queued、在读 reading、已理解 understood |
 | understanding | string | 否 | 自己的理解，不是订阅摘要 |
 | questions | string | 否 | 仍未想清的问题 |
-| related | `Ref[]` | 否 | 十种现有类型互指（S11） |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
 | materials | `MaterialRef[]` | 否 | 笔记、幻灯片或复现代码的链接 |
 
 - 阅读阶段由用户维护；订阅获取、加入工作台与完成阅读是不同事实（领域术语）。从文献追踪卡加入工作台时只带入标题、作者、刊会、年份与来源地址，阶段从待读开始，摘要不写入 `understanding`。
 - 同一来源地址的活跃或归档文献视为已在工作台；回收站里的记录不挡重新加入。
-- `related` 可指向十种现有类型（S11）。理解与问题是短文本，搜索会一并匹配。
+- `related` 可指向十一种现有类型（S11）。理解与问题是短文本，搜索会一并匹配。
 
 ### 研究记录 research
 
@@ -132,18 +132,22 @@ S05 补齐。研究记录是「我做过什么、看到了什么」，不是实�
 | title | string ≤200 | 是 | 这次推导、仿真或实验的标题 |
 | method | 枚举 | 是 | 推导 derivation、仿真 simulation、实验 experiment |
 | question | string | 否 | 这次想回答的研究问题 |
+| purpose | string | 否 | 方案目的（S12） |
+| hypothesis | string | 否 | 方案假设（S12） |
+| steps | string | 否 | 计划步骤；只记录，不执行（S12） |
 | environment | string | 否 | 机器、工具链版本与依赖，原样记录 |
 | seed | string | 否 | 一组或多组随机种子，原样记录 |
 | parameters | `ResearchEntry[]` | 否 | 参数，每条带名称、数值与可选单位 |
 | metrics | `ResearchEntry[]` | 否 | 指标，每条带名称、数值与可选单位 |
 | conclusion | string | 否 | 看到的结论 |
-| related | `Ref[]` | 否 | 十种现有类型互指（S11） |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
 | materials | `MaterialRef[]` | 否 | 结果表、图、日志或复现代码的链接 |
 
-`ResearchEntry` 形状为 `{ name: string, value: string, unit?: string }`：名称与数值都非空、按 Unicode 码点不超过 200，单位不超过 32 字符，单组最多 64 条。数值与种子都按文字保存（如 `0–20`、`3.2e-4`、`11, 42, 97`），宿主不解析数值也不换算单位。
+`ResearchEntry` 形状为 `{ name: string, value: string, unit?: string, definition?: string }`：名称与数值都非空、按 Unicode 码点不超过 200，单位不超过 32 字符，定义按文字原样保存，单组最多 64 条。数值与种子都按文字保存（如 `0–20`、`3.2e-4`、`11, 42, 97`），宿主不解析数值也不换算单位。
 
 - 环境、种子、参数与指标缺失时界面显示「未知」，不猜默认值；`method` 缺省不是合法记录，创建时必须写明。
-- `related` 可指向十种现有类型（S11）。标题、问题、环境、种子、结论与参数指标的文本都参与搜索。
+- `related` 可指向十一种现有类型（S11）。标题、问题、目的、假设、步骤、环境、种子、结论与参数指标的文本都参与搜索。
+- 研究记录同时是运行记录可以选择的方案；详情列出以它为 `plan` 的运行，「新建运行」建出一条 `planned` 运行，在运行记录卡继续填写（S12）。
 - 记录不触发实验、不下载材料、不遍历磁盘；结论与材料只是文字与链接（产品规划研究记录一节）。
 - 列表按做法筛选，可选全部、推导、仿真与实验；筛选只在活跃视图生效，归档与回收站各按自己的视图显示。
 
@@ -160,7 +164,7 @@ S11 补齐。课题记录的是「我正在追什么问题、现在判断到哪�
 | judgment | string | 否 | 当前判断 |
 | nextStep | string | 否 | 下一步 |
 | questions | `TopicQuestion[]` | 否 | 问题条目，最多 100 条 |
-| related | `Ref[]` | 否 | 十种现有类型互指（S11） |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
 | materials | `MaterialRef[]` | 否 | 课题材料链接 |
 
 `TopicQuestion` 形状为 `{ id: string ≤64, text: string ≤2000, status, actionId?: string }`。`id` 在一条课题里唯一且稳定；`status` 只认待解 open、调查中 investigating 与已解决 resolved；`actionId` 指向由该条目创建的行动项，可缺省。问题是否解决与行动项是否完成分开记录。
@@ -169,6 +173,45 @@ S11 补齐。课题记录的是「我正在追什么问题、现在判断到哪�
 - 移除问题条目只从 `questions` 中删掉该条，不级联删除已创建的行动项；行动项仍保留来源 id，界面显示来源条目已移除。行动项被移入回收站或永久删除时，问题条目保留原 `actionId` 并显示行动项缺失，可重新创建。
 - 列表行显示待解问题数、标题与问题 / 当前判断；搜索匹配标题、问题、目标、假设、当前判断、下一步与问题条目文字。
 - 课题卡与统一关联选择器都声明 `widget-board:records.open`，可打开关联记录；问题条目上的行动项也可直接打开。
+
+### 运行记录 run
+
+S12 补齐。运行记录「按某个方案实际做了什么、配置是什么、看到了什么」，不执行脚本，也不连接实验平台：
+
+| 字段 | 形状 | 必填 | 说明 |
+|---|---|---|---|
+| title | string ≤200 | 是 | 这次运行的标题 |
+| plan | `RecordRef` | 否 | 指向 `research` 方案；来源缺失可在详情重选 |
+| status | 枚举 | 是 | 计划中 planned、运行中 running、成功 succeeded、失败 failed、已取消 cancelled |
+| code | `RunCode` | 否 | `{ repository?, commit? }`，原样记录 |
+| datasets | `RunDataset[]` | 否 | 数据集及划分、版本，最多 32 条，`id` 在一条运行里唯一 |
+| checkpoints | `ResearchEntry[]` | 否 | 模型检查点；未给值时保持未知 |
+| config | `ResearchEntry[]` | 否 | 实际配置；名称、值与可选单位、定义 |
+| environment | string | 否 | 机器、工具链与依赖 |
+| seed | string | 否 | 随机种子，原样记录 |
+| evaluation | string | 否 | 评估集合或口径 |
+| startedAt | string | 否 | 开始时刻，ISO 8601，保存为 UTC；未知留空 |
+| endedAt | string | 否 | 结束时刻，规则同上；成功不要求补造时间 |
+| metrics | `ResearchEntry[]` | 否 | 观测指标 |
+| artifacts | `MaterialRef[]` | 否 | 日志、检查点文件与结果产物的链接 |
+| failure | string | 否 | 失败原因，失败与负结果照常保存 |
+| note | string | 否 | 备注 |
+| results | `RunResult[]` | 否 | 观测结果，最多 50 条 |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
+| materials | `MaterialRef[]` | 否 | 报告、图表与复现材料的链接 |
+
+`RunCode` 的仓库与提交都可留空，不猜 URL 或 SHA。`RunDataset` 形状为 `{ id ≤64, name ≤200, split?, version? }`，划分与版本按文字原样保存。
+
+`RunResult` 形状为 `{ id ≤64, kind: 'single'|'aggregate', text ≤2000, sources?: string[] ≤20, method? ≤200, sampleSize?: number, dispersion? ≤200, manual?: boolean }`。`id` 在一条运行里唯一，`sources` 是来源运行的 id 且不重复，`sampleSize` 是非负整数。单次结果不显示来源、方法与手工标记。
+
+- 结果必须分清单次运行与统计汇总：汇总应写来源运行、统计方法与样本数、离散度是否可用；没有原运行可引用时把 `manual` 设为 `true` 并写明方法，不得同时填 `sources` 与 `manual`，也不编造种子。汇总既没有来源又没有手工标记是非法记录。
+- 时间是单一时刻：界面按本地时间填写，保存统一转成 UTC；只收 ISO 8601，缺失保持未知，界面不按开始时间推断状态。
+- 状态由用户维护，本项不接数据源、不自动推进成功或失败；`status` 创建时必填。
+- 方案参数属于研究记录，运行的 `config` 与实际 `metrics` 只记录这次运行的值；指标名称、值、单位与定义保持一组，未给值与数值零分别保存。
+- 「复制为计划」复制方案、配置、环境、种子与数据集描述，新运行从 `planned` 开始；不复制状态、结果、起止时间与产物。
+- 引用：`plan` 指向 `research`，结果 `sources` 指向 `run`；导出导入会重映射这些 id，来源缺失时保留原 id 并显示「来源缺失」，可重选。
+- 搜索匹配标题、环境、种子、评估口径、失败原因、备注、配置与指标的文本、数据集名称与版本、代码仓库与提交、产物标题及结果文字。
+- 列表按状态筛选，可选全部与五种状态，只在活跃视图生效；摘要行显示状态、起止时间与数据集或结果摘要。
 
 ### 毕业论文 thesis
 
@@ -182,7 +225,7 @@ S06 补齐。毕业论文记录的是「写到哪、还差什么、材料在哪�
 | results | `ThesisResult[]` | 否 | 已有的成果来源 |
 | experiments | `ThesisExperiment[]` | 否 | 待补实验 |
 | milestones | `ThesisMilestone[]` | 否 | 学位节点，由用户自行维护 |
-| related | `Ref[]` | 否 | 十种现有类型互指（S11） |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
 | materials | `MaterialRef[]` | 否 | 论文提纲、图表与全文的链接 |
 
 - `ThesisChapter` 为 `{ id, title ≤200, status, question?, note? }`。`status` 只能是计划 planned、撰写 drafting、修订 revising、完成 done；章节顺序就是数组顺序，宿主不重排也不补编号。
@@ -205,7 +248,7 @@ S07 补齐。横向项目记录的是「我负责什么、交付到哪、和谁�
 | communications | `ProjectCommunication[]` | 否 | 沟通结论，来源会议走 `related` |
 | milestones | `ProjectMilestone[]` | 否 | 验收节点，由用户自行维护 |
 | issues | `ProjectIssue[]` | 否 | 待确认问题 |
-| related | `Ref[]` | 否 | 十种现有类型互指（S11） |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
 | materials | `MaterialRef[]` | 否 | 需求摘要、方案与交付材料的链接 |
 
 - `ProjectTask` 为 `{ id, title ≤200, status, due?, note?, materials? }`。`status` 只能是待办 todo、进行中 doing、受阻 blocked、完成 done。
@@ -230,7 +273,7 @@ S08 补齐。课程记录的是「这一门课在哪个学期、上到哪、还�
 | schedule | string | 否 | 上课时间 |
 | notes | string | 否 | 学习笔记 |
 | work | `CourseWork[]` | 否 | 作业与考试 |
-| related | `Ref[]` | 否 | 十种现有类型互指（S11） |
+| related | `Ref[]` | 否 | 十一种现有类型互指（S11） |
 | materials | `MaterialRef[]` | 否 | 课件、作业要求与资料链接 |
 
 - `CourseTerm` 为 `{ label ≤40, start?, end? }`。`label` 是用户给学期起的名字（如「2026 秋」），起止只收日期形状，不收时刻；起止可以留空。学期由用户维护，宿主不按日期自动归档课程。
@@ -251,7 +294,7 @@ S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查�
 | status | string | 是 | 待办 todo、进行中 doing、完成 done、已取消 cancelled |
 | due | `Due` | 否 | 期限，未知留空 |
 | note | string | 否 | 说明 |
-| related | `Ref[]` | 否 | 关联记录，十种类型都可指向（S11） |
+| related | `Ref[]` | 否 | 关联记录，十一种类型都可指向（S11） |
 | materials | `MaterialRef[]` | 否 | 票据、通知与办理材料的链接 |
 
 - `category` 由用户输入，已有类别在表单里作为候选；宿主不预置固定类别表，也不据此推断业务。
@@ -289,6 +332,8 @@ S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查�
 | 单条 work（课程作业与考试） | 100 |
 | 单条 milestones | 50 |
 | 单条 questions（课题问题条目，每条文字 ≤2000） | 100 |
+| 单条 datasets（运行数据集，每条 id 在运行内唯一） | 32 |
+| 单条 results（运行结果，每条文字 ≤2000，来源运行 ≤20） | 50 |
 | 单条序列化字节 | 64 KiB |
 | 工作区记录条数 | 10000 |
 | 工作区记录总字节 | 16 MiB |
@@ -352,9 +397,9 @@ S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查�
 
 ### 关联与导航
 
-- 记录的 `related` 允许指向十种类型，宿主只校验种类与引用形状，不要求目标已经存在；同一引用去重，记录不能关联自身，创建与更新都在写入队列内拒绝。
+- 记录的 `related` 允许指向十一种类型，宿主只校验种类与引用形状，不要求目标已经存在；同一引用去重，记录不能关联自身，创建与更新都在写入队列内拒绝。
 - 反向引用只按前向引用现算：`related`、行动项的 `source`、组会的 `derivedFrom`、毕业论文成果来源与课题问题条目里的 `actionId` 都算一条前向引用，重复关系只计一次。来源归档、移入回收站与永久缺失分别呈现，删除来源不级联删除引用方。
-- 编辑器的统一关联选择器由运行时 `widget.createRecordRelations` 提供，内置组件与用户组件调用同一份实现；十类记录卡都声明 `widget-board:records.open`。选择器按标题搜索、按类型筛选、分批读取并显示已归档与回收站标记；读取失败时保留已选关联并给出重试。
+- 编辑器的统一关联选择器由运行时 `widget.createRecordRelations` 提供，内置组件与用户组件调用同一份实现；十一类记录卡都声明 `widget-board:records.open`。选择器按标题搜索、按类型筛选、分批读取并显示已归档与回收站标记；读取失败时保留已选关联并给出重试。
 - 记录详情由看板页在插件自己的浮层里打开，经发起卡片的 `records.read` 读取，因此目标记录不必先有卡片；详情列出前向关联与反向引用，可逐级进入与返回，关闭后恢复原滚动与未保存的表单输入。预览与一次性快照里没有看板页，调用得到可见的失败说明。
 - 数据源推送沿用旧形状，不携带 `nextOffset`，避免旧组件的 data schema 拒绝额外字段；分页游标只经按需读能力返回。
 
@@ -405,7 +450,7 @@ S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查�
 
 ## 未决与重审
 
-- 课题作为图表目录、投稿轮次与修回逐条回复的关联对象留到后续批次；S11 起 `related` 已允许十种现有类型互指，课题问题条目也可创建并关联行动项。
+- 课题作为图表目录、投稿轮次与修回逐条回复的关联对象留到后续批次；S11 起 `related` 已允许十一种现有类型互指，课题问题条目也可创建并关联行动项。
 - 本地文件材料、宿主代开与路径校验留到第二批。
 - 记录提醒（触发、去重、时区、关页后能力）须独立说明，不承诺系统通知（产品规划行动项一节）。
 - 单份存储拆分为每条一份的时机见存储一节重审条件。

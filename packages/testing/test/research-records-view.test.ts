@@ -12,8 +12,10 @@ import '../../widgets/research-records/copy.js'
 interface ResearchModel {
   KIND: string
   METHODS: string[]
+  RUN_STATUSES: string[]
   MAX_ENTRIES: number
   UNIT_LENGTH: number
+  RUN_TITLE_LENGTH: number
   methodOf(record: unknown): string
   methodKey(method: unknown): string
   textOf(record: unknown, field: string): string
@@ -24,6 +26,11 @@ interface ResearchModel {
   entryLine(entry: unknown): string
   entriesLine(record: unknown, field: string, unknown: unknown): string
   daysLeft(record: unknown, now?: number): number | null
+  runStatusOf(run: unknown): string
+  runStatusKey(status: unknown): string
+  runTimeLine(run: unknown): string
+  runTitleOf(record: unknown, now?: number): string
+  planRuns(records: unknown): Array<Record<string, unknown>>
   viewRows(records: unknown, view: string, method?: string): Array<Record<string, unknown>>
   cleanEntries(rows: unknown): Array<Record<string, unknown>> | null
   materialValid(url: unknown, title: unknown): boolean
@@ -149,6 +156,48 @@ describe('视图过滤与排序', () => {
   it('不是数组时不抛错，读成空列表', () => {
     expect(model.viewRows(null, 'active')).toEqual([])
     expect(model.viewRows([null, 42, note()], 'active')).toHaveLength(1)
+  })
+})
+
+describe('方案下的运行', () => {
+  it('只认五个运行状态，不认识的值按计划中算', () => {
+    expect(model.RUN_STATUSES).toEqual(['planned', 'running', 'succeeded', 'failed', 'cancelled'])
+    expect(model.runStatusOf({ status: 'succeeded' })).toBe('succeeded')
+    expect(model.runStatusOf({ status: 'paused' })).toBe('planned')
+    expect(model.runStatusOf(null)).toBe('planned')
+    expect(model.runStatusKey('running')).toBe('runRunning')
+    expect(model.runStatusKey('succeeded')).toBe('runSucceeded')
+    expect(model.runStatusKey('failed')).toBe('runFailed')
+    expect(model.runStatusKey('cancelled')).toBe('runCancelled')
+    expect(model.runStatusKey('planned')).toBe('runPlanned')
+    expect(model.runStatusKey('paused')).toBe('runPlanned')
+  })
+
+  it('运行时间起止都有时写成一段，只有一个时写那一个', () => {
+    expect(model.runTimeLine({ startedAt: '2026-11-15T08:00:00.000Z', endedAt: '2026-11-15T10:00:00.000Z' })).toBe('2026-11-15 08:00 → 2026-11-15 10:00')
+    expect(model.runTimeLine({ startedAt: '2026-11-15T08:00:00.000Z' })).toBe('2026-11-15 08:00')
+    expect(model.runTimeLine({ endedAt: '2026-11-15T10:00:00.000Z' })).toBe('2026-11-15 10:00')
+    expect(model.runTimeLine({})).toBe('')
+    expect(model.runTimeLine(null)).toBe('')
+  })
+
+  it('新建运行的标题沿用方案标题并附上时刻，过长时截断', () => {
+    const now = Date.parse('2026-11-15T08:00:00.000Z')
+    expect(model.runTitleOf(note(), now)).toMatch(/^不同种子下的干扰对齐仿真 · 运行 \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
+    expect(model.runTitleOf(note({ title: '' }), now)).toMatch(/^研究运行 · 运行 /)
+    const long = model.runTitleOf(note({ title: 'x'.repeat(200) }), now)
+    expect(long.startsWith('x'.repeat(model.RUN_TITLE_LENGTH) + ' · 运行 ')).toBe(true)
+  })
+
+  it('一套方案下的运行不列回收站，按最近更新从新到旧', () => {
+    const runs = [
+      { id: 'old', updatedAt: '2026-11-01T00:00:00.000Z' },
+      { id: 'new', updatedAt: '2026-11-10T00:00:00.000Z' },
+      { id: 'trashed', deletedAt: '2026-11-09T00:00:00.000Z', updatedAt: '2026-11-11T00:00:00.000Z' },
+      null,
+    ]
+    expect(model.planRuns(runs).map((run) => run.id)).toEqual(['new', 'old'])
+    expect(model.planRuns(null)).toEqual([])
   })
 })
 

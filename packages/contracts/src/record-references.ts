@@ -18,6 +18,12 @@ export function recordReferences(record: DomainRecord): RecordRef[] {
       if (question.actionId !== undefined) refs.push({ kind: 'action', id: question.actionId })
     }
   }
+  if (record.kind === 'run') {
+    if (record.plan !== undefined) refs.push(record.plan)
+    for (const result of record.results ?? []) {
+      for (const source of result.sources ?? []) refs.push({ kind: 'run', id: source })
+    }
+  }
   const seen = new Set<string>()
   return refs.filter(ref => {
     const key = `${ref.kind}:${ref.id}`

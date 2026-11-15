@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ActionRecord, ChoreRecord, CourseRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ProjectRecord, ResearchRecord, ThesisRecord, TopicRecord } from '@dsh-scholar-board/contracts'
+import type { ActionRecord, ChoreRecord, CourseRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ProjectRecord, ResearchRecord, RunRecord, ThesisRecord, TopicRecord } from '@dsh-scholar-board/contracts'
 import { openDrafts } from '../src/drafts/store'
 import { exportRecords, importRecords, previewRecords, readRecordsPackage } from '../src/records/exchange'
 import { registerRecords } from '../src/records/access'
@@ -87,6 +87,49 @@ function research(overrides: Record<string, unknown> = {}): Record<string, unkno
       { name: 'runtime', value: '820', unit: 's' },
     ],
     conclusion: '种子只影响小样本段的抖动，趋势一致',
+    ...overrides,
+  }
+}
+
+/** 一条运行的输入。 */
+function run(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'run',
+    title: '种子 11 的干扰对齐仿真',
+    plan: { kind: 'research', id: 'research-1' },
+    status: 'running',
+    code: { repository: 'https://example.com/sim', commit: 'abc1234' },
+    datasets: [
+      { id: 'ds1', name: '合成信道', split: 'train', version: 'v1' },
+      { id: 'ds2', name: '真实信道', split: 'test' },
+    ],
+    checkpoints: [
+      { id: 'c1', name: 'epoch-120', value: '820', unit: 's', definition: '第 120 轮检查点' },
+      { id: 'c2', name: 'epoch-240', value: '1530', unit: 's' },
+    ],
+    config: [
+      { name: 'batch', value: '64' },
+      { name: 'lr', value: '1e-4', definition: '学习率' },
+    ],
+    environment: 'Ubuntu 24.04 / PyTorch 2.5 / CUDA 12.4',
+    seed: '11',
+    evaluation: '误码率与吞吐',
+    startedAt: '2026-11-15T08:00:00+08:00',
+    endedAt: '2026-11-15T10:00:00+08:00',
+    metrics: [
+      { name: 'ber', value: '3.1e-4', definition: '误码率' },
+      { name: 'throughput', value: '18.4', unit: 'Mbps' },
+    ],
+    artifacts: [{ id: 'a1', url: 'https://example.com/log', title: '训练日志' }],
+    failure: '第 240 轮出现 nan',
+    note: '重跑前先检查学习率',
+    results: [
+      { id: 'r1', kind: 'single', text: '种子 11 收敛到 3.1e-4', method: '固定 64 用户', dispersion: '三次均值' },
+      { id: 'r2', kind: 'aggregate', text: '三个种子的中位数', sources: ['run-1', 'run-2'], sampleSize: 3, method: '中位数' },
+      { id: 'r3', kind: 'aggregate', text: '与文献对比后手工汇总', manual: true },
+    ],
+    related: [{ kind: 'literature', id: 'literature-1' }],
+    materials: [{ id: 'rm1', url: 'https://example.com/report', title: '运行报告' }],
     ...overrides,
   }
 }
@@ -310,13 +353,20 @@ describe('记录存储', () => {
     await expect(store.create(literature({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).resolves.toMatchObject({ record: { related: [{ kind: 'meeting', id: 'meeting-1' }] } })
   })
 
-  it('研究记录带做法、环境、种子与带单位的参数指标，搜索也看参数与结论', async () => {
+  it('研究记录带目的、假设、步骤、环境、种子与带单位的参数指标，搜索也看这些内容', async () => {
     const { store } = await open()
-    const created = await store.create(research(), ACTOR)
+    const created = await store.create(research({
+      purpose: '验证种子变化对曲线的影响',
+      hypothesis: '种子只影响小样本段',
+      steps: '先跑基线，再换三个种子',
+    }), ACTOR)
     const record = created.record as ResearchRecord
     expect(record).toMatchObject({
       kind: 'research',
       method: 'simulation',
+      purpose: '验证种子变化对曲线的影响',
+      hypothesis: '种子只影响小样本段',
+      steps: '先跑基线，再换三个种子',
       environment: 'Ubuntu 24.04 / Node 22 / numpy 2.1',
       seed: '11, 42, 97',
     })
@@ -328,15 +378,92 @@ describe('记录存储', () => {
     expect(store.view({ kind: 'research' }).records).toHaveLength(1)
     expect(store.view({ search: 'runtime' }).records.map((entry) => entry.id)).toEqual([record.id])
     expect(store.view({ search: '种子只影响' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '先跑基线' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '验证种子变化' }).records.map((entry) => entry.id)).toEqual([record.id])
 
-    const moved = await store.update(record.id, 1, { method: 'experiment', conclusion: '复现一致' }, ACTOR)
+    const moved = await store.update(record.id, 1, { method: 'experiment', conclusion: '复现一致', purpose: '换一组种子复验' }, ACTOR)
     expect((moved.record as ResearchRecord).method).toBe('experiment')
     expect((moved.record as ResearchRecord).conclusion).toBe('复现一致')
+    expect((moved.record as ResearchRecord).purpose).toBe('换一组种子复验')
 
     await expect(store.create(research({ method: 'field' }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(research({ parameters: [{ name: 'snr' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(research({ metrics: [{ name: 'ber', value: '1e-3', unit: 'x'.repeat(33) }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(research({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).resolves.toMatchObject({ record: { related: [{ kind: 'meeting', id: 'meeting-1' }] } })
+  })
+
+  it('运行记录带方案来源、状态、代码、数据集、检查点、配置与结果，搜索也看这些内容', async () => {
+    const { store } = await open()
+    const created = await store.create(run(), ACTOR)
+    const record = created.record as RunRecord
+    expect(record).toMatchObject({
+      kind: 'run',
+      status: 'running',
+      plan: { kind: 'research', id: 'research-1' },
+      code: { repository: 'https://example.com/sim', commit: 'abc1234' },
+      environment: 'Ubuntu 24.04 / PyTorch 2.5 / CUDA 12.4',
+      seed: '11',
+      evaluation: '误码率与吞吐',
+      failure: '第 240 轮出现 nan',
+      note: '重跑前先检查学习率',
+    })
+    expect(record.datasets).toEqual([
+      { id: 'ds1', name: '合成信道', split: 'train', version: 'v1' },
+      { id: 'ds2', name: '真实信道', split: 'test' },
+    ])
+    expect(record.checkpoints?.[0]).toEqual({ name: 'epoch-120', value: '820', unit: 's', definition: '第 120 轮检查点' })
+    expect(record.config?.[1]).toEqual({ name: 'lr', value: '1e-4', definition: '学习率' })
+    expect(record.metrics?.[0]).toEqual({ name: 'ber', value: '3.1e-4', definition: '误码率' })
+    expect(record.startedAt).toBe('2026-11-15T00:00:00.000Z')
+    expect(record.endedAt).toBe('2026-11-15T02:00:00.000Z')
+    expect(record.results).toEqual([
+      { id: 'r1', kind: 'single', text: '种子 11 收敛到 3.1e-4', method: '固定 64 用户', dispersion: '三次均值' },
+      { id: 'r2', kind: 'aggregate', text: '三个种子的中位数', sources: ['run-1', 'run-2'], sampleSize: 3, method: '中位数' },
+      { id: 'r3', kind: 'aggregate', text: '与文献对比后手工汇总', manual: true },
+    ])
+    expect(record.related).toEqual([{ kind: 'literature', id: 'literature-1' }])
+    expect(record.artifacts?.[0]).toMatchObject({ title: '训练日志' })
+
+    expect(store.view({ kind: 'run' }).records).toHaveLength(1)
+    expect(store.view({ search: '合成信道' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '检查点' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: 'abc1234' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '学习率' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '训练日志' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: 'nan' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '收敛到' }).records.map((entry) => entry.id)).toEqual([record.id])
+    // 方案来源就是一条普通引用：从研究记录这一侧能查到引用它的运行。
+    expect(store.view({ references: { kind: 'research', id: 'research-1' } }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const moved = await store.update(record.id, 1, { status: 'failed', failure: '第 240 轮 nan 未收敛' }, ACTOR)
+    expect((moved.record as RunRecord).status).toBe('failed')
+    expect((moved.record as RunRecord).failure).toBe('第 240 轮 nan 未收敛')
+
+    // 状态是运行记录的必填项：没有状态的历史运行不允许写进来。
+    await expect(store.create(run({ title: '没有状态的运行', status: undefined }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({ status: 'done' }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({ plan: { kind: 'run', id: 'run-1' } }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({ code: ['repo'] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({ datasets: [{ id: 'ds1', name: '' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({
+      datasets: [{ id: 'ds1', name: '合成信道' }, { id: 'ds1', name: '真实信道' }],
+    }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({ metrics: [{ name: 'ber' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({ endedAt: '昨天' }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({ results: [{ id: 'r1', kind: 'aggregate', text: '缺来源的汇总' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({
+      results: [{ id: 'r1', kind: 'aggregate', text: '既写来源又标手工', sources: ['run-1'], manual: true }],
+    }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({
+      results: [{ id: 'r1', kind: 'single', text: '第一条' }, { id: 'r1', kind: 'single', text: '重复' }],
+    }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({
+      results: [{ id: 'r-long', kind: 'single', text: '字'.repeat(2000) }],
+    }), ACTOR)).resolves.toMatchObject({ record: { results: [{ id: 'r-long', text: '字'.repeat(2000) }] } })
+    await expect(store.create(run({
+      results: [{ id: 'r1', kind: 'single', text: '字'.repeat(2001) }],
+    }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(run({ related: [{ kind: 'unknown', id: 'x-1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
   it('课题带目标、假设、判断与问题条目，行动项按来源条目幂等创建，搜索也看问题与判断', async () => {
@@ -900,6 +1027,32 @@ describe('记录存储', () => {
     await importRecords(target.store, bytes, Date.now())
     const action = target.store.view().records[0] as ActionRecord
     expect(action.source).toEqual({ kind: 'meeting', id: meetingCreated.record.id })
+  })
+
+  it('运行记录导出再导入时，方案来源与结果来源都跟着重映射', async () => {
+    const source = await open()
+    const plan = await source.store.create(research(), ACTOR)
+    const first = await source.store.create(run({ plan: { kind: 'research', id: plan.record.id }, results: [] }), ACTOR)
+    const second = await source.store.create(run({ title: '第二个运行', plan: { kind: 'research', id: plan.record.id }, results: [] }), ACTOR)
+    await source.store.create(run({
+      title: '汇总运行',
+      results: [{ id: 'r1', kind: 'aggregate', text: '两个运行的汇总', sources: [first.record.id, second.record.id] }],
+    }), ACTOR)
+    const bytes = exportRecords(source.store, { includeArchived: false, includeTrashed: false }, Date.now())
+    expect(previewRecords(bytes).byKind.run).toBe(3)
+
+    const target = await open()
+    await importRecords(target.store, bytes, Date.now())
+    const view = target.store.view()
+    const importedPlan = view.records.find((record) => record.kind === 'research')
+    const importedRuns = view.records.filter((record): record is RunRecord => record.kind === 'run')
+    const importedFirst = importedRuns.find((record) => record.title === '种子 11 的干扰对齐仿真')
+    const importedSecond = importedRuns.find((record) => record.title === '第二个运行')
+    const importedCombined = importedRuns.find((record) => record.title === '汇总运行')
+    if (importedPlan === undefined || importedFirst === undefined || importedSecond === undefined || importedCombined === undefined) throw new Error('导入后找不到方案与三个运行')
+    expect(importedFirst.plan).toEqual({ kind: 'research', id: importedPlan.id })
+    expect(importedSecond.plan).toEqual({ kind: 'research', id: importedPlan.id })
+    expect(importedCombined.results?.[0].sources?.sort()).toEqual([importedFirst.id, importedSecond.id].sort())
   })
 
   it('导入整批校验：坏文件、坏版本与容量不够都拒绝，不留半份', async () => {

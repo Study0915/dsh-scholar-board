@@ -1,0 +1,183 @@
+<div class="t-data rr" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">运行记录</h2>
+    </div>
+    <div class="rr__head-aside">
+      <span class="t-data__meta rr__count" data-field="count"></span>
+      <button class="rr__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="rr__toolbar">
+    <div class="rr__tabs" role="tablist" aria-label="记录范围">
+      <button class="rr__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="rr__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="rr__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <select class="rr__search rr__status-filter" data-role="status-filter" aria-label="状态">
+      <option value="">全部状态</option>
+      <option value="planned">计划中</option>
+      <option value="running">运行中</option>
+      <option value="succeeded">成功</option>
+      <option value="failed">失败</option>
+      <option value="cancelled">已取消</option>
+    </select>
+    <input class="rr__search" type="search" data-role="search" aria-label="搜索记录" placeholder="搜索标题、方案、环境与结果" />
+  </div>
+
+  <div class="rr__body">
+    <div class="t-data__scroll rr__list" data-role="list" hidden></div>
+    <div class="rr__note-wrap">
+      <p class="t-data__empty rr__note" data-role="note">正在读取记录…</p>
+      <button class="rr__ghost rr__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="rr__detail" data-role="detail" hidden aria-label="记录详情">
+    <div class="rr__detail-head">
+      <button class="rr__ghost rr__back" type="button" data-action="back">返回</button>
+      <span class="rr__state" data-role="detail-state"></span>
+      <span class="rr__spacer"></span>
+      <button class="rr__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="rr__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="rr__ghost rr__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll rr__detail-body">
+      <p class="rr__hint" data-role="detail-hint" hidden></p>
+      <label class="rr__field">
+        <span class="rr__label" data-role="label-title">标题</span>
+        <input class="rr__input" type="text" data-field="title-input" maxlength="200" autocomplete="off" />
+      </label>
+      <div class="rr__pair">
+        <label class="rr__field">
+          <span class="rr__label" data-role="label-status">状态</span>
+          <select class="rr__input" data-field="status-input">
+            <option value="planned">计划中</option>
+            <option value="running">运行中</option>
+            <option value="succeeded">成功</option>
+            <option value="failed">失败</option>
+            <option value="cancelled">已取消</option>
+          </select>
+        </label>
+        <label class="rr__field">
+          <span class="rr__label" data-role="label-plan">研究方案</span>
+          <select class="rr__input" data-field="plan-input"></select>
+        </label>
+      </div>
+      <p class="rr__note-line" data-role="plan-hint"></p>
+      <div class="rr__pair">
+        <label class="rr__field">
+          <span class="rr__label" data-role="label-repository">代码仓库</span>
+          <input class="rr__input" type="text" data-field="repository-input" autocomplete="off" spellcheck="false" />
+        </label>
+        <label class="rr__field">
+          <span class="rr__label" data-role="label-commit">提交</span>
+          <input class="rr__input" type="text" data-field="commit-input" autocomplete="off" spellcheck="false" />
+        </label>
+      </div>
+      <p class="rr__note-line" data-role="code-hint"></p>
+      <fieldset class="rr__entries">
+        <legend class="rr__label" data-role="label-datasets">数据集</legend>
+        <ul class="rr__entry-list" data-role="datasets"></ul>
+        <button class="rr__ghost" type="button" data-action="add-dataset">添加数据集</button>
+        <p class="rr__error" data-role="dataset-error" role="status"></p>
+      </fieldset>
+      <fieldset class="rr__entries">
+        <legend class="rr__label" data-role="label-checkpoints">检查点</legend>
+        <ul class="rr__entry-list" data-role="checkpoints"></ul>
+        <button class="rr__ghost" type="button" data-action="add-checkpoint">添加检查点</button>
+      </fieldset>
+      <fieldset class="rr__entries">
+        <legend class="rr__label" data-role="label-config">运行配置</legend>
+        <ul class="rr__entry-list" data-role="config"></ul>
+        <button class="rr__ghost" type="button" data-action="add-config">添加配置</button>
+      </fieldset>
+      <fieldset class="rr__entries">
+        <legend class="rr__label" data-role="label-metrics">观测指标</legend>
+        <ul class="rr__entry-list" data-role="metrics"></ul>
+        <button class="rr__ghost" type="button" data-action="add-metric">添加指标</button>
+      </fieldset>
+      <p class="rr__note-line" data-role="entries-hint"></p>
+      <p class="rr__error" data-role="entry-error" role="status"></p>
+      <label class="rr__field">
+        <span class="rr__label" data-role="label-environment">环境</span>
+        <input class="rr__input" type="text" data-field="environment-input" autocomplete="off" />
+      </label>
+      <p class="rr__note-line" data-role="environment-hint"></p>
+      <label class="rr__field">
+        <span class="rr__label" data-role="label-seed">随机种子</span>
+        <input class="rr__input" type="text" data-field="seed-input" autocomplete="off" />
+      </label>
+      <p class="rr__note-line" data-role="seed-hint"></p>
+      <label class="rr__field">
+        <span class="rr__label" data-role="label-evaluation">评估集合</span>
+        <input class="rr__input" type="text" data-field="evaluation-input" autocomplete="off" />
+      </label>
+      <p class="rr__note-line" data-role="evaluation-hint"></p>
+      <div class="rr__pair">
+        <label class="rr__field">
+          <span class="rr__label" data-role="label-started">开始时间</span>
+          <input class="rr__input" type="datetime-local" data-field="started-input" />
+        </label>
+        <label class="rr__field">
+          <span class="rr__label" data-role="label-ended">结束时间</span>
+          <input class="rr__input" type="datetime-local" data-field="ended-input" />
+        </label>
+      </div>
+      <p class="rr__note-line" data-role="time-hint"></p>
+      <p class="rr__error" data-role="time-error" role="status"></p>
+      <fieldset class="rr__entries">
+        <legend class="rr__label" data-role="label-results">结果</legend>
+        <ul class="rr__result-list" data-role="results"></ul>
+        <button class="rr__ghost" type="button" data-action="add-result">添加结果</button>
+        <p class="rr__note-line" data-role="results-hint"></p>
+        <p class="rr__error" data-role="result-error" role="status"></p>
+      </fieldset>
+      <fieldset class="rr__materials">
+        <legend class="rr__label" data-role="label-artifacts">日志与产物</legend>
+        <ul class="rr__material-list" data-role="artifacts"></ul>
+        <div class="rr__material-add">
+          <input class="rr__input" type="url" data-field="artifact-url" placeholder="https://…" autocomplete="off" spellcheck="false" />
+          <input class="rr__input" type="text" data-field="artifact-title" maxlength="200" placeholder="链接说明" autocomplete="off" />
+          <button class="rr__ghost" type="button" data-action="add-artifact">添加</button>
+        </div>
+        <p class="rr__error" data-role="artifact-error" role="status"></p>
+      </fieldset>
+      <label class="rr__field">
+        <span class="rr__label" data-role="label-failure">失败原因</span>
+        <textarea class="rr__input rr__textarea" rows="2" data-field="failure"></textarea>
+      </label>
+      <p class="rr__note-line" data-role="failure-hint"></p>
+      <label class="rr__field">
+        <span class="rr__label" data-role="label-note">备注</span>
+        <textarea class="rr__input rr__textarea" rows="2" data-field="note"></textarea>
+      </label>
+      <div class="rr__detail-actions">
+        <button class="rr__ghost" type="button" data-action="duplicate" hidden>复制为新计划</button>
+        <span class="rr__spacer"></span>
+        <button class="rr__primary" type="button" data-action="save">保存</button>
+        <button class="rr__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="rr__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="rr__dialog-actions">
+      <button class="rr__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="rr__primary" type="button" data-action="confirm-close">关闭并保留草稿</button>
+    </div>
+  </dialog>
+
+  <dialog class="rr__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="rr__dialog-actions">
+      <button class="rr__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="rr__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

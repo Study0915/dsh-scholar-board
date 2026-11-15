@@ -46,14 +46,20 @@ export const RECORDS_LIMITS = {
   categoryLength: 40,
   topicQuestions: 100,
   topicQuestionText: 2000,
+  runDatasets: 32,
+  runResults: 50,
+  runResultText: 2000,
+  runResultSources: 20,
+  runMethodLength: 200,
+  runDispersionLength: 200,
   searchLength: 200,
 } as const
 
-/** 领域记录的十种类型。 */
-export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore' | 'topic'
+/** 领域记录的十一种类型。 */
+export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore' | 'topic' | 'run'
 
 /** 记录类型的唯一列表，校验、筛选和关系查询共用。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore', 'topic']
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore', 'topic', 'run']
 
 /** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
 export type LiteratureStage = 'queued' | 'reading' | 'understood'
@@ -124,11 +130,12 @@ export interface MaterialRef {
   note?: string
 }
 
-/** 研究记录里的一行参数或指标：名称、数值与可选单位。 */
+/** 研究记录里的一行参数或指标：名称、数值、可选单位与可选定义。 */
 export interface ResearchEntry {
   name: string
   value: string
   unit?: string
+  definition?: string
 }
 
 /** 每条记录都有的系统字段；组件不可写。 */
@@ -204,17 +211,73 @@ export interface LiteratureRecord extends RecordBase {
   materials?: MaterialRef[]
 }
 
-/** 研究记录：推导、仿真或实验的做法与可复现信息。 */
+/** 研究记录：推导、仿真或实验的做法与可复现信息；也承载方案的实验目的与步骤。 */
 export interface ResearchRecord extends RecordBase {
   kind: 'research'
   title: string
   method: ResearchMethod
   question?: string
+  purpose?: string
+  hypothesis?: string
+  steps?: string
   environment?: string
   seed?: string
   parameters?: ResearchEntry[]
   metrics?: ResearchEntry[]
   conclusion?: string
+  related?: RecordRef[]
+  materials?: MaterialRef[]
+}
+
+/** 运行状态；由用户或以后明确接入的数据源维护，这里不执行程序。 */
+export type RunStatus = 'planned' | 'running' | 'succeeded' | 'failed' | 'cancelled'
+
+/** 运行的代码来源；仓库与提交都允许未知。 */
+export interface RunCode {
+  repository?: string
+  commit?: string
+}
+
+/** 一次运行用到的数据集、划分与版本。 */
+export interface RunDataset {
+  id: string
+  name: string
+  split?: string
+  version?: string
+}
+
+/** 一条运行结果：单次运行的观测，或明确标记来源与统计口径的汇总。 */
+export interface RunResult {
+  id: string
+  kind: 'single' | 'aggregate'
+  text: string
+  sources?: string[]
+  method?: string
+  sampleSize?: number
+  dispersion?: string
+  manual?: boolean
+}
+
+/** 运行记录：按方案实际开展的一次运行或一次统计汇总。 */
+export interface RunRecord extends RecordBase {
+  kind: 'run'
+  title: string
+  plan?: RecordRef
+  status: RunStatus
+  code?: RunCode
+  datasets?: RunDataset[]
+  checkpoints?: ResearchEntry[]
+  config?: ResearchEntry[]
+  environment?: string
+  seed?: string
+  evaluation?: string
+  startedAt?: string
+  endedAt?: string
+  metrics?: ResearchEntry[]
+  artifacts?: MaterialRef[]
+  failure?: string
+  note?: string
+  results?: RunResult[]
   related?: RecordRef[]
   materials?: MaterialRef[]
 }
@@ -418,7 +481,7 @@ export interface TopicRecord extends RecordBase {
 }
 
 /** 一条领域记录。 */
-export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord | CourseRecord | ChoreRecord | TopicRecord
+export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord | CourseRecord | ChoreRecord | TopicRecord | RunRecord
 
 /** 工作区当前的用量；到九成时 `warning` 为真，到顶阻止新建。 */
 export interface RecordsQuota {

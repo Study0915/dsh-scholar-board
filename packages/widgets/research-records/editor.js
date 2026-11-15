@@ -27,6 +27,7 @@
     var WRITE = 'widget-board:records.write'
     var DRAFT = 'widget-board:records.draft'
     var draftTimer = null
+    var creatingRun = false
     var relations = widget.createRecordRelations({ container: nodes.detail,
       current: function () { return app.baseline },
       onChange: function (refs) { app.related = refs; onInput() }
@@ -38,6 +39,9 @@
         title: nodes.titleInput.value,
         method: nodes.methodInput.value,
         question: nodes.question.value,
+        purpose: nodes.purpose.value,
+        hypothesis: nodes.hypothesis.value,
+        steps: nodes.steps.value,
         environment: nodes.environmentInput.value,
         seed: nodes.seedInput.value,
         parameters: app.parameters,
@@ -52,6 +56,9 @@
       nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
       nodes.methodInput.value = pure.METHODS.indexOf(form.method) >= 0 ? form.method : 'simulation'
       nodes.question.value = typeof form.question === 'string' ? form.question : ''
+      nodes.purpose.value = typeof form.purpose === 'string' ? form.purpose : ''
+      nodes.hypothesis.value = typeof form.hypothesis === 'string' ? form.hypothesis : ''
+      nodes.steps.value = typeof form.steps === 'string' ? form.steps : ''
       nodes.environmentInput.value = typeof form.environment === 'string' ? form.environment : ''
       nodes.seedInput.value = typeof form.seed === 'string' ? form.seed : ''
       nodes.conclusion.value = typeof form.conclusion === 'string' ? form.conclusion : ''
@@ -75,7 +82,8 @@
       nodes.archiveAction.hidden = record === null || trashed || record.archived === true
       nodes.restoreAction.hidden = record === null || (!trashed && record.archived !== true)
       nodes.trashAction.hidden = record === null || trashed
-      var fields = [nodes.titleInput, nodes.methodInput, nodes.question, nodes.environmentInput, nodes.seedInput, nodes.conclusion, nodes.materialUrl, nodes.materialTitle]
+      if (nodes.planRuns !== null) nodes.planRuns.hidden = record === null
+      var fields = [nodes.titleInput, nodes.methodInput, nodes.question, nodes.purpose, nodes.hypothesis, nodes.steps, nodes.environmentInput, nodes.seedInput, nodes.conclusion, nodes.materialUrl, nodes.materialTitle]
       for (var at = 0; at < fields.length; at += 1) fields[at].disabled = trashed
       var buttons = [ctx.card.querySelector('[data-action="add-material"]'), ctx.card.querySelector('[data-action="add-parameter"]'), ctx.card.querySelector('[data-action="add-metric"]')]
       for (var buttonAt = 0; buttonAt < buttons.length; buttonAt += 1) {
@@ -85,12 +93,14 @@
       for (var entryAt = 0; entryAt < entryInputs.length; entryAt += 1) entryInputs[entryAt].disabled = trashed
       nodes.saveButton.disabled = trashed
       nodes.saveButton.textContent = t('save')
+      if (nodes.newRunButton !== null) nodes.newRunButton.disabled = trashed
       if (trashed) {
         nodes.detailHint.textContent = t('trashRestoreHint')
         if (nodes.detailHint !== null) nodes.detailHint.hidden = false
       } else if (nodes.detailHint !== null) {
         nodes.detailHint.hidden = true
       }
+      refreshPlanRuns()
       if (focus === true) nodes.titleInput.focus()
     }
 
@@ -106,6 +116,9 @@
         title: record.title,
         method: pure.methodOf(record),
         question: record.question,
+        purpose: record.purpose,
+        hypothesis: record.hypothesis,
+        steps: record.steps,
         environment: record.environment,
         seed: record.seed,
         parameters: pure.entriesOf(record, 'parameters'),
@@ -126,7 +139,7 @@
       app.dirty = false
       app.saving = false
       app.materials = []
-      fillForm({ title: '', method: 'simulation', question: '', environment: '', seed: '', parameters: [], metrics: [], conclusion: '' })
+      fillForm({ title: '', method: 'simulation', question: '', purpose: '', hypothesis: '', steps: '', environment: '', seed: '', parameters: [], metrics: [], conclusion: '' })
       showDetail(null, true)
       restoreDraft('new').then(function (restored) {
         if (restored) ctx.setStatus(t('draftRestored'), 'neutral')
@@ -216,6 +229,9 @@
         nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
         nodes.methodInput.value = pure.METHODS.indexOf(form.method) >= 0 ? form.method : 'simulation'
         nodes.question.value = typeof form.question === 'string' ? form.question : ''
+        nodes.purpose.value = typeof form.purpose === 'string' ? form.purpose : ''
+        nodes.hypothesis.value = typeof form.hypothesis === 'string' ? form.hypothesis : ''
+        nodes.steps.value = typeof form.steps === 'string' ? form.steps : ''
         nodes.environmentInput.value = typeof form.environment === 'string' ? form.environment : ''
         nodes.seedInput.value = typeof form.seed === 'string' ? form.seed : ''
         nodes.conclusion.value = typeof form.conclusion === 'string' ? form.conclusion : ''
@@ -253,6 +269,9 @@
         title: title,
         method: pure.METHODS.indexOf(nodes.methodInput.value) >= 0 ? nodes.methodInput.value : 'simulation',
         question: nodes.question.value.trim() === '' ? null : nodes.question.value.trim(),
+        purpose: nodes.purpose.value.trim() === '' ? null : nodes.purpose.value.trim(),
+        hypothesis: nodes.hypothesis.value.trim() === '' ? null : nodes.hypothesis.value.trim(),
+        steps: nodes.steps.value.trim() === '' ? null : nodes.steps.value.trim(),
         environment: nodes.environmentInput.value.trim() === '' ? null : nodes.environmentInput.value.trim(),
         seed: nodes.seedInput.value.trim() === '' ? null : nodes.seedInput.value.trim(),
         parameters: parameters.length === 0 ? null : parameters,
@@ -354,6 +373,9 @@
         title: latest.title,
         method: pure.methodOf(latest),
         question: latest.question,
+        purpose: latest.purpose,
+        hypothesis: latest.hypothesis,
+        steps: latest.steps,
         environment: latest.environment,
         seed: latest.seed,
         parameters: pure.entriesOf(latest, 'parameters'),
@@ -364,6 +386,68 @@
       showDetail(latest, false)
       ctx.setStatus(t('saved'), 'ok')
       ctx.refreshList()
+    }
+
+    function refreshPlanRuns() {
+      if (nodes.runs === null) return
+      var baseline = app.baseline
+      if (baseline === null || typeof baseline !== 'object') {
+        nodes.runs.replaceChildren()
+        if (nodes.runError !== null) nodes.runError.textContent = ''
+        return
+      }
+      if (!live) {
+        nodes.runs.replaceChildren()
+        return
+      }
+      var wanted = baseline.id
+      widget.call(READ, { kind: 'run', references: { kind: 'research', id: wanted }, includeArchived: true }).then(function (result) {
+        if (app.baseline === null || app.baseline.id !== wanted) return
+        var records = result !== null && typeof result === 'object' && Array.isArray(result.records) ? result.records : []
+        var runs = pure.planRuns(records)
+        var items = []
+        for (var at = 0; at < runs.length; at += 1) items.push(view.planRunRow(runs[at], text))
+        if (items.length === 0) {
+          var empty = document.createElement('li')
+          empty.className = 'rs__run-empty'
+          empty.textContent = t('planRunsEmpty')
+          items.push(empty)
+        }
+        nodes.runs.replaceChildren.apply(nodes.runs, items)
+        if (nodes.runError !== null) nodes.runError.textContent = ''
+      }, function () {
+        if (nodes.runError !== null) nodes.runError.textContent = t('runsFailed')
+      })
+    }
+
+    function createRun() {
+      if (!live || creatingRun || app.baseline === null || typeof app.baseline.deletedAt === 'string') return
+      var plan = app.baseline
+      creatingRun = true
+      if (nodes.newRunButton !== null) nodes.newRunButton.disabled = true
+      ctx.setStatus(t('creatingRun'), 'neutral')
+      widget.call(WRITE, {
+        op: 'create',
+        record: { kind: 'run', title: pure.runTitleOf(plan), plan: { kind: 'research', id: plan.id }, status: 'planned' }
+      }).then(function (result) {
+        creatingRun = false
+        if (nodes.newRunButton !== null) nodes.newRunButton.disabled = false
+        var record = result !== null && typeof result === 'object' && result.record !== null && typeof result.record === 'object' ? result.record : null
+        if (record === null || typeof record.id !== 'string') {
+          if (nodes.runError !== null) nodes.runError.textContent = t('runCreateFailed')
+          ctx.setStatus(t('runCreateFailed'), 'error')
+          return
+        }
+        if (nodes.runError !== null) nodes.runError.textContent = ''
+        ctx.setStatus(t('runCreated'), 'ok')
+        refreshPlanRuns()
+      }, function (error) {
+        creatingRun = false
+        if (nodes.newRunButton !== null) nodes.newRunButton.disabled = false
+        var message = t('runCreateFailed') + '：' + messageOf(error)
+        if (nodes.runError !== null) nodes.runError.textContent = message
+        ctx.setStatus(message, 'error')
+      })
     }
 
     function renderEntries(kind) {
@@ -467,7 +551,9 @@
       renderMaterials: renderMaterials,
       addMaterial: addMaterial,
       removeMaterial: removeMaterial,
-      reloadLatest: reloadLatest
+      reloadLatest: reloadLatest,
+      refreshPlanRuns: refreshPlanRuns,
+      createRun: createRun
     }
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)

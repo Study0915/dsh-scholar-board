@@ -137,6 +137,41 @@
     return row
   }
 
+  /** 运行状态的色调。 */
+  function runTone(status) {
+    return status === 'succeeded' ? 'ok' : status === 'failed' ? 'trash' : status === 'running' ? 'reading' : 'neutral'
+  }
+
+  /**
+   * 一套方案下的一行运行：状态、标题与起止时间；只是记录，不跳转到别的卡片。
+   *
+   * @param {object} run - 一条运行记录。
+   * @param {{ t: function(string): string }} text - 文案。
+   * @returns {HTMLLIElement} 运行行。
+   */
+  function planRunRow(run, text) {
+    var row = document.createElement('li')
+    row.className = 'rs__run'
+    row.dataset.id = String(run.id)
+    var status = model.runStatusOf(run)
+    row.appendChild(tagOf(text.t(model.runStatusKey(status)), runTone(status)))
+    var body = document.createElement('span')
+    body.className = 'rs__run-body'
+    var title = document.createElement('span')
+    title.className = 'rs__run-title'
+    title.textContent = typeof run.title === 'string' && run.title !== '' ? run.title : String(run.id)
+    body.appendChild(title)
+    var time = model.runTimeLine(run)
+    if (time !== '') {
+      var line = document.createElement('span')
+      line.className = 'rs__run-time'
+      line.textContent = time
+      body.appendChild(line)
+    }
+    row.appendChild(body)
+    return row
+  }
+
   /** 缩略画面里的一份静态样例：三条记录，与真实读到的形状相同。 */
   function sampleRows() {
     var now = new Date().toISOString()
@@ -150,7 +185,9 @@
   root.ResearchRecordsView = {
     tagOf: tagOf,
     methodTone: methodTone,
+    runTone: runTone,
     rowOf: rowOf,
+    planRunRow: planRunRow,
     entryRow: entryRow,
     materialRow: materialRow,
     sampleRows: sampleRows

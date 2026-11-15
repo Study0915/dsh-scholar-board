@@ -2,7 +2,7 @@
 import type { DomainRecord, ResearchEntry, ManuscriptFigure, RevisionItem, SubmissionRound, CourseWork, MaterialRef, ProjectCommunication, ProjectDeliverable, ProjectIssue, ProjectTask, ThesisChapter, ThesisExperiment, ThesisMilestone, ThesisResult } from '@dsh-scholar-board/contracts'
 
 /** 搜索和展示时要读的文本字段。 */
-const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'goal', 'hypothesis', 'judgment', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'conclusion', 'code', 'teacher', 'schedule', 'notes', 'note', 'category'] as const
+const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'goal', 'purpose', 'hypothesis', 'steps', 'judgment', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'environment', 'seed', 'evaluation', 'failure', 'conclusion', 'code', 'teacher', 'schedule', 'notes', 'note', 'category'] as const
 
 /**
  * 一条记录的搜索文本：标题与全部短文本字段，材料标题也进来。
@@ -23,13 +23,39 @@ export function searchTextOf(record: DomainRecord): string {
       if (typeof material?.title === 'string') parts.push(material.title)
     }
   }
-  for (const field of ['parameters', 'metrics'] as const) {
+  for (const field of ['parameters', 'metrics', 'checkpoints', 'config'] as const) {
     const entries = entry[field]
     if (!Array.isArray(entries)) continue
     for (const item of entries as ResearchEntry[]) {
       if (typeof item?.name === 'string') parts.push(item.name)
       if (typeof item?.value === 'string') parts.push(item.value)
       if (typeof item?.unit === 'string') parts.push(item.unit)
+      if (typeof item?.definition === 'string') parts.push(item.definition)
+    }
+  }
+  if (Array.isArray(entry.datasets)) {
+    for (const dataset of entry.datasets as { name?: unknown, split?: unknown, version?: unknown }[]) {
+      if (typeof dataset?.name === 'string') parts.push(dataset.name)
+      if (typeof dataset?.split === 'string') parts.push(dataset.split)
+      if (typeof dataset?.version === 'string') parts.push(dataset.version)
+    }
+  }
+  if (entry.code !== null && typeof entry.code === 'object') {
+    for (const field of ['repository', 'commit'] as const) {
+      const value = (entry.code as Record<string, unknown>)[field]
+      if (typeof value === 'string') parts.push(value)
+    }
+  }
+  if (Array.isArray(entry.artifacts)) {
+    for (const material of entry.artifacts as MaterialRef[]) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  if (Array.isArray(entry.results)) {
+    for (const result of entry.results as { text?: unknown, method?: unknown, dispersion?: unknown }[]) {
+      if (typeof result?.text === 'string') parts.push(result.text)
+      if (typeof result?.method === 'string') parts.push(result.method)
+      if (typeof result?.dispersion === 'string') parts.push(result.dispersion)
     }
   }
   for (const figure of (Array.isArray(entry.figures) ? entry.figures : []) as ManuscriptFigure[]) {

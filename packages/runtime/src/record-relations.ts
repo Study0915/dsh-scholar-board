@@ -14,10 +14,12 @@ export interface RecordRelationsOptions {
   container: HTMLElement
   current(): { id?: string, kind: RecordKind, deletedAt?: string } | null
   onChange(refs: RecordRef[]): void
+  /** 只允许选这些记录类型；省略时是所有类型。 */
+  kinds?: readonly RecordKind[]
 }
 
-const names = ['组会', '行动项', '小论文', '文献', '研究', '毕业论文', '项目', '课程', '事务', '课题']
-const english = ['Meeting', 'Action', 'Manuscript', 'Literature', 'Research', 'Thesis', 'Project', 'Course', 'Chore', 'Topic']
+const names = ['组会', '行动项', '小论文', '文献', '研究', '毕业论文', '项目', '课程', '事务', '课题', '运行']
+const english = ['Meeting', 'Action', 'Manuscript', 'Literature', 'Research', 'Thesis', 'Project', 'Course', 'Chore', 'Topic', 'Run']
 
 /**
  * 安装统一关联选择器；所有宿主读取集中在这里，用户组件也可使用。
@@ -49,7 +51,10 @@ export function createRecordRelations(api: WidgetHandles & { readonly lang: stri
   all.value = ''
   all.textContent = label('全部类型', 'All types')
   kind.append(all)
-  for (const [index, id] of RECORD_KINDS.entries()) {
+  const allowed = options.kinds ?? RECORD_KINDS
+  for (const id of allowed) {
+    const index = RECORD_KINDS.indexOf(id)
+    if (index < 0) continue
     const option = document.createElement('option')
     option.value = id
     option.textContent = (zh ? names : english)[index] ?? id
@@ -213,6 +218,7 @@ export function createRecordRelations(api: WidgetHandles & { readonly lang: stri
       const seen = new Set<string>()
       refs = (Array.isArray(value) ? value : []).filter((ref): ref is RecordRef => {
         if (!ref || !RECORD_KINDS.includes(ref.kind) || typeof ref.id !== 'string') return false
+        if (!allowed.includes(ref.kind)) return false
         if (seen.has(key(ref))) return false
         seen.add(key(ref))
         return true
