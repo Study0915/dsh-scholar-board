@@ -8,7 +8,7 @@
 import { randomUUID } from 'node:crypto'
 import { gunzipSync, gzipSync } from 'node:zlib'
 import type { DomainRecord, RecordKind } from '@dsh-scholar-board/contracts'
-import { RECORDS_LIMITS } from '@dsh-scholar-board/contracts'
+import { RECORDS_LIMITS, materialKindOf } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
 import { Refusal } from '../refusal'
 import type { RecordsStore } from './store'
@@ -37,6 +37,8 @@ export interface ImportPreview {
   active: number
   archived: number
   trashed: number
+  /** 材料里写成本地路径的条数；备份只带路径文本，不带文件正文。 */
+  localPaths: number
   bytes: number
 }
 
@@ -116,9 +118,15 @@ export function previewRecords(bytes: Buffer): ImportPreview {
   let archived = 0
   let trashed = 0
   let size = 0
+  let localPaths = 0
   for (const record of pkg.records) {
     byKind[record.kind] += 1
     size += recordBytes(record)
+    for (const field of ['materials', 'artifacts'] as const) {
+      const entries = (record as unknown as Record<string, unknown>)[field]
+      if (!Array.isArray(entries)) continue
+      for (const entry of entries) if (isRecord(entry) && materialKindOf(entry as never) === 'local') localPaths += 1
+    }
     if (record.deletedAt !== undefined) trashed += 1
     else if (record.archived) archived += 1
     else active += 1
@@ -132,6 +140,7 @@ export function previewRecords(bytes: Buffer): ImportPreview {
     active,
     archived,
     trashed,
+    localPaths,
     bytes: size,
   }
 }

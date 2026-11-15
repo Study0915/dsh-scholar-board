@@ -66,27 +66,72 @@
   }
 
   /**
-   * 一行材料：打开按钮是一段带下划线的标题，右边是移除。
+   * 一行材料：网页给「打开」，本地给「复制路径」，右边是移除。
+   *
+   * 本地路径只是一段文字：不交给 `widget.open`，也不执行；属于别的设备的路径再标一行提示。
    *
    * @param {object} material - 一条材料引用。
-   * @param {string} removeText - 「移除」的文案。
+   * @param {{ t: function(string): string, fill: function(string, object): string }} text - 文案。
+   * @param {{ device?: string, readonly?: boolean, removeText?: string }} options - 当前设备与只读状态。
    * @returns {HTMLLIElement} 材料行。
    */
-  function materialRow(material, removeText) {
+  function materialRow(material, text, options) {
+    var settings = options !== null && typeof options === 'object' ? options : {}
+    var kind = model.materialKindOf(material)
+    var title = model.materialTitleOf(material)
     var row = document.createElement('li')
     row.className = 'lt__material'
-    var open = document.createElement('button')
-    open.type = 'button'
-    open.className = 'lt__material-open'
-    open.textContent = typeof material.title === 'string' && material.title !== '' ? material.title : String(material.url)
-    open.title = String(material.url)
-    open.dataset.url = String(material.url)
-    var remove = document.createElement('button')
-    remove.type = 'button'
-    remove.className = 'lt__ghost lt__material-remove'
-    remove.textContent = removeText
-    remove.dataset.material = String(material.id)
-    row.append(open, remove)
+    row.dataset.kind = kind
+    var head = document.createElement('span')
+    head.className = 'lt__material-head'
+    if (kind === 'web') {
+      var open = document.createElement('button')
+      open.type = 'button'
+      open.className = 'lt__material-open'
+      open.textContent = title
+      open.title = String(material.url)
+      open.dataset.url = String(material.url)
+      head.appendChild(open)
+    } else {
+      var label = document.createElement('span')
+      label.className = 'lt__material-title'
+      label.textContent = title
+      head.appendChild(label)
+    }
+    head.appendChild(tagOf(kind === 'local' ? text.t('materialLocal') : text.t('materialWeb'), kind === 'local' ? 'local' : 'neutral'))
+    if (model.deviceMismatch(material, settings.device)) {
+      var mismatch = tagOf(text.t('materialOtherDevice'), 'warn')
+      mismatch.title = text.fill(text.t('materialOtherDeviceHint'), { device: model.materialDevice(material) })
+      head.appendChild(mismatch)
+    }
+    row.appendChild(head)
+    if (kind === 'local') {
+      var path = document.createElement('code')
+      path.className = 'lt__material-path'
+      path.textContent = String(material.path)
+      row.appendChild(path)
+      var copy = document.createElement('button')
+      copy.type = 'button'
+      copy.className = 'lt__ghost lt__material-copy'
+      copy.textContent = text.t('copyPath')
+      copy.dataset.copy = String(material.path)
+      row.appendChild(copy)
+    }
+    var meta = model.materialMetaOf(material)
+    if (meta !== '') {
+      var line = document.createElement('span')
+      line.className = 'lt__material-meta'
+      line.textContent = meta
+      row.appendChild(line)
+    }
+    if (settings.readonly !== true) {
+      var remove = document.createElement('button')
+      remove.type = 'button'
+      remove.className = 'lt__ghost lt__material-remove'
+      remove.textContent = typeof settings.removeText === 'string' ? settings.removeText : text.t('removeMaterial')
+      remove.dataset.material = String(material.id)
+      row.appendChild(remove)
+    }
     return row
   }
 

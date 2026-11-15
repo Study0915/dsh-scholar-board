@@ -15,6 +15,7 @@ interface ImportPreview {
   active: number
   archived: number
   trashed: number
+  localPaths: number
   bytes: number
 }
 
@@ -175,6 +176,7 @@ export function RecordsExchange(): ReactNode {
                 active: pending.preview.active,
                 archived: pending.preview.archived,
                 trashed: pending.preview.trashed,
+                localPaths: pending.preview.localPaths,
               })}
             </p>
             <div className="dsh-scholar-board__records-backup-actions">

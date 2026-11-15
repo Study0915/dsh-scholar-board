@@ -58,6 +58,9 @@ import {
 } from './board-sources'
 import type { BoardSourceDeps } from './board-sources'
 import { registerGithub } from './github'
+import { registerLiteratureDoi } from './literature/doi'
+import { registerLiteratureZotero } from './literature/zotero'
+import { materialsDeviceCapability } from './literature/device'
 import { registerTheme } from './theme'
 import { createUsageReader, registerUsage } from './usage'
 import { createScheduler } from './refresh'
@@ -166,6 +169,11 @@ export async function apply(ctx: Context, config: Config = {}): Promise<void> {
   const disposeTheme = registerTheme(sources, ctx)
   // GitHub 的 issue 列表（D24）：令牌从卡片设置的凭据服务现取，看板核心不碰 GitHub。
   const disposeGithub = registerGithub(sources, () => credentialsOf(ctx))
+  // 外部文献来源（S16）：DOI 查 Crossref、本机 Zotero 本地 API 只读，另有一项只报宿主平台的设备能力。
+  // 前三者只读公开或本机数据，都不声明权限；Zotero 连接由卡片设置里的开关手动打开。
+  const disposeLiteratureDoi = registerLiteratureDoi(sources)
+  const disposeLiteratureZotero = registerLiteratureZotero(sources)
+  const disposeMaterialsDevice = sources.registerCapability(materialsDeviceCapability())
   // 会话用量（D24）：看板自己读会话日志、自己缓存，组件不必依赖别的插件；装了 dsh-claude-style
   // 时组件先问它，两份汇总不会同时算。实时那一路先取 dsh-usage 的启动前快照再订阅，因此要等它。
   const disposeUsage = await registerUsage(sources, ctx, home)
@@ -440,6 +448,9 @@ export async function apply(ctx: Context, config: Config = {}): Promise<void> {
     disposeMedia()
     disposeTheme()
     disposeGithub()
+    disposeLiteratureDoi()
+    disposeLiteratureZotero()
+    disposeMaterialsDevice()
     disposeUsage()
     tools?.dispose()
     disposeSystemMetrics()

@@ -5,8 +5,8 @@
     "en": "Literature"
   },
   "description": {
-    "zh": "按阅读阶段整理文献：标题、作者、期刊或会议、年份、DOI、arXiv id 与版本、稿件类型、来源地址、自己的理解与问题。阅读记录按条目记下实际读到的章节或页码、笔记、理解、疑问与待复现事项，疑问可转为行动项；预印本与正式稿可以互相关联。列表可按待读、在读与已理解筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。",
-    "en": "Papers organised by reading stage: title, authors, venue, year, DOI, arXiv id and version, paper type, source link, your own understanding and questions. Reading entries record the sections or pages actually read, notes, understanding, questions and items to reproduce; a question can become an action, and preprints can link to their published versions. The list filters by to read, reading and understood, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict."
+    "zh": "按阅读阶段整理文献：标题、作者、期刊或会议、年份、DOI、arXiv id 与版本、稿件类型、来源地址、自己的理解与问题。填了 DOI 可以查 Crossref 的候选元数据并逐项补入；在设置里允许后可以从本机 Zotero 只读导入、补空字段；材料区分网页与本地路径，本地路径只复制不打开，换设备会标出来。阅读记录按条目记下实际读到的章节或页码、笔记、理解、疑问与待复现事项，疑问可转为行动项；预印本与正式稿可以互相关联。列表可按待读、在读与已理解筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。",
+    "en": "Papers organised by reading stage: title, authors, venue, year, DOI, arXiv id and version, paper type, source link, your own understanding and questions. A DOI can fetch Crossref candidates to fill field by field; after you allow it in settings, entries can be imported read-only from local Zotero, filling only empty fields. Materials distinguish web links from local paths; local paths are copied rather than opened, and paths from another device are marked. Reading entries record the sections or pages actually read, notes, understanding, questions and items to reproduce; a question can become an action, and preprints can link to their published versions. The list filters by to read, reading and understood, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict."
   },
   "author": "dsh-scholar-board",
   "version": "0.1.0",
@@ -19,7 +19,10 @@
     "widget-board:records.read",
     "widget-board:records.write",
     "widget-board:records.draft",
-    "widget-board:records.open"
+    "widget-board:records.open",
+    "literature.doi",
+    "literature.zotero",
+    "materials.device"
   ],
   "defaultBox": {
     "w": 2,
@@ -34,7 +37,13 @@
     "copy.js",
     "view.js",
     "reading-panel.js",
+    "doi-panel.js",
+    "zotero-panel.js",
+    "materials-panel.js",
     "editor.js"
+  ],
+  "styles": [
+    "external.css"
   ],
   "props": {
     "type": "object",
@@ -47,6 +56,18 @@
       "kicker": {
         "type": "string",
         "maxLength": 40
+      },
+      "crossrefMailto": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "zoteroEnabled": {
+        "type": "boolean",
+        "default": false
+      },
+      "deviceLabel": {
+        "type": "string",
+        "maxLength": 80
       }
     }
   },
@@ -428,6 +449,242 @@
     "titleRequired": {
       "zh": "标题不能是空的。",
       "en": "The title is required."
+    },
+    "lookupDoi": {
+      "zh": "查询 DOI",
+      "en": "Look up DOI"
+    },
+    "doiSame": {
+      "zh": "已一致",
+      "en": "Same"
+    },
+    "doiReplace": {
+      "zh": "替换",
+      "en": "Replace"
+    },
+    "doiAdopt": {
+      "zh": "补入",
+      "en": "Fill"
+    },
+    "doiCurrent": {
+      "zh": "当前：{value}",
+      "en": "Current: {value}"
+    },
+    "doiSource": {
+      "zh": "来自 {source}，查询于 {at}",
+      "en": "From {source}, looked up {at}"
+    },
+    "doiNoNewFields": {
+      "zh": "这条 DOI 没有可补入的字段；现有内容已是最新，或候选为空。",
+      "en": "This DOI has no fields to fill; the current values are already up to date or the candidate is empty."
+    },
+    "doiChooseFields": {
+      "zh": "逐项选择要补入的字段；冲突的字段点「替换」才会改。",
+      "en": "Choose fields to fill; conflicting values change only when you click Replace."
+    },
+    "doiInvalid": {
+      "zh": "DOI 格式不对",
+      "en": "That DOI is not valid"
+    },
+    "doiNotFound": {
+      "zh": "这个 DOI 查不到记录。",
+      "en": "No record found for that DOI."
+    },
+    "doiLimited": {
+      "zh": "Crossref 暂时限制了查询频率，稍后再试。",
+      "en": "Crossref is rate-limiting lookups; try again later."
+    },
+    "doiLimitedAfter": {
+      "zh": "Crossref 暂时限制了查询频率，{after} 秒后再试。",
+      "en": "Crossref is rate-limiting lookups; try again in {after} seconds."
+    },
+    "doiFailed": {
+      "zh": "DOI 查询失败",
+      "en": "DOI lookup failed"
+    },
+    "doiRequired": {
+      "zh": "先填 DOI，再查询。",
+      "en": "Enter a DOI before looking it up."
+    },
+    "doiQuerying": {
+      "zh": "正在查询…",
+      "en": "Looking up…"
+    },
+    "openZotero": {
+      "zh": "从 Zotero 导入",
+      "en": "Import from Zotero"
+    },
+    "zoteroTitle": {
+      "zh": "从 Zotero 导入",
+      "en": "Import from Zotero"
+    },
+    "zoteroSearch": {
+      "zh": "按标题搜索",
+      "en": "Search titles"
+    },
+    "zoteroSearchGo": {
+      "zh": "搜索",
+      "en": "Search"
+    },
+    "zoteroAllCollections": {
+      "zh": "全部分类",
+      "en": "All collections"
+    },
+    "zoteroImport": {
+      "zh": "补入空字段",
+      "en": "Fill empty fields"
+    },
+    "zoteroReadyHint": {
+      "zh": "只读本机 Zotero 的本地接口；导入只补空着的字段。",
+      "en": "Reads your local Zotero API; import only fills empty fields."
+    },
+    "zoteroOffHint": {
+      "zh": "Zotero 连接默认关闭；在卡片设置里打开「允许连接本机 Zotero」后可用。",
+      "en": "Zotero access is off by default; enable “Allow local Zotero” in the card settings."
+    },
+    "zoteroDisabled": {
+      "zh": "Zotero 连接没有打开。",
+      "en": "Zotero access is not enabled."
+    },
+    "zoteroDisabledNote": {
+      "zh": "先在卡片设置里打开「允许连接本机 Zotero」；这里只读 {device} 上的本地接口。",
+      "en": "Enable “Allow local Zotero” in the card settings first; this reads only the local API on {device}."
+    },
+    "zoteroOffline": {
+      "zh": "本机 Zotero 没有响应；确认它已经打开并允许本地接口。",
+      "en": "Local Zotero did not respond; check that it is running with the local API enabled."
+    },
+    "zoteroForbidden": {
+      "zh": "Zotero 拒绝了本地接口请求；检查设置里的本地访问开关。",
+      "en": "Zotero refused the local API request; check its local access setting."
+    },
+    "zoteroTimeout": {
+      "zh": "连接 Zotero 超时。",
+      "en": "Connecting to Zotero timed out."
+    },
+    "zoteroNotFound": {
+      "zh": "Zotero 里没有这一条。",
+      "en": "Zotero does not have that entry."
+    },
+    "zoteroFailed": {
+      "zh": "Zotero 读取失败",
+      "en": "Zotero lookup failed"
+    },
+    "zoteroEmpty": {
+      "zh": "没有条目；换个分类或搜索词。",
+      "en": "No entries; try another collection or search."
+    },
+    "zoteroKept": {
+      "zh": "保留现有",
+      "en": "Kept"
+    },
+    "zoteroPreview": {
+      "zh": "会补入 {applied} 项，保留 {kept} 项。",
+      "en": "Will fill {applied} fields and keep {kept}."
+    },
+    "zoteroLoading": {
+      "zh": "正在读取条目…",
+      "en": "Reading items…"
+    },
+    "zoteroNoHost": {
+      "zh": "当前打开方式不支持连接 Zotero；请在卡片里打开。",
+      "en": "This view cannot reach Zotero; open it from the card."
+    },
+    "zoteroConnecting": {
+      "zh": "正在连接 Zotero…",
+      "en": "Connecting to Zotero…"
+    },
+    "zoteroNothingToFill": {
+      "zh": "这一条没有可补入的空字段。",
+      "en": "This entry has no empty fields to fill."
+    },
+    "zoteroImported": {
+      "zh": "已补入 {applied} 项，保留 {kept} 项。",
+      "en": "Filled {applied} fields and kept {kept}."
+    },
+    "zoteroImportedDetail": {
+      "zh": "已从 Zotero 补入空字段。",
+      "en": "Empty fields filled from Zotero."
+    },
+    "deviceUnknown": {
+      "zh": "这台设备",
+      "en": "This device"
+    },
+    "deviceWindows": {
+      "zh": "Windows",
+      "en": "Windows"
+    },
+    "deviceMac": {
+      "zh": "macOS",
+      "en": "macOS"
+    },
+    "deviceLinux": {
+      "zh": "Linux",
+      "en": "Linux"
+    },
+    "materialKind": {
+      "zh": "来源",
+      "en": "Source"
+    },
+    "materialWeb": {
+      "zh": "网页",
+      "en": "Web"
+    },
+    "materialLocal": {
+      "zh": "本地路径",
+      "en": "Local path"
+    },
+    "materialPath": {
+      "zh": "/papers/…",
+      "en": "/papers/…"
+    },
+    "materialPurpose": {
+      "zh": "用途（可选）",
+      "en": "Purpose (optional)"
+    },
+    "materialDevice": {
+      "zh": "设备（可选）",
+      "en": "Device (optional)"
+    },
+    "materialVersion": {
+      "zh": "版本（可选）",
+      "en": "Version (optional)"
+    },
+    "materialCheckedAt": {
+      "zh": "YYYY-MM-DD",
+      "en": "YYYY-MM-DD"
+    },
+    "materialEmpty": {
+      "zh": "还没有材料；网页填完整地址，本地文件填路径并写明用途。",
+      "en": "No materials yet; use a complete web address or a local path with its purpose."
+    },
+    "materialPathInvalid": {
+      "zh": "本地路径不能为空、不能带控制字符，也不要写成 https:// 这样的地址。",
+      "en": "A local path must be non-empty, free of control characters, and not a URL."
+    },
+    "materialDateInvalid": {
+      "zh": "核查日期要写成 YYYY-MM-DD。",
+      "en": "The checked date must be YYYY-MM-DD."
+    },
+    "materialOtherDevice": {
+      "zh": "另一台设备",
+      "en": "Other device"
+    },
+    "materialOtherDeviceHint": {
+      "zh": "这条路径记在 {device} 上，本机不一定有。",
+      "en": "This path is recorded on {device}; it may not exist on this machine."
+    },
+    "copyPath": {
+      "zh": "复制路径",
+      "en": "Copy path"
+    },
+    "copyPathDone": {
+      "zh": "路径已复制。",
+      "en": "Path copied."
+    },
+    "copyPathFailed": {
+      "zh": "复制失败；可以手动选中路径。",
+      "en": "Copy failed; select the path manually."
     }
   }
 }

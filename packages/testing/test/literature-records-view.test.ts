@@ -18,6 +18,19 @@ interface LiteratureModel {
   daysLeft(record: unknown, now?: number): number | null
   viewRows(records: unknown, view: string, stage?: string): Array<Record<string, unknown>>
   materialValid(url: unknown, title: unknown): boolean
+  materialKindOf(material: unknown): string
+  localPathValid(path: unknown): boolean
+  materialProblem(material: unknown): string
+  dateTextValid(text: unknown): boolean
+  materialDraft(input: Record<string, unknown>, now: number, index: number): Record<string, unknown> | null
+  materialDevice(material: unknown): string
+  deviceMismatch(material: unknown, device: unknown): boolean
+  materialTitleOf(material: unknown): string
+  materialMetaOf(material: unknown): string
+  externalWith(list: unknown, ref: Record<string, unknown>): Array<Record<string, unknown>>
+  zoteroExternal(library: string, item: Record<string, unknown>): Record<string, unknown> | null
+  zoteroFields(item: unknown): Record<string, string> | null
+  doiAdoption(candidate: unknown, current: unknown): Array<Record<string, string>>
   openableUrl(url: unknown): boolean
   yearValue(text: unknown): { ok: boolean, value: number | null }
   fill(text: string, values: Record<string, unknown>): string
@@ -134,6 +147,134 @@ describe('年份、地址与文案', () => {
   })
 })
 
+describe('材料引用', () => {
+  const web = { id: 'm1', kind: 'web', url: 'https://example.com/paper.pdf', title: '论文页' }
+
+  it('来源优先看 kind，旧记录按 url 与 path 推断', () => {
+    expect(model.materialKindOf(web)).toBe('web')
+    expect(model.materialKindOf({ url: 'https://example.com' })).toBe('web')
+    expect(model.materialKindOf({ path: '/papers/a.pdf' })).toBe('local')
+    expect(model.materialKindOf({ title: '无坐标' })).toBe('')
+    expect(model.materialKindOf(null)).toBe('')
+  })
+
+  it('本地路径只收文本，不收地址与带控制字符的值', () => {
+    expect(model.localPathValid('/papers/a.pdf')).toBe(true)
+    expect(model.localPathValid('/home/user/papers/a.pdf')).toBe(true)
+    expect(model.localPathValid('  /tmp/a.pdf  ')).toBe(true)
+    expect(model.localPathValid('')).toBe(false)
+    expect(model.localPathValid('https://example.com/a.pdf')).toBe(false)
+    expect(model.localPathValid('file:///etc/passwd')).toBe(false)
+    expect(model.localPathValid('/a\u0000b')).toBe(false)
+    expect(model.localPathValid('x'.repeat(1025))).toBe(false)
+  })
+
+  it('材料校验按来源检查坐标，网页与本地不能混填', () => {
+    expect(model.materialProblem(web)).toBe('')
+    expect(model.materialProblem({ kind: 'local', path: '/papers/a.pdf', title: '本地', purpose: '复现' })).toBe('')
+    expect(model.materialProblem({ kind: 'web', url: 'file:///etc/passwd', title: 'x' })).toBe('materialInvalid')
+    expect(model.materialProblem({ kind: 'web', url: 'https://example.com', title: 'x', path: '/papers/a' })).toBe('materialInvalid')
+    expect(model.materialProblem({ kind: 'local', path: '', title: 'x' })).toBe('materialPathInvalid')
+    expect(model.materialProblem({ kind: 'local', path: '/papers/a', url: 'https://example.com', title: 'x' })).toBe('materialInvalid')
+    expect(model.materialProblem({ kind: 'web', url: 'https://example.com', title: '  ' })).toBe('materialInvalid')
+  })
+
+  it('新材料只保留这一种坐标，可选的说明与核查日期跟着走', () => {
+    const local = model.materialDraft({
+      kind: 'local',
+      path: '  /papers/a.pdf  ',
+      title: ' 复现材料 ',
+      purpose: ' 复现 ',
+      device: ' 笔记本 ',
+      version: ' 2 ',
+      checkedAt: '2026-11-10',
+    }, 1700000000000, 3)
+    expect(local).toEqual({
+      id: 'm-1700000000000-3',
+      kind: 'local',
+      title: '复现材料',
+      path: '/papers/a.pdf',
+      purpose: '复现',
+      device: '笔记本',
+      version: '2',
+      checkedAt: '2026-11-10',
+    })
+    expect(model.materialDraft({ kind: 'web', url: 'https://example.com', title: '页' }, 1, 0)).toEqual({
+      id: 'm-1-0', kind: 'web', title: '页', url: 'https://example.com',
+    })
+    expect(model.materialDraft({ kind: 'web', url: 'javascript:alert(1)', title: '页' }, 1, 0)).toBeNull()
+    expect(model.materialDraft({ kind: 'local', path: 'https://example.com', title: '页' }, 1, 0)).toBeNull()
+    expect(model.materialDraft({ kind: 'local', path: '/papers/a', title: '页', checkedAt: '11/10/2026' }, 1, 0))
+      .toEqual({ id: 'm-1-0', kind: 'local', title: '页', path: '/papers/a' })
+  })
+
+  it('核查日期按 YYYY-MM-DD，空串表示未填', () => {
+    expect(model.dateTextValid('')).toBe(true)
+    expect(model.dateTextValid('2026-11-10')).toBe(true)
+    expect(model.dateTextValid('2026-13-01')).toBe(false)
+    expect(model.dateTextValid('11/10/2026')).toBe(false)
+  })
+
+  it('设备标签只标在本地材料上，换机器时标出另一台设备', () => {
+    const local = { id: 'm1', kind: 'local', path: '/papers/a', title: 'x', device: '笔记本' }
+    expect(model.materialDevice(local)).toBe('笔记本')
+    expect(model.materialDevice(web)).toBe('')
+    expect(model.deviceMismatch(local, '笔记本')).toBe(false)
+    expect(model.deviceMismatch(local, '台式机')).toBe(true)
+    expect(model.deviceMismatch(local, '')).toBe(false)
+    expect(model.deviceMismatch({ ...local, device: '' }, '台式机')).toBe(false)
+    expect(model.deviceMismatch(web, '台式机')).toBe(false)
+  })
+
+  it('标题与说明行：标题空时退回坐标，说明只写有的部分', () => {
+    expect(model.materialTitleOf(web)).toBe('论文页')
+    expect(model.materialTitleOf({ kind: 'local', path: '/papers/a.pdf', title: '' })).toBe('/papers/a.pdf')
+    expect(model.materialMetaOf({ kind: 'local', path: '/papers/a', title: 'x', purpose: '复现', version: '2', device: '笔记本', checkedAt: '2026-11-10' }))
+      .toBe('复现 · v2 · 笔记本 · 2026-11-10')
+    expect(model.materialMetaOf(web)).toBe('')
+  })
+})
+
+describe('外部来源与 DOI 候选', () => {
+  it('Zotero 条目变成外部来源，只留库、条目与接口版本', () => {
+    const ref = model.zoteroExternal('0', { key: 'ABCD1234', title: 'x' })
+    expect(ref).toMatchObject({ provider: 'zotero', library: '0', itemKey: 'ABCD1234', apiVersion: '3' })
+    expect(typeof ref?.fetchedAt).toBe('string')
+    expect(model.zoteroExternal('0', { title: '没有 key' })).toBeNull()
+  })
+
+  it('同一库同一条目只留最新一份，最多四份', () => {
+    const refs = ['A', 'B', 'C', 'D', 'E'].map((key) => ({ provider: 'zotero', library: '0', itemKey: key, apiVersion: '3', fetchedAt: '2026-11-10T00:00:00.000Z' }))
+    expect(model.externalWith([], refs[0]).map((entry) => entry.itemKey)).toEqual(['A'])
+    expect(model.externalWith([refs[0]], { ...refs[0], fetchedAt: '2026-11-11T00:00:00.000Z' })).toHaveLength(1)
+    expect(model.externalWith(refs.slice(0, 4), refs[4]).map((entry) => entry.itemKey)).toEqual(['B', 'C', 'D', 'E'])
+  })
+
+  it('Zotero 字段与表单同名，缺的给空串', () => {
+    expect(model.zoteroFields({
+      key: 'A', title: '论文', authors: ['甲', '乙'], venue: 'JSAC', year: 2025,
+      doi: '10.1109/x', url: 'https://example.com',
+    })).toEqual({ title: '论文', authors: '甲, 乙', venue: 'JSAC', year: '2025', doi: '10.1109/x', url: 'https://example.com' })
+    expect(model.zoteroFields({ key: 'A' })).toEqual({ title: '', authors: '', venue: '', year: '', doi: '', url: '' })
+    expect(model.zoteroFields(null)).toBeNull()
+  })
+
+  it('DOI 候选只列有的字段，空、同、冲突三种状态', () => {
+    const rows = model.doiAdoption({
+      title: '论文', authors: ['甲'], year: 2025, venue: '', url: 'https://doi.org/10.1/x',
+    }, { title: '论文', authors: '乙', year: '', venue: '旧刊', url: '' })
+    expect(rows.map((row) => [row.field, row.state])).toEqual([
+      ['title', 'same'],
+      ['authors', 'conflict'],
+      ['year', 'empty'],
+      ['url', 'empty'],
+    ])
+    expect(rows[1].current).toBe('乙')
+    expect(rows[3].value).toBe('https://doi.org/10.1/x')
+    expect(model.doiAdoption(null, {})).toEqual([])
+  })
+})
+
 describe('样例与清单', () => {
   it('s 与 l 两个尺寸族都有样例', () => {
     const samples = JSON.parse(readFileSync(new URL('../../widgets/literature-records/samples.json', import.meta.url), 'utf8')) as Record<string, unknown>
@@ -154,7 +295,19 @@ describe('样例与清单', () => {
       'widget-board:records.write',
       'widget-board:records.draft',
       'widget-board:records.open',
+      'literature.doi',
+      'literature.zotero',
+      'materials.device',
     ])
-    expect(manifest.scripts).toContain('records-model.js')
+    expect(manifest.scripts).toEqual([
+      'records-model.js',
+      'copy.js',
+      'view.js',
+      'reading-panel.js',
+      'doi-panel.js',
+      'zotero-panel.js',
+      'materials-panel.js',
+      'editor.js',
+    ])
   })
 })

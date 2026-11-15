@@ -1,0 +1,344 @@
+/*
+ * 文献卡的外部来源与材料面板：材料一行、DOI 候选、Zotero 导入都在这里。
+ *
+ * 从 style.css 拆出来是为了让每份样式表都留在行数上限以内；两份文件顺序相接，
+ * 这里写的规则排在 style.css 之后，同名选择器会盖住前面的。
+ */
+.lt__materials {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.lt__material-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 var(--w-space-xs, 4px);
+  padding: 0;
+  list-style: none;
+}
+
+.lt__material {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--w-space-xs, 4px) var(--w-space-sm, 8px);
+  min-width: 0;
+  padding: 4px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 60%, transparent);
+}
+
+.lt__material-head {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: var(--w-space-xs, 4px);
+  min-width: 0;
+}
+
+.lt__material-title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lt__material-path {
+  flex: 1 1 60%;
+  min-width: 0;
+  padding: 1px 4px;
+  border-radius: var(--w-radius-sm, 6px);
+  background: color-mix(in srgb, var(--w-color-border, #e5e7eb) 35%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lt__material-copy,
+.lt__material-remove {
+  padding: 1px 6px;
+}
+
+.lt__material-meta {
+  flex: 1 1 100%;
+  color: var(--w-color-fg-muted, #6b7280);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lt__material-kind {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lt__material-open {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--w-color-accent, #2563eb);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--w-color-accent, #2563eb) 40%, transparent);
+  text-underline-offset: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lt__material-remove {
+  padding: 1px 6px;
+}
+
+.lt__material-add {
+  display: flex;
+  gap: var(--w-space-xs, 4px);
+  min-width: 0;
+}
+
+.lt__material-add .lt__input {
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.lt__lookup {
+  display: flex;
+  gap: var(--w-space-xs, 4px);
+  min-width: 0;
+}
+
+.lt__lookup .lt__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.lt__lookup-go {
+  flex: none;
+  padding: 2px 8px;
+  font-size: var(--w-type-caption, 12px);
+}
+
+.lt__lookup-status:empty {
+  display: none;
+}
+
+.lt__doi-candidates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-sm, 8px);
+  margin: 0 0 var(--w-space-sm, 8px);
+}
+
+.lt__doi-candidate {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--w-space-sm, 8px);
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  border-radius: var(--w-radius-md, 10px);
+}
+
+.lt__doi-source {
+  margin: 0;
+  color: var(--w-color-fg-muted, #6b7280);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.lt__doi-field {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  gap: 2px var(--w-space-sm, 8px);
+  align-items: baseline;
+  min-width: 0;
+}
+
+.lt__doi-name {
+  color: var(--w-color-fg-muted, #6b7280);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.lt__doi-value {
+  min-width: 0;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lt__doi-adopt {
+  padding: 1px 6px;
+}
+
+.lt__doi-current {
+  grid-column: 2 / -1;
+  color: var(--w-color-fg-muted, #6b7280);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lt__doi-field[data-state="conflict"] .lt__doi-value {
+  color: var(--w-tone-warn, #b45309);
+}
+
+.lt__import-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--w-space-xs, 4px) var(--w-space-sm, 8px);
+  margin: 0 0 var(--w-space-sm, 8px);
+}
+
+.lt__import-row .lt__hint {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.lt__zotero {
+  width: min(96%, 560px);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-sm, 8px);
+}
+
+.lt__zotero:not([open]) {
+  display: none;
+}
+
+.lt__zotero-head {
+  display: flex;
+  align-items: center;
+  gap: var(--w-space-sm, 8px);
+}
+
+.lt__zotero-heading {
+  flex: 1;
+  margin: 0;
+  font-size: var(--w-type-body, 14px);
+}
+
+.lt__zotero-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--w-space-xs, 4px) var(--w-space-sm, 8px);
+}
+
+.lt__zotero-controls .lt__input {
+  font-size: var(--w-type-caption, 12px);
+}
+
+.lt__zotero-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--w-space-sm, 8px);
+  min-height: 120px;
+  max-height: 45vh;
+}
+
+.lt__zotero-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+  padding: var(--w-space-xs, 4px);
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  border-radius: var(--w-radius-md, 10px);
+}
+
+.lt__zotero-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: var(--w-space-xs, 4px) var(--w-space-sm, 8px);
+  border: 0;
+  border-radius: var(--w-radius-sm, 6px);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lt__zotero-item[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--w-color-accent, #2563eb) 12%, transparent);
+}
+
+.lt__zotero-title {
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lt__zotero-meta {
+  color: var(--w-color-fg-muted, #6b7280);
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lt__zotero-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: auto;
+  padding: var(--w-space-xs, 4px);
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 88%, transparent);
+  border-radius: var(--w-radius-md, 10px);
+}
+
+.lt__zotero-preview[hidden] {
+  display: none;
+}
+
+.lt__zotero-field {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 2px var(--w-space-sm, 8px);
+  align-items: baseline;
+  min-width: 0;
+}
+
+:root[data-box-width="narrow"] .lt__material-add {
+  flex-wrap: wrap;
+}
+
+:root[data-box-width="narrow"] .lt__material-add .lt__input {
+  flex: 1 1 45%;
+}
+
+:root[data-box-width="narrow"] .lt__doi-field {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+:root[data-box-width="narrow"] .lt__doi-name {
+  grid-column: 1 / -1;
+}
+
+:root[data-box-width="narrow"] .lt__doi-current {
+  grid-column: 1 / -1;
+}
+
+:root[data-box-width="narrow"] .lt__zotero-controls,
+:root[data-box-width="narrow"] .lt__zotero-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:root[data-box-width="narrow"] .lt__material-path {
+  flex: 1 1 100%;
+}

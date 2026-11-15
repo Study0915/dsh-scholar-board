@@ -63,6 +63,11 @@ export const RECORDS_LIMITS = {
   literatureVersions: 20,
   readingEntries: 100,
   readingText: 2000,
+  materialPathLength: 1024,
+  materialPurposeLength: 200,
+  materialDeviceLength: 80,
+  materialVersionLength: 80,
+  literatureExternal: 4,
 } as const
 
 /** 领域记录的十二种类型；`template` 只由模板面板读写，不出现在关联选择器里。 */
@@ -158,12 +163,43 @@ export interface RecordRef {
   id: string
 }
 
-/** 内嵌在记录里的材料引用；首批仅 http/https（D26）。 */
+/**
+ * 内嵌在记录里的材料引用：网页给地址，本地给路径，两者不混用。
+ *
+ * 旧记录只有 `url`，读的时候按 `web` 处理。本地路径只是文本，宿主不据此扫描磁盘或执行，
+ * 打开能力也只对网页材料生效。
+ */
 export interface MaterialRef {
   id: string
-  url: string
+  kind?: MaterialKind
+  url?: string
+  path?: string
   title: string
   note?: string
+  /** 这份材料用来做什么。 */
+  purpose?: string
+  /** 材料所在的设备标签，用来发现跨设备失效的引用。 */
+  device?: string
+  /** 材料自己的版本说明，不是记录的修订号。 */
+  version?: string
+  /** 最后一次核对材料仍可用的日期。 */
+  checkedAt?: string
+}
+
+/** 材料的两种来源：网页与本地路径。 */
+export type MaterialKind = 'web' | 'local'
+
+/**
+ * 一条外部来源：外部提供方、库与条目 key，以及读它时的接口版本。
+ *
+ * 外部版本与记录自己的修订号无关，导入后记录仍按本地修订号读写。
+ */
+export interface ExternalSourceRef {
+  provider: 'zotero'
+  library: string
+  itemKey: string
+  apiVersion: string
+  fetchedAt: string
 }
 
 /** 研究记录里的一行参数或指标：名称、数值、可选单位与可选定义。 */
@@ -266,6 +302,8 @@ export interface LiteratureRecord extends RecordBase {
   reading?: ReadingEntry[]
   related?: RecordRef[]
   materials?: MaterialRef[]
+  /** 从外部文献库导入时的来源；记录自己的修订号与外部版本无关。 */
+  external?: ExternalSourceRef[]
 }
 
 /** 研究记录：推导、仿真或实验的做法与可复现信息；也承载方案的实验目的与步骤。 */
