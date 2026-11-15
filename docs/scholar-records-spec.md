@@ -96,11 +96,12 @@
 
 S05 补齐三个内嵌数组，反馈、改动与证据在同一条稿件里串起来：
 
-- `ManuscriptFigure` 为 `{ id, kind: 'figure'|'table', label ≤32, title ≤200, note?, materials? }`。`label` 是「图 1」「表 2」这样的编号，`title` 是图表标题；没有图表时不写这个字段，界面不虚构编号。
+- `ManuscriptFigure` 为 `{ id, kind: 'figure'|'table', label ≤32, title ≤200, note?, runs?, plot?, conclusion?, materials? }`。`label` 是「图 1」「表 2」这样的编号，`title` 是图表标题；没有图表时不写这个字段，界面不虚构编号。S14 起 `runs` 引用这条图对应的运行（每条 `{ kind: 'run', id }`，单图 ≤20 条、id 不重复），`plot` 记录绘图代码的 `{ repository?, commit? }`，`conclusion` 是图表结论说明；仓库、提交与结论都只是文字记录，不拉取代码、不执行绘图。
+- 图表编号保留原形：排序、筛选与新增不改写已有 `label`，也不自动重编号。
 - `SubmissionRound` 为 `{ id, venue, decision, submittedAt?, decidedAt?, note? }`。`decision` 只能是待定 pending、小修 minor、大修 major、接收 accepted、拒稿 rejected、撤稿 withdrawn、转投 transferred；日期沿用 `Due` 形状。
 - `RevisionItem` 为 `{ id, roundId, feedback, change?, status, materials? }`。`roundId` 必须指向本稿件 `submissions` 里的一轮；`status` 只能是待改 todo、处理中 doing、已完成 done、不改 declined。`feedback` 必填且不超过 2000 字符，`change` 与证据可留空。
 - 删除一轮投稿时，界面连带移除指向该轮的修回事项；宿主在读盘时也拒绝指向不存在轮次的记录。修回已完成但没写改动或没附证据时，界面写「未记改动」「未附证据」，不用具名结论顶替。
-- 搜索匹配图表编号、标题、备注与图表材料标题，轮次的刊会与备注，修回的反馈、改动与材料标题。
+- 搜索匹配图表编号、标题、备注、结论说明、绘图代码仓库与提交，以及图表材料标题，轮次的刊会与备注，修回的反馈、改动与材料标题。
 
 ### 文献 literature
 
@@ -140,14 +141,19 @@ S05 补齐。研究记录是「我做过什么、看到了什么」，不是实�
 | parameters | `ResearchEntry[]` | 否 | 参数，每条带名称、数值与可选单位 |
 | metrics | `ResearchEntry[]` | 否 | 指标，每条带名称、数值与可选单位 |
 | conclusion | string | 否 | 看到的结论 |
+| conclusionBasis | string | 否 | 结论依据（S14） |
+| conclusionScope | string | 否 | 适用边界：条件、数据集合与不适用的情况（S14） |
+| conclusionEvidence | `EvidenceRef[]` | 否 | 结论引用的记录与冻结修订号（S14） |
 | template | `TemplateSnapshot` | 否 | 应用过的模板与当时取值（S13） |
 | related | `Ref[]` | 否 | 十一种可关联类型互指，模板不参与（S11、S13） |
 | materials | `MaterialRef[]` | 否 | 结果表、图、日志或复现代码的链接 |
 
 `ResearchEntry` 形状为 `{ name: string, value: string, unit?: string, definition?: string }`：名称与数值都非空、按 Unicode 码点不超过 200，单位不超过 32 字符，定义按文字原样保存，单组最多 64 条。数值与种子都按文字保存（如 `0–20`、`3.2e-4`、`11, 42, 97`），宿主不解析数值也不换算单位。
 
+`EvidenceRef` 形状为 `{ kind, id, revision, entryId?, materialId?, summary? }`（S14）：`kind` 为可关联的记录类型，`id` 指向记录，`revision` 是引用那一刻记录自己的修订号；`entryId` 与 `materialId` 可选到记录内的条目与材料，`summary` 是冻结的依据摘要（≤2000 字符），单条结论最多引用 50 项且 id 不重复。详情读取当前记录后与冻结的 `revision` 比较，不同就显示「来源已更新」，但不改写冻结的修订号；来源缺失、归档与回收站分别标记。引用只保存摘要，不保存外部文件或全部历史记录。
+
 - 环境、种子、参数与指标缺失时界面显示「未知」，不猜默认值；`method` 缺省不是合法记录，创建时必须写明。
-- `related` 可指向十一种可关联类型（模板不参与关联，S11）。标题、问题、目的、假设、步骤、环境、种子、结论、参数指标与模板取值的文本都参与搜索。
+- `related` 可指向十一种可关联类型（模板不参与关联，S11）。标题、问题、目的、假设、步骤、环境、种子、结论、结论依据、适用边界、证据摘要、参数指标与模板取值的文本都参与搜索。
 - 研究记录同时是运行记录可以选择的方案；详情列出以它为 `plan` 的运行，「新建运行」建出一条 `planned` 运行，在运行记录卡继续填写（S12）。
 - 记录不触发实验、不下载材料、不遍历磁盘；结论与材料只是文字与链接（产品规划研究记录一节）。
 - 列表按做法筛选，可选全部、推导、仿真与实验；筛选只在活跃视图生效，归档与回收站各按自己的视图显示。
@@ -349,6 +355,8 @@ S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查�
 | 单条 materials | 64 |
 | 单条 parameters 或 metrics | 64 |
 | 单条 figures | 100 |
+| 单条 figure.runs（图表引用运行，id 在图表内唯一） | 20 |
+| 单条 conclusionEvidence（结论证据，id 不重复） | 50 |
 | 单条 submissions | 50 |
 | 单条 revisions | 200 |
 | 单条 stageHistory | 200 |
@@ -369,7 +377,7 @@ S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查�
 
 ## 关联与引用
 
-- 关联只存指向方的前向 id，反向引用由宿主现算，不双写。例如行动项的 `source` 存会议 id，会议详情里的「生成的行动项」由扫描 `source==本会议` 得出。单一存储文件让这份推导总是一致。
+- 关联只存指向方的前向 id，反向引用由宿主现算，不双写。例如行动项的 `source` 存会议 id，会议详情里的「生成的行动项」由扫描 `source==本会议` 得出。单一存储文件让这份推导总是一致。S14 起研究结论的 `conclusionEvidence` 与稿件图表的 `runs` 也计入前向引用，来源详情能看到反向引用。
 - 引用失效须可见：被指向的记录不在存储中（含已永久删除）时，引用方保留该 id，界面显示「来源缺失」。删除来源记录不级联删除事项或材料（产品规划行动项一节）。
 - 回收站里的来源记录：引用方仍可显示其标题并标注「已在回收站」，恢复后照常。
 - 移除卡片不删除记录；重新添加同类卡片仍按 id 找到原记录。组件不得读写其他实例的私有 state，记录是独立的共享存储（D36）。

@@ -33,6 +33,15 @@ interface ResearchModel {
   planRuns(records: unknown): Array<Record<string, unknown>>
   viewRows(records: unknown, view: string, method?: string): Array<Record<string, unknown>>
   cleanEntries(rows: unknown): Array<Record<string, unknown>> | null
+  EVIDENCE_LIMIT: number
+  EVIDENCE_ID: number
+  EVIDENCE_SUMMARY: number
+  kindKey(kind: unknown): string
+  evidenceKey(ref: unknown): string
+  evidenceOf(record: unknown): Array<Record<string, unknown>>
+  evidenceCount(record: unknown): number
+  cleanEvidence(rows: unknown): Array<Record<string, unknown>> | null
+  evidenceUpdated(ref: unknown, record: unknown): boolean
   materialValid(url: unknown, title: unknown): boolean
   openableUrl(url: unknown): boolean
   fill(text: string, values: Record<string, unknown>): string
@@ -222,6 +231,57 @@ describe('回收倒计时、地址与文案', () => {
 
   it('文案占位符全部替换', () => {
     expect(model.fill('最近 {n} 条 · 共 {total} 条', { n: 3, total: 8 })).toBe('最近 3 条 · 共 8 条')
+  })
+})
+
+describe('结论证据', () => {
+  it('引用要同时有类型、id 与修订号，可选的条目、材料与说明原样保留', () => {
+    const rows = [
+      { kind: 'run', id: 'run-1', revision: 3 },
+      { kind: 'literature', id: 'lit-1', revision: 0, entryId: ' e1 ', materialId: 'pdf-1', summary: ' 与第 2 节一致 ' },
+    ]
+    expect(model.cleanEvidence(rows)).toEqual([
+      { kind: 'run', id: 'run-1', revision: 3 },
+      { kind: 'literature', id: 'lit-1', revision: 0, entryId: 'e1', materialId: 'pdf-1', summary: '与第 2 节一致' },
+    ])
+    expect(model.cleanEvidence([])).toEqual([])
+    expect(model.cleanEvidence(null)).toEqual([])
+  })
+
+  it('类型不认识、修订号不是非负整数、id 过长或说明过长都拒绝整份引用', () => {
+    expect(model.cleanEvidence([{ kind: 'photo', id: 'x', revision: 0 }])).toBeNull()
+    expect(model.cleanEvidence([{ kind: 'run', id: 'x', revision: 1.5 }])).toBeNull()
+    expect(model.cleanEvidence([{ kind: 'run', id: 'x', revision: -1 }])).toBeNull()
+    expect(model.cleanEvidence([{ kind: 'run', id: 'x'.repeat(model.EVIDENCE_ID + 1), revision: 0 }])).toBeNull()
+    expect(model.cleanEvidence([{ kind: 'run', id: 'x', revision: 0, entryId: 'e'.repeat(model.EVIDENCE_ID + 1) }])).toBeNull()
+    expect(model.cleanEvidence([{ kind: 'run', id: 'x', revision: 0, summary: 's'.repeat(model.EVIDENCE_SUMMARY + 1) }])).toBeNull()
+  })
+
+  it('同一记录、条目与材料只收一次；超过上限整份拒绝', () => {
+    const once = { kind: 'run', id: 'run-1', revision: 1, entryId: 'e1' }
+    expect(model.cleanEvidence([once, once])).toBeNull()
+    expect(model.cleanEvidence([once, { ...once, entryId: 'e2' }])).toHaveLength(2)
+    const full = Array.from({ length: model.EVIDENCE_LIMIT + 1 }, (_, index) => ({ kind: 'run', id: `r${index}`, revision: 1 }))
+    expect(model.cleanEvidence(full)).toBeNull()
+    expect(model.cleanEvidence(full.slice(0, model.EVIDENCE_LIMIT))).toHaveLength(model.EVIDENCE_LIMIT)
+  })
+
+  it('来源改过时只提示已更新，不改写引用时的修订号', () => {
+    const ref = { kind: 'run', id: 'run-1', revision: 2 }
+    expect(model.evidenceUpdated(ref, { revision: 3 })).toBe(true)
+    expect(model.evidenceUpdated(ref, { revision: 2 })).toBe(false)
+    expect(model.evidenceUpdated(ref, { revision: '3' })).toBe(false)
+    expect(model.evidenceUpdated(ref, null)).toBe(false)
+    expect(ref.revision).toBe(2)
+    expect(model.kindKey('run')).toBe('kindRun')
+    expect(model.kindKey('photo')).toBe('unknown')
+    expect(model.evidenceKey({ kind: 'run', id: 'r1', entryId: 'e1' })).toBe('run:r1:e1:')
+  })
+
+  it('列表按记录上的引用条数计数', () => {
+    expect(model.evidenceCount(note({ conclusionEvidence: [{ kind: 'run', id: 'r1', revision: 0 }] }))).toBe(1)
+    expect(model.evidenceCount(note())).toBe(0)
+    expect(model.evidenceCount(null)).toBe(0)
   })
 })
 

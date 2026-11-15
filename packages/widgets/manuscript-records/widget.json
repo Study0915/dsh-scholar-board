@@ -5,8 +5,8 @@
     "en": "Manuscripts"
   },
   "description": {
-    "zh": "小论文进度：研究问题、当前阶段、下一步、阻碍、目标刊会与可选投稿期限；关联组会、行动项与材料。阶段可前进或回退，每次变更由宿主记入历史，不显示虚构的完成百分比。",
-    "en": "Manuscript progress: research question, current stage, next step, blockers, target venue and an optional submission date; links to meetings, action items and materials. Stages move forward or back, every change is recorded by the host, and no made-up completion percentage is shown."
+    "zh": "记下一篇小论文的阶段、下一步、阻碍、目标刊会与投稿期限：投稿轮次、修回事项与图表目录都在详情里，图表还能引用运行、数据材料、绘图代码仓库与提交并写下结论。列表按阶段筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。缺失的内容显示「未知」，这里只记录不执行绘图。",
+    "en": "Records a manuscript's stage, next step, blockers, target venue and submission date: submission rounds, revision items and the figure list live in the detail, and a figure can reference runs, data materials, a plot repository and commit, and a conclusion. The list filters by stage, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. Missing content shows as unknown, and nothing is plotted here."
   },
   "author": "dsh-scholar-board",
   "version": "0.1.0",
@@ -33,6 +33,7 @@
     "manuscript-model.js",
     "copy.js",
     "view.js",
+    "figure-panel.js",
     "editor-deep.js",
     "editor.js"
   ],
@@ -272,6 +273,70 @@
     "figureInvalid": {
       "zh": "图表要填编号和标题。",
       "en": "A figure needs a label and a title."
+    },
+    "figureRuns": {
+      "zh": "对应运行",
+      "en": "Runs"
+    },
+    "figureRunAdd": {
+      "zh": "添加运行",
+      "en": "Add run"
+    },
+    "figureRunChoose": {
+      "zh": "选择运行…",
+      "en": "Choose a run…"
+    },
+    "figureRunEmpty": {
+      "zh": "还没有可选的运行。",
+      "en": "No runs to choose yet."
+    },
+    "figureRunLimit": {
+      "zh": "图表最多引用 {n} 个运行。",
+      "en": "A figure can reference at most {n} runs."
+    },
+    "figureRunLoadFailed": {
+      "zh": "运行列表读取失败",
+      "en": "Runs unavailable"
+    },
+    "figureRunTrashed": {
+      "zh": "回收站",
+      "en": "Trash"
+    },
+    "figureRunArchived": {
+      "zh": "归档",
+      "en": "Archived"
+    },
+    "figureMaterials": {
+      "zh": "数据材料",
+      "en": "Data materials"
+    },
+    "figureMaterialEmpty": {
+      "zh": "还没有数据材料；有数据文件或链接就记下来。",
+      "en": "No data materials yet; record a data file or link when one exists."
+    },
+    "figurePlot": {
+      "zh": "绘图代码",
+      "en": "Plot code"
+    },
+    "figurePlotRepository": {
+      "zh": "仓库地址",
+      "en": "Repository"
+    },
+    "figurePlotCommit": {
+      "zh": "提交",
+      "en": "Commit"
+    },
+    "figurePlotHint": {
+      "zh": "只记录仓库与提交，不拉取代码。",
+      "en": "Repository and commit are recorded only; no code is fetched."
+    },
+    "figureConclusion": {
+      "zh": "结论",
+      "en": "Conclusion"
+    },
+    "figureConclusionHint": {
+      "zh": "结论只是记录，不执行绘图。",
+      "en": "Conclusions are recorded only; nothing is plotted."
     },
     "submissions": {
       "zh": "投稿轮次",

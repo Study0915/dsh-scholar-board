@@ -38,6 +38,14 @@
       manage: true,
       onApply: applyTemplate
     })
+    var evidence = root.createResearchEvidence({
+      app: app,
+      widget: widget,
+      live: live,
+      t: t,
+      container: nodes.evidence,
+      onChange: function () { onInput() }
+    })
 
     /** 记录里已有的值，按显示名索引；预览据此默认保留同名值。 */
     function templateValues() {
@@ -71,6 +79,9 @@
         parameters: app.parameters,
         metrics: app.metrics,
         conclusion: nodes.conclusion.value,
+        conclusionBasis: nodes.conclusionBasis.value,
+        conclusionScope: nodes.conclusionScope.value,
+        conclusionEvidence: evidence.value(),
         materials: app.materials,
         template: app.template
       }
@@ -87,6 +98,9 @@
       nodes.environmentInput.value = typeof form.environment === 'string' ? form.environment : ''
       nodes.seedInput.value = typeof form.seed === 'string' ? form.seed : ''
       nodes.conclusion.value = typeof form.conclusion === 'string' ? form.conclusion : ''
+      nodes.conclusionBasis.value = typeof form.conclusionBasis === 'string' ? form.conclusionBasis : ''
+      nodes.conclusionScope.value = typeof form.conclusionScope === 'string' ? form.conclusionScope : ''
+      evidence.load(Array.isArray(form.conclusionEvidence) ? form.conclusionEvidence : [])
       app.parameters = Array.isArray(form.parameters) ? form.parameters.slice() : []
       app.metrics = Array.isArray(form.metrics) ? form.metrics.slice() : []
       app.template = form.template !== null && typeof form.template === 'object' ? form.template : null
@@ -110,8 +124,9 @@
       nodes.trashAction.hidden = record === null || trashed
       if (nodes.planRuns !== null) nodes.planRuns.hidden = record === null
       if (nodes.template !== null) nodes.template.hidden = trashed
-      var fields = [nodes.titleInput, nodes.methodInput, nodes.question, nodes.purpose, nodes.hypothesis, nodes.steps, nodes.environmentInput, nodes.seedInput, nodes.conclusion, nodes.materialUrl, nodes.materialTitle]
+      var fields = [nodes.titleInput, nodes.methodInput, nodes.question, nodes.purpose, nodes.hypothesis, nodes.steps, nodes.environmentInput, nodes.seedInput, nodes.conclusion, nodes.conclusionBasis, nodes.conclusionScope, nodes.materialUrl, nodes.materialTitle]
       for (var at = 0; at < fields.length; at += 1) fields[at].disabled = trashed
+      evidence.setDisabled(trashed)
       var buttons = [ctx.card.querySelector('[data-action="add-material"]'), ctx.card.querySelector('[data-action="add-parameter"]'), ctx.card.querySelector('[data-action="add-metric"]')]
       for (var buttonAt = 0; buttonAt < buttons.length; buttonAt += 1) {
         if (buttons[buttonAt] !== null) buttons[buttonAt].disabled = trashed
@@ -151,6 +166,9 @@
         parameters: pure.entriesOf(record, 'parameters'),
         metrics: pure.entriesOf(record, 'metrics'),
         conclusion: record.conclusion,
+        conclusionBasis: record.conclusionBasis,
+        conclusionScope: record.conclusionScope,
+        conclusionEvidence: pure.evidenceOf(record),
         template: record.template
       })
       showDetail(record, true)
@@ -167,7 +185,7 @@
       app.dirty = false
       app.saving = false
       app.materials = []
-      fillForm({ title: '', method: 'simulation', question: '', purpose: '', hypothesis: '', steps: '', environment: '', seed: '', parameters: [], metrics: [], conclusion: '', template: null })
+      fillForm({ title: '', method: 'simulation', question: '', purpose: '', hypothesis: '', steps: '', environment: '', seed: '', parameters: [], metrics: [], conclusion: '', conclusionBasis: '', conclusionScope: '', conclusionEvidence: [], template: null })
       showDetail(null, true)
       restoreDraft('new').then(function (restored) {
         if (restored) ctx.setStatus(t('draftRestored'), 'neutral')
@@ -263,6 +281,9 @@
         nodes.environmentInput.value = typeof form.environment === 'string' ? form.environment : ''
         nodes.seedInput.value = typeof form.seed === 'string' ? form.seed : ''
         nodes.conclusion.value = typeof form.conclusion === 'string' ? form.conclusion : ''
+        nodes.conclusionBasis.value = typeof form.conclusionBasis === 'string' ? form.conclusionBasis : ''
+        nodes.conclusionScope.value = typeof form.conclusionScope === 'string' ? form.conclusionScope : ''
+        evidence.load(Array.isArray(form.conclusionEvidence) ? form.conclusionEvidence : [])
         app.parameters = Array.isArray(form.parameters) ? form.parameters : []
         app.metrics = Array.isArray(form.metrics) ? form.metrics : []
         renderEntries('parameters')
@@ -294,6 +315,11 @@
         return
       }
       nodes.entryError.textContent = ''
+      var conclusionEvidence = pure.cleanEvidence(evidence.value())
+      if (conclusionEvidence === null) {
+        ctx.setStatus(t('evidenceInvalid'), 'error')
+        return
+      }
       var fields = {
         title: title,
         method: pure.METHODS.indexOf(nodes.methodInput.value) >= 0 ? nodes.methodInput.value : 'simulation',
@@ -306,6 +332,9 @@
         parameters: parameters.length === 0 ? null : parameters,
         metrics: metrics.length === 0 ? null : metrics,
         conclusion: nodes.conclusion.value.trim() === '' ? null : nodes.conclusion.value.trim(),
+        conclusionBasis: nodes.conclusionBasis.value.trim() === '' ? null : nodes.conclusionBasis.value.trim(),
+        conclusionScope: nodes.conclusionScope.value.trim() === '' ? null : nodes.conclusionScope.value.trim(),
+        conclusionEvidence: conclusionEvidence.length === 0 ? null : conclusionEvidence,
         materials: app.materials.length === 0 ? null : app.materials,
         template: app.template
       }
@@ -410,7 +439,10 @@
         seed: latest.seed,
         parameters: pure.entriesOf(latest, 'parameters'),
         metrics: pure.entriesOf(latest, 'metrics'),
-        conclusion: latest.conclusion
+        conclusion: latest.conclusion,
+        conclusionBasis: latest.conclusionBasis,
+        conclusionScope: latest.conclusionScope,
+        conclusionEvidence: pure.evidenceOf(latest)
       })
       app.dirty = false
       showDetail(latest, false)

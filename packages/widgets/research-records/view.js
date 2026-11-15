@@ -57,6 +57,8 @@
     tags.className = 'rs__tags'
     var materials = Array.isArray(record.materials) ? record.materials.length : 0
     if (materials > 0) tags.appendChild(tagOf(text.fill(text.t('materials'), { n: materials }), 'material'))
+    var evidence = model.evidenceCount(record)
+    if (evidence > 0) tags.appendChild(tagOf(text.fill(text.t('evidenceCount'), { n: evidence }), 'reading'))
     var left = model.daysLeft(record)
     if (left !== null) tags.appendChild(tagOf(text.fill(text.t('deletedIn'), { n: left }), 'trash'))
     if (tags.childNodes.length > 0) sub.appendChild(tags)

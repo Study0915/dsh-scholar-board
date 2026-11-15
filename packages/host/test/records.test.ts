@@ -827,6 +827,89 @@ describe('记录存储', () => {
     }, ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
+  it('研究结论带依据、边界与证据引用，重复引用被拒绝', async () => {
+    const { store } = await open()
+    const created = await store.create(research({
+      conclusion: '同样阈值下检测概率更高',
+      conclusionBasis: '三次运行与一次消融结论一致',
+      conclusionScope: '仅限 8 用户、静态信道',
+      conclusionEvidence: [
+        { kind: 'run', id: 'run-1', revision: 3, entryId: 'm1', summary: '检测概率 0.92' },
+        { kind: 'literature', id: 'lit-1', revision: 0, materialId: 'pdf-1' },
+      ],
+    }), ACTOR)
+    const record = created.record as ResearchRecord
+    expect(record.conclusionBasis).toBe('三次运行与一次消融结论一致')
+    expect(record.conclusionScope).toBe('仅限 8 用户、静态信道')
+    expect(record.conclusionEvidence).toHaveLength(2)
+    expect(record.conclusionEvidence?.[0]).toMatchObject({ kind: 'run', id: 'run-1', revision: 3, entryId: 'm1' })
+    expect(record.conclusionEvidence?.[1]).toMatchObject({ kind: 'literature', id: 'lit-1', revision: 0, materialId: 'pdf-1' })
+    expect(store.view({ search: '静态信道' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '检测概率 0.92' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const repeated = { kind: 'run', id: 'run-1', revision: 3 }
+    await expect(store.create(research({ conclusionEvidence: [repeated, repeated] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ conclusionEvidence: [{ kind: 'template', id: 't1', revision: 1 }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ conclusionEvidence: [{ kind: 'run', id: 'r1', revision: 1.5 }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ conclusionEvidence: [{ kind: 'run', id: 'r1', revision: 1, summary: 'x'.repeat(2001) }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(research({ conclusionEvidence: Array.from({ length: 51 }, (_, index) => ({ kind: 'run', id: `r${index}`, revision: 1 })) }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    const blank = await store.create(research({ conclusionBasis: '   ' }), ACTOR)
+    expect('conclusionBasis' in blank.record).toBe(false)
+  })
+
+  it('图表带运行引用、绘图代码与结论说明，编号保持原样', async () => {
+    const { store } = await open()
+    const created = await store.create({
+      kind: 'manuscript',
+      title: '低轨星座干扰分析',
+      stage: 'writing',
+      figures: [
+        {
+          id: 'f1',
+          kind: 'figure',
+          label: '图 3a',
+          title: '检测概率随 SNR 变化',
+          runs: [{ kind: 'run', id: 'run-1' }, { kind: 'run', id: 'run-2' }],
+          plot: { repository: 'https://example.com/plots', commit: 'abc1234' },
+          conclusion: '固定虚警率下检测概率随 SNR 单调上升',
+          materials: [{ id: 'fm1', url: 'https://example.com/fig.pdf', title: '矢量图' }],
+        },
+      ],
+    }, ACTOR)
+    const record = created.record as ManuscriptRecord
+    expect(record.figures?.[0].label).toBe('图 3a')
+    expect(record.figures?.[0].runs).toHaveLength(2)
+    expect(record.figures?.[0].plot).toEqual({ repository: 'https://example.com/plots', commit: 'abc1234' })
+    expect(store.view({ search: '固定虚警率' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: 'plots' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '矢量图' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    await expect(store.create({
+      kind: 'manuscript',
+      title: '坏运行引用',
+      stage: 'idea',
+      figures: [{ id: 'f1', kind: 'figure', label: '图 1', title: '来源', runs: [{ kind: 'research', id: 'r1' }] }],
+    }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({
+      kind: 'manuscript',
+      title: '重复运行',
+      stage: 'idea',
+      figures: [{ id: 'f1', kind: 'figure', label: '图 1', title: '来源', runs: [{ kind: 'run', id: 'r1' }, { kind: 'run', id: 'r1' }] }],
+    }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({
+      kind: 'manuscript',
+      title: '坏绘图代码',
+      stage: 'idea',
+      figures: [{ id: 'f1', kind: 'figure', label: '图 1', title: '来源', plot: { repository: 42 } }],
+    }, ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({
+      kind: 'manuscript',
+      title: '运行太多',
+      stage: 'idea',
+      figures: [{ id: 'f1', kind: 'figure', label: '图 1', title: '来源', runs: Array.from({ length: 21 }, (_, index) => ({ kind: 'run', id: `r${index}` })) }],
+    }, ACTOR)).rejects.toMatchObject({ status: 400 })
+  })
+
   it('归档收起、恢复回到活跃', async () => {
     const { store } = await open()
     const { record } = await store.create(meeting(), ACTOR)

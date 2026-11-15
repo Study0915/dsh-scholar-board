@@ -17,8 +17,12 @@
   var MAX_FIGURES = 100
   var MAX_ROUNDS = 50
   var MAX_REVISIONS = 200
+  var MAX_FIGURE_RUNS = 20
   var FIGURE_LABEL_LENGTH = 32
   var REVISION_TEXT = 2000
+  var PLOT_REPOSITORY = 2048
+  var PLOT_COMMIT = 200
+  var FIGURE_CONCLUSION = 2000
 
   /** 阶段读成文案键。 */
   function stageKey(stage) {
@@ -219,7 +223,39 @@
     return out
   }
 
-  /** 图表目录：编号、标题与可选的备注；不认识的条目跳过。 */
+  /** 图表对应的运行引用；没有时是空数组。 */
+  function figureRunsOf(figure) {
+    return figure !== null && typeof figure === 'object' && Array.isArray(figure.runs) ? figure.runs : []
+  }
+
+  /** 图表里可以引用的运行：类型必须是 run，同一运行只留一次。 */
+  function cleanFigureRuns(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var seen = {}
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var ref = list[at]
+      if (ref === null || typeof ref !== 'object' || ref.kind !== 'run') continue
+      if (typeof ref.id !== 'string' || ref.id === '' || ref.id.length > 64 || seen[ref.id] === true) continue
+      if (out.length >= MAX_FIGURE_RUNS) break
+      seen[ref.id] = true
+      out.push({ kind: 'run', id: ref.id })
+    }
+    return out
+  }
+
+  /** 绘图代码：仓库与提交各自可选，都空时不写。 */
+  function cleanPlot(plot) {
+    if (plot === null || typeof plot !== 'object') return null
+    var repository = textOf(plot.repository)
+    var commit = textOf(plot.commit)
+    var out = {}
+    if (repository !== '' && repository.length <= PLOT_REPOSITORY) out.repository = repository
+    if (commit !== '' && commit.length <= PLOT_COMMIT) out.commit = commit
+    return out.repository === undefined && out.commit === undefined ? null : out
+  }
+
+  /** 图表目录：编号、标题与可选的备注、运行、材料、绘图代码与结论；不认识的条目跳过。 */
   function cleanFigures(rows) {
     var list = Array.isArray(rows) ? rows : []
     var seen = {}
@@ -236,8 +272,14 @@
       var entry = { id: figure.id, kind: figure.kind, label: label, title: title }
       var note = textOf(figure.note)
       if (note !== '') entry.note = note
+      var runs = cleanFigureRuns(figure.runs)
+      if (runs.length > 0) entry.runs = runs
       var materials = cleanMaterials(figure.materials)
       if (materials.length > 0) entry.materials = materials
+      var plot = cleanPlot(figure.plot)
+      if (plot !== null) entry.plot = plot
+      var conclusion = textOf(figure.conclusion)
+      if (conclusion !== '' && conclusion.length <= FIGURE_CONCLUSION) entry.conclusion = conclusion
       out.push(entry)
     }
     return out
@@ -346,8 +388,12 @@
     MAX_FIGURES: MAX_FIGURES,
     MAX_ROUNDS: MAX_ROUNDS,
     MAX_REVISIONS: MAX_REVISIONS,
+    MAX_FIGURE_RUNS: MAX_FIGURE_RUNS,
     FIGURE_LABEL_LENGTH: FIGURE_LABEL_LENGTH,
     REVISION_TEXT: REVISION_TEXT,
+    PLOT_REPOSITORY: PLOT_REPOSITORY,
+    PLOT_COMMIT: PLOT_COMMIT,
+    FIGURE_CONCLUSION: FIGURE_CONCLUSION,
     stageKey: stageKey,
     isStage: isStage,
     figureKey: figureKey,
@@ -363,6 +409,9 @@
     viewRows: viewRows,
     materialValid: materialValid,
     cleanMaterials: cleanMaterials,
+    figureRunsOf: figureRunsOf,
+    cleanFigureRuns: cleanFigureRuns,
+    cleanPlot: cleanPlot,
     cleanFigures: cleanFigures,
     cleanRounds: cleanRounds,
     cleanRevisions: cleanRevisions,

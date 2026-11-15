@@ -16,6 +16,24 @@
   var MAX_ENTRIES = 64
   var UNIT_LENGTH = 32
   var RUN_TITLE_LENGTH = 160
+  var EVIDENCE_LIMIT = 50
+  var EVIDENCE_ID = 64
+  var EVIDENCE_SUMMARY = 2000
+  var EVIDENCE_KINDS = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore', 'topic', 'run', 'template']
+  var KIND_KEYS = {
+    meeting: 'kindMeeting',
+    action: 'kindAction',
+    manuscript: 'kindManuscript',
+    literature: 'kindLiterature',
+    research: 'kindResearch',
+    thesis: 'kindThesis',
+    project: 'kindProject',
+    course: 'kindCourse',
+    chore: 'kindChore',
+    topic: 'kindTopic',
+    run: 'kindRun',
+    template: 'kindTemplate'
+  }
 
   /** 记录里的做法：不认识的值按仿真算。 */
   function methodOf(record) {
@@ -197,6 +215,130 @@
     return out
   }
 
+  /** 记录类型读成文案键；不认识的类型按未知说。 */
+  function kindKey(kind) {
+    return typeof kind === 'string' && KIND_KEYS[kind] !== undefined ? KIND_KEYS[kind] : 'unknown'
+  }
+
+  /** 一条证据引用的身份：记录、条目与材料三段一起判重。 */
+  function evidenceKey(ref) {
+    if (ref === null || typeof ref !== 'object') return ''
+    return String(ref.kind) + ':' + String(ref.id) + ':' + (typeof ref.entryId === 'string' ? ref.entryId : '') + ':' + (typeof ref.materialId === 'string' ? ref.materialId : '')
+  }
+
+  /** 记录里的证据引用；没有时是空数组。 */
+  function evidenceOf(record) {
+    return record !== null && typeof record === 'object' && Array.isArray(record.conclusionEvidence) ? record.conclusionEvidence : []
+  }
+
+  /** 证据引用的条数。 */
+  function evidenceCount(record) {
+    return evidenceOf(record).length
+  }
+
+  /**
+   * 把编辑器里的证据行整理成可保存的样子。
+   *
+   * 类型、id 与修订号必须齐全；同一记录、条目与材料只能出现一次；超过五十条或半填时返回 null。
+   *
+   * @param {Array} rows - `{ kind, id, revision, entryId?, materialId?, summary? }` 行。
+   * @returns {Array|null} 归一后的引用；有问题时是 null。
+   */
+  function cleanEvidence(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var seen = {}
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var ref = list[at]
+      if (ref === null || typeof ref !== 'object') return null
+      if (EVIDENCE_KINDS.indexOf(ref.kind) < 0) return null
+      if (typeof ref.id !== 'string' || ref.id === '' || ref.id.length > EVIDENCE_ID) return null
+      if (!Number.isInteger(ref.revision) || ref.revision < 0) return null
+      var entry = { kind: ref.kind, id: ref.id, revision: ref.revision }
+      var entryId = typeof ref.entryId === 'string' ? ref.entryId.trim() : ''
+      if (entryId !== '') {
+        if (entryId.length > EVIDENCE_ID) return null
+        entry.entryId = entryId
+      }
+      var materialId = typeof ref.materialId === 'string' ? ref.materialId.trim() : ''
+      if (materialId !== '') {
+        if (materialId.length > EVIDENCE_ID) return null
+        entry.materialId = materialId
+      }
+      var summary = typeof ref.summary === 'string' ? ref.summary.trim() : ''
+      if (summary !== '') {
+        if (summary.length > EVIDENCE_SUMMARY) return null
+        entry.summary = summary
+      }
+      var key = evidenceKey(entry)
+      if (seen[key] === true) return null
+      seen[key] = true
+      out.push(entry)
+      if (out.length > EVIDENCE_LIMIT) return null
+    }
+    return out
+  }
+
+  /** 来源在引用之后改过：当前修订号与引用时不同。 */
+  function evidenceUpdated(ref, record) {
+    if (ref === null || typeof ref !== 'object' || record === null || typeof record !== 'object') return false
+    return Number.isInteger(record.revision) && record.revision !== ref.revision
+  }
+
+  /** 一段条目文字：先找名称，再找标题与正文；都没有时用 id。 */
+  function entryLabel(entry) {
+    var fields = ['name', 'title', 'label', 'text', 'feedback', 'content', 'question', 'venue']
+    for (var at = 0; at < fields.length; at += 1) {
+      var value = entry[fields[at]]
+      if (typeof value === 'string' && value.trim() !== '') return value.trim()
+    }
+    return String(entry.id)
+  }
+
+  /**
+   * 记录里可以单独引用的条目：带稳定 id，且有可读的名称或标题。
+   *
+   * @param {object} record - 来源记录。
+   * @returns {Array} `{ id, label }`；去重并保持原顺序。
+   */
+  function evidenceEntries(record) {
+    var fields = ['parameters', 'metrics', 'checkpoints', 'config', 'datasets', 'results', 'figures', 'issues', 'items', 'problemEntries', 'chapters', 'sections', 'submissions', 'revisions', 'tasks', 'members', 'deliverables', 'requirements', 'tests', 'milestones', 'experiments']
+    var seen = {}
+    var out = []
+    if (record === null || typeof record !== 'object') return out
+    for (var fieldAt = 0; fieldAt < fields.length; fieldAt += 1) {
+      var list = record[fields[fieldAt]]
+      if (!Array.isArray(list)) continue
+      for (var at = 0; at < list.length; at += 1) {
+        var entry = list[at]
+        if (entry === null || typeof entry !== 'object') continue
+        if (typeof entry.id !== 'string' || entry.id === '' || seen[entry.id] === true) continue
+        seen[entry.id] = true
+        out.push({ id: entry.id, label: entryLabel(entry) })
+      }
+    }
+    return out
+  }
+
+  /** 记录里可以单独引用的材料：结果材料与产物。 */
+  function evidenceMaterials(record) {
+    var out = []
+    var seen = {}
+    if (record === null || typeof record !== 'object') return out
+    var lists = [record.materials, record.artifacts]
+    for (var listAt = 0; listAt < lists.length; listAt += 1) {
+      if (!Array.isArray(lists[listAt])) continue
+      for (var at = 0; at < lists[listAt].length; at += 1) {
+        var material = lists[listAt][at]
+        if (material === null || typeof material !== 'object') continue
+        if (typeof material.id !== 'string' || material.id === '' || seen[material.id] === true) continue
+        seen[material.id] = true
+        out.push({ id: material.id, label: typeof material.title === 'string' && material.title !== '' ? material.title : String(material.url) })
+      }
+    }
+    return out
+  }
+
   /** 材料地址只收 http/https 的完整地址，说明不能是空的。 */
   function materialValid(url, title) {
     if (typeof title !== 'string' || title.trim() === '') return false
@@ -232,6 +374,10 @@
     MAX_ENTRIES: MAX_ENTRIES,
     UNIT_LENGTH: UNIT_LENGTH,
     RUN_TITLE_LENGTH: RUN_TITLE_LENGTH,
+    EVIDENCE_LIMIT: EVIDENCE_LIMIT,
+    EVIDENCE_ID: EVIDENCE_ID,
+    EVIDENCE_SUMMARY: EVIDENCE_SUMMARY,
+    EVIDENCE_KINDS: EVIDENCE_KINDS,
     methodOf: methodOf,
     methodKey: methodKey,
     textOf: textOf,
@@ -249,6 +395,14 @@
     planRuns: planRuns,
     viewRows: viewRows,
     cleanEntries: cleanEntries,
+    kindKey: kindKey,
+    evidenceKey: evidenceKey,
+    evidenceOf: evidenceOf,
+    evidenceCount: evidenceCount,
+    cleanEvidence: cleanEvidence,
+    evidenceUpdated: evidenceUpdated,
+    evidenceEntries: evidenceEntries,
+    evidenceMaterials: evidenceMaterials,
     materialValid: materialValid,
     openableUrl: openableUrl,
     fill: fill

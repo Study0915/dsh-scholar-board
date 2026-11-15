@@ -15,6 +15,8 @@
   root.createManuscriptDeep = function (ctx) {
     var app = ctx.app
     var nodes = ctx.nodes
+    var widget = ctx.widget
+    var live = ctx.live
     var t = ctx.t
     var pure = ctx.pure
     var onInput = ctx.onInput
@@ -71,6 +73,22 @@
       if (node !== null) node.hidden = !empty
     }
 
+    /** 图表的扩展字段：运行、数据材料、绘图代码与结论。 */
+    var panel = root.createManuscriptFigurePanel({
+      app: app,
+      widget: widget,
+      live: live,
+      t: t,
+      pure: pure,
+      control: controlOf,
+      trashed: trashedNow,
+      newId: newId,
+      rerender: function () { renderFigures() },
+      onInput: function () { onInput() },
+      setStatus: function (text, tone) { setStatus(text, tone) }
+    })
+
+
     function dateFieldOf(label, field, value) {
       var wrap = document.createElement('label')
       wrap.className = 'ms__deep-date'
@@ -114,6 +132,7 @@
       note.setAttribute('aria-label', t('figureNote'))
       note.value = typeof figure.note === 'string' ? figure.note : ''
       row.appendChild(note)
+      panel.appendTo(row, figure)
       return row
     }
 
@@ -273,6 +292,7 @@
       nodes.figures.replaceChildren.apply(nodes.figures, rows)
       emptyHint(nodes.figuresEmpty, rows.length === 0)
       if (nodes.addFigure !== null) nodes.addFigure.disabled = trashedNow() || app.figures.length >= pure.MAX_FIGURES
+      panel.refresh()
     }
 
     function renderRounds() {
@@ -343,6 +363,7 @@
     }
 
     function updateFigure(id, field, value) {
+      if (field === 'figure-material-url' || field === 'figure-material-title') return
       var figure = findEntry(app.figures, id)
       if (figure === null) return
       if (field === 'figure-kind') figure.kind = value
@@ -351,6 +372,9 @@
       else if (field === 'figure-note') {
         if (value.trim() === '') delete figure.note
         else figure.note = value
+      } else if (panel.update(figure, id, field, value)) {
+        onInput()
+        return
       }
       onInput()
     }
@@ -493,6 +517,11 @@
       addFigure: addFigure,
       updateFigure: updateFigure,
       removeFigure: removeFigure,
+      addFigureRun: panel.addRun,
+      removeFigureRun: panel.removeRun,
+      addFigureMaterial: panel.addMaterial,
+      removeFigureMaterial: panel.removeMaterial,
+      openFigureRun: panel.openRun,
       addRound: addRound,
       updateRound: updateRound,
       removeRound: removeRound,

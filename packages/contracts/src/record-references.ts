@@ -24,6 +24,14 @@ export function recordReferences(record: DomainRecord): RecordRef[] {
       for (const source of result.sources ?? []) refs.push({ kind: 'run', id: source })
     }
   }
+  if (record.kind === 'research') {
+    for (const evidence of record.conclusionEvidence ?? []) refs.push({ kind: evidence.kind, id: evidence.id })
+  }
+  if (record.kind === 'manuscript') {
+    for (const figure of record.figures ?? []) {
+      for (const run of figure.runs ?? []) refs.push(run)
+    }
+  }
   const seen = new Set<string>()
   return refs.filter(ref => {
     const key = `${ref.kind}:${ref.id}`

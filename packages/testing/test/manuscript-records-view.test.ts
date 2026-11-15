@@ -19,6 +19,13 @@ interface ManuscriptModel {
   MAX_REVISIONS: number
   FIGURE_LABEL_LENGTH: number
   REVISION_TEXT: number
+  MAX_FIGURE_RUNS: number
+  PLOT_REPOSITORY: number
+  PLOT_COMMIT: number
+  FIGURE_CONCLUSION: number
+  figureRunsOf(figure: unknown): Array<Record<string, unknown>>
+  cleanFigureRuns(rows: unknown): Array<Record<string, unknown>>
+  cleanPlot(plot: unknown): Record<string, unknown> | null
   stageKey(stage: unknown): string
   isStage(value: unknown): boolean
   figureKey(kind: unknown): string
@@ -205,6 +212,50 @@ describe('图表、投稿与修回', () => {
   })
 })
 
+describe('图表引用运行、数据材料与绘图代码', () => {
+  it('图表只引用运行，同一运行只留一次，最多二十个', () => {
+    expect(model.figureRunsOf(null)).toEqual([])
+    expect(model.figureRunsOf({})).toEqual([])
+    expect(model.cleanFigureRuns([
+      { kind: 'run', id: 'r1' },
+      { kind: 'research', id: 'x1' },
+      { kind: 'run', id: 'r1' },
+      { kind: 'run', id: '' },
+      { kind: 'run', id: 'r2' },
+    ])).toEqual([{ kind: 'run', id: 'r1' }, { kind: 'run', id: 'r2' }])
+    const many = Array.from({ length: model.MAX_FIGURE_RUNS + 5 }, (_, index) => ({ kind: 'run', id: `r${index}` }))
+    expect(model.cleanFigureRuns(many)).toHaveLength(model.MAX_FIGURE_RUNS)
+    expect(model.cleanFigureRuns([{ kind: 'run', id: 'x'.repeat(65) }])).toEqual([])
+  })
+
+  it('绘图代码的仓库与提交去掉空白，两个都空时不写', () => {
+    expect(model.cleanPlot({ repository: ' https://example.com/plots ', commit: ' abc123 ' })).toEqual({ repository: 'https://example.com/plots', commit: 'abc123' })
+    expect(model.cleanPlot({ repository: ' https://example.com/plots ' })).toEqual({ repository: 'https://example.com/plots' })
+    expect(model.cleanPlot({ repository: '  ', commit: '' })).toBeNull()
+    expect(model.cleanPlot(null)).toBeNull()
+    expect(model.cleanPlot({ repository: 'r'.repeat(model.PLOT_REPOSITORY + 1) })).toBeNull()
+    expect(model.cleanPlot({ commit: 'c'.repeat(model.PLOT_COMMIT + 1) })).toBeNull()
+  })
+
+  it('图表保存时保留运行、材料、绘图代码与结论，结论过长时不写结论', () => {
+    const kept = model.cleanFigures([{
+      id: 'f1', kind: 'figure', label: '图 1', title: '误码率',
+      runs: [{ kind: 'run', id: 'r1' }],
+      materials: [{ id: 'm1', url: 'https://example.com/data.csv', title: ' 数据 ' }],
+      plot: { repository: 'https://example.com/plots', commit: 'abc123' },
+      conclusion: ' 采样率提高后误码率下降 ',
+    }])
+    expect(kept).toEqual([{
+      id: 'f1', kind: 'figure', label: '图 1', title: '误码率',
+      runs: [{ kind: 'run', id: 'r1' }],
+      materials: [{ id: 'm1', url: 'https://example.com/data.csv', title: '数据' }],
+      plot: { repository: 'https://example.com/plots', commit: 'abc123' },
+      conclusion: '采样率提高后误码率下降',
+    }])
+    expect(model.cleanFigures([{ id: 'f2', kind: 'figure', label: '图 2', title: '过长', conclusion: 'x'.repeat(model.FIGURE_CONCLUSION + 1) }])).toEqual([{ id: 'f2', kind: 'figure', label: '图 2', title: '过长' }])
+  })
+})
+
 describe('样例与清单', () => {
   it('m 与 l 两个尺寸族都有样例', () => {
     const samples = JSON.parse(readFileSync(new URL('../../widgets/manuscript-records/samples.json', import.meta.url), 'utf8')) as Record<string, unknown>
@@ -227,7 +278,7 @@ describe('样例与清单', () => {
       'widget-board:records.draft',
       'widget-board:records.open',
     ])
-    expect(manifest.scripts).toEqual(['manuscript-model.js', 'copy.js', 'view.js', 'editor-deep.js', 'editor.js'])
+    expect(manifest.scripts).toEqual(['manuscript-model.js', 'copy.js', 'view.js', 'figure-panel.js', 'editor-deep.js', 'editor.js'])
     expect(Object.keys(manifest.text).sort()).toEqual(Object.keys(copy).sort())
   })
 })

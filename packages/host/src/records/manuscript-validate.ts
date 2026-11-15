@@ -1,6 +1,6 @@
 /** 稿件图表、投稿轮次和修回条目的校验（D36）。 */
-import type { FigureKind, ManuscriptFigure, RevisionItem, RevisionStatus, SubmissionDecision, SubmissionRound } from '@dsh-scholar-board/contracts'
-import { RECORDS_LIMITS } from '@dsh-scholar-board/contracts'
+import type { FigureKind, ManuscriptFigure, PlotCode, RecordRef, RevisionItem, RevisionStatus, SubmissionDecision, SubmissionRound } from '@dsh-scholar-board/contracts'
+import { RECORDS_LIMITS, RELATION_KINDS } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
 import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
 
@@ -52,6 +52,47 @@ function revisionTextOf(value: unknown, field: string, required: boolean): strin
 }
 
 /**
+ * 图表引用的运行：只收可关联类型里的 run，id 不重复。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns 运行引用；未填时是 `null`。
+ */
+function figureRunsOf(value: unknown, field: string): RecordRef[] | null {
+  if (value === null) return null
+  if (!Array.isArray(value)) fail(`${field} 要是数组`)
+  if (value.length > RECORDS_LIMITS.figureRuns) fail(`${field} 最多 ${String(RECORDS_LIMITS.figureRuns)} 项`)
+  const seen = new Set<string>()
+  return value.map((entry, index) => {
+    if (!isRecord(entry) || entry.kind !== 'run') fail(`${field}[${String(index)}] 要写成 { kind: "run", id }`)
+    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
+    if (seen.has(entry.id)) fail(`${field} 里的 id 重复`)
+    seen.add(entry.id)
+    return { kind: 'run', id: entry.id }
+  })
+}
+
+/**
+ * 图表的绘图代码：仓库与提交都可留空，只校验长度。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns 代码来源；未填时是 `null`。
+ */
+function figurePlotOf(value: unknown, field: string): PlotCode | null {
+  if (value === null) return null
+  if (!isRecord(value)) fail(`${field} 要写成 { repository?, commit? }`)
+  const repository = value.repository === undefined ? null : textOf(value.repository, `${field}.repository`)
+  const commit = value.commit === undefined ? null : textOf(value.commit, `${field}.commit`)
+  if (repository !== null && repository.length > 2048) fail(`${field}.repository 最多 2048 个字符`)
+  if (commit !== null && commit.length > 200) fail(`${field}.commit 最多 200 个字符`)
+  return {
+    ...(repository === null ? {} : { repository }),
+    ...(commit === null ? {} : { commit }),
+  }
+}
+
+/**
  * 图表目录：编号与标题必填，证据材料只收 http/https，条目 id 不重复。
  *
  * @param value - 外来值。
@@ -75,12 +116,19 @@ export function figuresOf(value: unknown, field: string): ManuscriptFigure[] | n
     const title = titleOf(entry.title, `${field}[${String(index)}].title`)
     const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
     const materials = entry.materials === undefined ? null : materialsOf(entry.materials, `${field}[${String(index)}].materials`)
+    const runs = entry.runs === undefined ? null : figureRunsOf(entry.runs, `${field}[${String(index)}].runs`)
+    const plot = entry.plot === undefined ? null : figurePlotOf(entry.plot, `${field}[${String(index)}].plot`)
+    const conclusion = entry.conclusion === undefined ? null : textOf(entry.conclusion, `${field}[${String(index)}].conclusion`)
+    if (conclusion !== null && [...conclusion].length > RECORDS_LIMITS.revisionText) fail(`${field}[${String(index)}].conclusion 最多 ${String(RECORDS_LIMITS.revisionText)} 个字符`)
     return {
       id: entry.id,
       kind: entry.kind as FigureKind,
       label,
       title,
       ...(note === null ? {} : { note }),
+      ...(runs === null ? {} : { runs }),
+      ...(plot === null ? {} : { plot }),
+      ...(conclusion === null ? {} : { conclusion }),
       ...(materials === null ? {} : { materials }),
     }
   })
@@ -173,6 +221,9 @@ export function manuscriptArraysProblem(value: Record<string, unknown>): string 
       ids.add(entry.id)
       if (entry.kind !== 'figure' && entry.kind !== 'table') return 'figures 的 kind 不认识'
       if (typeof entry.label !== 'string' || entry.label === '' || typeof entry.title !== 'string' || entry.title === '') return 'figures 的条目缺少编号或标题'
+      if (entry.runs !== undefined && (!Array.isArray(entry.runs) || entry.runs.some((run: unknown) => !isRecord(run) || run.kind !== 'run' || typeof run.id !== 'string' || run.id === ''))) return 'figures 的 runs 不合法'
+      if (entry.plot !== undefined && !isRecord(entry.plot)) return 'figures 的 plot 不合法'
+      if (entry.conclusion !== undefined && typeof entry.conclusion !== 'string') return 'figures 的 conclusion 不合法'
     }
   }
   const roundIds = new Set<string>()

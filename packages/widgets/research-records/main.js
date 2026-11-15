@@ -76,6 +76,9 @@
     seedInput: card.querySelector('[data-field="seed-input"]'),
     template: card.querySelector('[data-role="template"]'),
     conclusion: card.querySelector('[data-field="conclusion"]'),
+    conclusionBasis: card.querySelector('[data-field="conclusion-basis"]'),
+    conclusionScope: card.querySelector('[data-field="conclusion-scope"]'),
+    evidence: card.querySelector('[data-role="evidence"]'),
     materialUrl: card.querySelector('[data-field="material-url"]'),
     materialTitle: card.querySelector('[data-field="material-title"]'),
     parameters: card.querySelector('[data-role="parameters"]'),
@@ -107,6 +110,8 @@
     parameters: card.querySelector('[data-role="label-parameters"]'),
     metrics: card.querySelector('[data-role="label-metrics"]'),
     conclusion: card.querySelector('[data-role="label-conclusion"]'),
+    conclusionBasis: card.querySelector('[data-role="label-conclusion-basis"]'),
+    conclusionScope: card.querySelector('[data-role="label-conclusion-scope"]'),
     runs: card.querySelector('[data-role="label-runs"]'),
     materials: card.querySelector('[data-role="label-materials"]')
   }
@@ -194,12 +199,16 @@
     put(labels.parameters, t('parameters'))
     put(labels.metrics, t('metrics'))
     put(labels.conclusion, t('conclusion'))
+    put(labels.conclusionBasis, t('conclusionBasis'))
+    put(labels.conclusionScope, t('conclusionScope'))
     put(labels.runs, t('planRuns'))
     put(labels.materials, t('material'))
     put(card.querySelector('[data-role="environment-hint"]'), t('environmentHint'))
     put(card.querySelector('[data-role="seed-hint"]'), t('seedHint'))
     put(card.querySelector('[data-role="steps-hint"]'), t('stepsHint'))
     put(card.querySelector('[data-role="conclusion-hint"]'), t('conclusionHint'))
+    put(card.querySelector('[data-role="conclusion-basis-hint"]'), t('conclusionBasisHint'))
+    put(card.querySelector('[data-role="conclusion-scope-hint"]'), t('conclusionScopeHint'))
     put(card.querySelector('[data-role="runs-hint"]'), t('planRunsHint'))
     put(nodes.newRunButton, t('newRun'))
     put(card.querySelector('[data-action="close"]'), t('close'))
@@ -458,7 +467,7 @@
     nodes.conflict.close()
     editor.reloadLatest()
   })
-  var inputs = [nodes.titleInput, nodes.question, nodes.purpose, nodes.hypothesis, nodes.steps, nodes.environmentInput, nodes.seedInput, nodes.conclusion]
+  var inputs = [nodes.titleInput, nodes.question, nodes.purpose, nodes.hypothesis, nodes.steps, nodes.environmentInput, nodes.seedInput, nodes.conclusion, nodes.conclusionBasis, nodes.conclusionScope]
   for (var inputAt = 0; inputAt < inputs.length; inputAt += 1) inputs[inputAt].addEventListener('input', function () { editor.onInput() })
   nodes.methodInput.addEventListener('change', function () { editor.onInput() })
 
