@@ -98,6 +98,8 @@ function writeCompatibility(version) {
  * @param en - 英文一句。
  */
 function addNoteFragment(date, zh, en) {
+  // 上一次发布把待发布条目清空后，git 里不会留下空目录，全新克隆里 docs/changes/ 并不存在。
+  fs.mkdirSync(CHANGES, { recursive: true })
   fs.writeFileSync(path.join(CHANGES, 'release-note.json'), `${JSON.stringify({ at: date, group: 'chores', order: 0, external: false, zh, en }, null, 2)}\n`)
 }
 
