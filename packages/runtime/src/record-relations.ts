@@ -16,8 +16,8 @@ export interface RecordRelationsOptions {
   onChange(refs: RecordRef[]): void
 }
 
-const names = ['组会', '行动项', '小论文', '文献', '研究', '毕业论文', '项目', '课程', '事务']
-const english = ['Meeting', 'Action', 'Manuscript', 'Literature', 'Research', 'Thesis', 'Project', 'Course', 'Chore']
+const names = ['组会', '行动项', '小论文', '文献', '研究', '毕业论文', '项目', '课程', '事务', '课题']
+const english = ['Meeting', 'Action', 'Manuscript', 'Literature', 'Research', 'Thesis', 'Project', 'Course', 'Chore', 'Topic']
 
 /**
  * 安装统一关联选择器；所有宿主读取集中在这里，用户组件也可使用。

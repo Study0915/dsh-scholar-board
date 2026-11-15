@@ -4,6 +4,8 @@
  * 导出回一个 gzip 的 `.dshrecords`；导入先预览条数与分布，确认之后整包一次写入。三条路由都只做
  * HTTP 适配，格式校验、id 重映射与容量判断在 `exchange.ts` 与记录存储里。
  */
+import type { RecordKind } from '@dsh-scholar-board/contracts'
+import { RECORD_KINDS } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
 import { readBody, readJson } from '../body'
 import { Refusal } from '../refusal'
@@ -28,7 +30,7 @@ export const IMPORT_PACKAGE_LIMIT = 32 * 1024 * 1024
 function scopeOf(value: unknown): ExportScope {
   const body = isRecord(value) ? value : {}
   const kinds = Array.isArray(body.kinds)
-    ? body.kinds.filter((kind): kind is 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore' => kind === 'meeting' || kind === 'action' || kind === 'manuscript' || kind === 'literature' || kind === 'research' || kind === 'thesis' || kind === 'project' || kind === 'course' || kind === 'chore')
+    ? body.kinds.filter((kind): kind is RecordKind => typeof kind === 'string' && RECORD_KINDS.includes(kind as RecordKind))
     : undefined
   return {
     includeArchived: body.includeArchived === true,

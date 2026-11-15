@@ -34,7 +34,7 @@ const READ_INPUT = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    kind: { enum: ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore'] },
+    kind: { enum: [...RECORD_KINDS] },
     ids: { type: 'array', maxItems: 200, items: { type: 'string', minLength: 1, maxLength: 64 } },
     includeArchived: { type: 'boolean' },
     includeTrashed: { type: 'boolean' },
@@ -49,7 +49,7 @@ const READ_INPUT = {
       additionalProperties: false,
       required: ['kind', 'id'],
       properties: {
-        kind: { enum: ['meeting', 'manuscript'] },
+        kind: { enum: ['meeting', 'manuscript', 'topic'] },
         id: { type: 'string', minLength: 1, maxLength: 64 },
       },
     },
@@ -92,12 +92,13 @@ const WIDGET_KINDS: Record<string, RecordKind> = {
   'project-records': 'project',
   'course-records': 'course',
   'chore-records': 'chore',
+  'topic-records': 'topic',
 }
 
 /** 数据源能认的记录类型：props.kind 优先，内置记录组件按 id 取类型。 */
 function kindOf(instance: InstanceFace): RecordKind | undefined {
   const kind = instance.props.kind
-  if (kind === 'meeting' || kind === 'action' || kind === 'manuscript' || kind === 'literature' || kind === 'research' || kind === 'thesis' || kind === 'project' || kind === 'course' || kind === 'chore') return kind
+  if (typeof kind === 'string' && RECORD_KINDS.includes(kind as RecordKind)) return kind as RecordKind
   return WIDGET_KINDS[instance.widget]
 }
 
@@ -110,7 +111,7 @@ function kindOf(instance: InstanceFace): RecordKind | undefined {
  */
 function readOf(store: RecordsStore, args: unknown): RecordsView {
   const body = isRecord(args) ? args : {}
-  const source = isRecord(body.source) && typeof body.source.id === 'string' && (body.source.kind === 'meeting' || body.source.kind === 'manuscript')
+  const source = isRecord(body.source) && typeof body.source.id === 'string' && (body.source.kind === 'meeting' || body.source.kind === 'manuscript' || body.source.kind === 'topic')
     ? { kind: body.source.kind, id: body.source.id } as const
     : undefined
   const query: RecordQuery = {

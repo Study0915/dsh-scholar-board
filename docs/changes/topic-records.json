@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 12,
+  "at": "2026-11-15",
+  "external": true,
+  "zh": "新增「研究课题」卡：把研究问题、目标、假设、当前判断与下一步放在一起，问题条目按待解、调查中与已解决记录，并可为一条问题创建行动项。转任务重复点击只建出一条，行动项保留课题与条目来源；关闭问题与完成行动项分别记录，卡片不把行动项完成当成问题解决。课题可关联十类记录与材料，详情聚合前向关联与反向引用；列表支持搜索、归档与回收站，详情支持草稿与修订冲突。记录类型、检索、导出导入、配额与内置组件画廊一并支持课题。",
+  "en": "Adds the Research topics card: keep the research question, goal, hypothesis, current judgement and next step together, track question entries as open, investigating or resolved, and create an action from any question. Repeated conversion clicks create one action, and the action keeps the topic and entry as its source; closing a question and completing an action are recorded separately, and a done action never resolves a question by itself. Topics link to all ten record kinds and materials, the detail aggregates outgoing links and incoming references, the list searches, archives and trashes, and the detail supports drafts and revision conflicts. Records, search, export/import, quota and the built-in gallery now cover topics too."
+}

@@ -19,11 +19,13 @@ import type {
 import { RECORDS_FORMAT, RECORDS_LIMITS, RECORD_KINDS, isOpenableUrl } from '@dsh-scholar-board/contracts'
 export { RECORD_KINDS } from '@dsh-scholar-board/contracts'
 export { FIGURE_KINDS, SUBMISSION_DECISIONS, REVISION_STATUSES } from './manuscript-validate'
+export { TOPIC_QUESTION_STATUSES } from './topic-validate'
 export { searchTextOf } from './search'
 import { figuresOf, submissionsOf, revisionsOf, manuscriptArraysProblem } from './manuscript-validate'
 import { isRecord } from '../guards'
 import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
 import { chaptersOf, experimentsOf, thesisArraysProblem, thesisMilestonesOf, thesisResultsOf } from './thesis-validate'
+import { topicArraysProblem, topicQuestionsOf } from './topic-validate'
 import {
   projectArraysProblem,
   projectCommunicationsOf,
@@ -49,7 +51,7 @@ export const RESEARCH_METHODS: readonly ResearchMethod[] = ['derivation', 'simul
 /** 每种记录可写的字段；系统字段与阶段历史不在这张表里。 */
 const WRITABLE: Record<RecordKind, readonly string[]> = {
   meeting: ['title', 'date', 'topics', 'feedback', 'openQuestions', 'related', 'materials', 'derivedFrom'],
-  action: ['title', 'status', 'due', 'source', 'related', 'blockedNote', 'doneNote', 'materials'],
+  action: ['title', 'status', 'due', 'source', 'sourceEntry', 'related', 'blockedNote', 'doneNote', 'materials'],
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials', 'figures', 'submissions', 'revisions'],
   literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'related', 'materials'],
   research: ['title', 'method', 'question', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'related', 'materials'],
@@ -57,6 +59,7 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
   course: ['title', 'term', 'code', 'teacher', 'schedule', 'notes', 'work', 'related', 'materials'],
   chore: ['title', 'category', 'status', 'due', 'note', 'related', 'materials'],
+  topic: ['title', 'question', 'goal', 'hypothesis', 'judgment', 'nextStep', 'questions', 'related', 'materials'],
 }
 
 /** 每种记录允许指向的引用类型。 */
@@ -70,6 +73,7 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   project: RECORD_KINDS,
   course: RECORD_KINDS,
   chore: RECORD_KINDS,
+  topic: RECORD_KINDS,
 }
 
 /**
@@ -224,6 +228,9 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.openQuestions !== undefined) out.openQuestions = textOf(input.openQuestions, 'openQuestions')
   if (input.summary !== undefined) out.summary = textOf(input.summary, 'summary')
   if (input.question !== undefined) out.question = textOf(input.question, 'question')
+  if (input.goal !== undefined) out.goal = textOf(input.goal, 'goal')
+  if (input.hypothesis !== undefined) out.hypothesis = textOf(input.hypothesis, 'hypothesis')
+  if (input.judgment !== undefined) out.judgment = textOf(input.judgment, 'judgment')
   if (input.nextStep !== undefined) out.nextStep = textOf(input.nextStep, 'nextStep')
   if (input.blockers !== undefined) out.blockers = textOf(input.blockers, 'blockers')
   if (input.target !== undefined) out.target = textOf(input.target, 'target')
@@ -232,7 +239,9 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.year !== undefined) out.year = yearOf(input.year)
   if (input.url !== undefined) out.url = urlOf(input.url)
   if (input.understanding !== undefined) out.understanding = textOf(input.understanding, 'understanding')
-  if (input.questions !== undefined) out.questions = textOf(input.questions, 'questions')
+  if (input.questions !== undefined) {
+    out.questions = kind === 'topic' ? topicQuestionsOf(input.questions, 'questions') : textOf(input.questions, 'questions')
+  }
   if (input.environment !== undefined) out.environment = textOf(input.environment, 'environment')
   if (input.seed !== undefined) out.seed = textOf(input.seed, 'seed')
   if (input.parameters !== undefined) out.parameters = entriesOf(input.parameters, 'parameters')
@@ -270,9 +279,17 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
     if (input.source === null) out.source = null
     else {
       if (!isRecord(input.source) || typeof input.source.id !== 'string' || input.source.id === '' || input.source.id.length > 64) fail('source 要写成 { kind, id }')
-      if (input.source.kind !== 'meeting' && input.source.kind !== 'manuscript') fail('source.kind 只能是 meeting 或 manuscript')
+      if (input.source.kind !== 'meeting' && input.source.kind !== 'manuscript' && input.source.kind !== 'topic') fail('source.kind 只能是 meeting、manuscript 或 topic')
       out.source = { kind: input.source.kind, id: input.source.id }
     }
+  }
+  if (input.sourceEntry !== undefined) {
+    if (input.sourceEntry === null) out.sourceEntry = null
+    else if (typeof input.sourceEntry !== 'string' || input.sourceEntry === '' || input.sourceEntry.length > 64) fail('sourceEntry 不合法')
+    else out.sourceEntry = input.sourceEntry
+  }
+  if (kind === 'action' && mode === 'create' && isRecord(out.source) && out.source.kind === 'topic' && out.sourceEntry === undefined) {
+    fail('来源是课题时要写明问题条目 sourceEntry')
   }
   if (kind === 'action' && (input.status !== undefined || mode === 'create')) out.status = statusOf(input.status)
   if (kind === 'manuscript' && (input.stage !== undefined || mode === 'create')) out.stage = stageOf(input.stage)
@@ -372,7 +389,19 @@ export function storedProblem(value: unknown): string | null {
     const arraysProblem = courseArraysProblem(value)
     if (arraysProblem !== null) return arraysProblem
   }
+  if (value.kind === 'action') {
+    if (value.source !== undefined) {
+      if (!isRecord(value.source) || typeof value.source.id !== 'string' || value.source.id === '') return 'source 不合法'
+      if (value.source.kind !== 'meeting' && value.source.kind !== 'manuscript' && value.source.kind !== 'topic') return 'source.kind 不认识'
+    }
+    if (value.sourceEntry !== undefined && (typeof value.sourceEntry !== 'string' || value.sourceEntry === '')) return 'sourceEntry 不合法'
+    if (isRecord(value.source) && value.source.kind === 'topic' && typeof value.sourceEntry !== 'string') return '课题来源缺少问题条目'
+  }
   if (value.kind === 'chore' && (typeof value.status !== 'string' || !CHORE_STATUSES.includes(value.status as ChoreStatus))) return 'status 不认识'
+  if (value.kind === 'topic') {
+    const arraysProblem = topicArraysProblem(value)
+    if (arraysProblem !== null) return arraysProblem
+  }
   return null
 }
 

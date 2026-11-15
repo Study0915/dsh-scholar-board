@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ActionRecord, ChoreRecord, CourseRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ProjectRecord, ResearchRecord, ThesisRecord } from '@dsh-scholar-board/contracts'
+import type { ActionRecord, ChoreRecord, CourseRecord, DomainRecord, LiteratureRecord, ManuscriptRecord, MeetingRecord, ProjectRecord, ResearchRecord, ThesisRecord, TopicRecord } from '@dsh-scholar-board/contracts'
 import { openDrafts } from '../src/drafts/store'
 import { exportRecords, importRecords, previewRecords, readRecordsPackage } from '../src/records/exchange'
 import { registerRecords } from '../src/records/access'
@@ -87,6 +87,26 @@ function research(overrides: Record<string, unknown> = {}): Record<string, unkno
       { name: 'runtime', value: '820', unit: 's' },
     ],
     conclusion: '种子只影响小样本段的抖动，趋势一致',
+    ...overrides,
+  }
+}
+
+/** 一条课题的输入。 */
+function topic(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'topic',
+    title: '非平稳干扰下的多用户检测',
+    question: '干扰功率未知时还能不能写出闭式检测器',
+    goal: '给出可复现的推导与仿真口径',
+    hypothesis: '先把干扰建模成慢变过程，闭式解仍然存在',
+    judgment: '已知功率时有闭式解，未知功率时要迭代',
+    nextStep: '补一组 8 用户、64 天线的仿真',
+    questions: [
+      { id: 'q1', text: '慢变假设能覆盖多普勒范围吗', status: 'investigating' },
+      { id: 'q2', text: '迭代收敛次数能否给出上界', status: 'open' },
+    ],
+    related: [{ kind: 'research', id: 'research-1' }],
+    materials: [{ id: 'tm1', url: 'https://example.com/notes.pdf', title: '推导笔记' }],
     ...overrides,
   }
 }
@@ -317,6 +337,75 @@ describe('记录存储', () => {
     await expect(store.create(research({ parameters: [{ name: 'snr' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(research({ metrics: [{ name: 'ber', value: '1e-3', unit: 'x'.repeat(33) }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
     await expect(store.create(research({ related: [{ kind: 'meeting', id: 'meeting-1' }] }), ACTOR)).resolves.toMatchObject({ record: { related: [{ kind: 'meeting', id: 'meeting-1' }] } })
+  })
+
+  it('课题带目标、假设、判断与问题条目，行动项按来源条目幂等创建，搜索也看问题与判断', async () => {
+    const { store } = await open()
+    const created = await store.create(topic(), ACTOR)
+    const record = created.record as TopicRecord
+    expect(record).toMatchObject({
+      kind: 'topic',
+      goal: '给出可复现的推导与仿真口径',
+      hypothesis: '先把干扰建模成慢变过程，闭式解仍然存在',
+      judgment: '已知功率时有闭式解，未知功率时要迭代',
+    })
+    expect(record.questions).toEqual([
+      { id: 'q1', text: '慢变假设能覆盖多普勒范围吗', status: 'investigating' },
+      { id: 'q2', text: '迭代收敛次数能否给出上界', status: 'open' },
+    ])
+    expect(store.view({ kind: 'topic' }).records).toHaveLength(1)
+    expect(store.view({ search: '多普勒' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '闭式解' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '给出可复现' }).records.map((entry) => entry.id)).toEqual([record.id])
+    expect(store.view({ search: '慢变过程' }).records.map((entry) => entry.id)).toEqual([record.id])
+
+    const action = await store.create({
+      kind: 'action',
+      title: '慢变假设能覆盖多普勒范围吗',
+      status: 'todo',
+      source: { kind: 'topic', id: record.id },
+      sourceEntry: 'q1',
+    }, ACTOR)
+    // 同一来源与条目再点一次不会多出一条行动项。
+    const again = await store.create({
+      kind: 'action',
+      title: '慢变假设能覆盖多普勒范围吗',
+      status: 'todo',
+      source: { kind: 'topic', id: record.id },
+      sourceEntry: 'q1',
+    }, ACTOR)
+    expect(again.record.id).toBe(action.record.id)
+    expect(again.record.revision).toBe(action.record.revision)
+    expect(store.view({ kind: 'action' }).records).toHaveLength(1)
+    expect(store.view({ references: { kind: 'topic', id: record.id } }).records.map((entry) => entry.id)).toEqual([action.record.id])
+
+    const linked = await store.update(record.id, 1, {
+      questions: [
+        { id: 'q1', text: '慢变假设能覆盖多普勒范围吗', status: 'investigating', actionId: action.record.id },
+        { id: 'q2', text: '迭代收敛次数能否给出上界', status: 'resolved' },
+      ],
+    }, ACTOR)
+    expect((linked.record as TopicRecord).questions?.[0]).toEqual({
+      id: 'q1',
+      text: '慢变假设能覆盖多普勒范围吗',
+      status: 'investigating',
+      actionId: action.record.id,
+    })
+
+    await expect(store.create(topic({ questions: [{ id: 'q1', text: '  ', status: 'open' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(topic({ questions: [{ id: 'q1', text: '第一条', status: 'open' }, { id: 'q1', text: '重复', status: 'open' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(topic({ questions: [{ id: 'q1', text: '第一条', status: 'closed' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(topic({ questions: [{ id: 'q1', text: '第一条', status: 'open', actionId: 'a1' }, { id: 'q2', text: '第二条', status: 'open', actionId: 'a1' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(topic({ questions: [{ id: 'q1', text: '字'.repeat(2001), status: 'open' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(topic({
+      questions: Array.from({ length: 101 }, (_, index) => ({ id: `q${String(index)}`, text: '问题', status: 'open' })),
+    }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create({
+      kind: 'action',
+      title: '缺少问题条目',
+      status: 'todo',
+      source: { kind: 'topic', id: record.id },
+    }, ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
   it('毕业论文带章节、成果来源、待补实验与可配置的学位节点，搜索也看章节与节点', async () => {
