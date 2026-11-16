@@ -40,7 +40,9 @@ import {
   projectDeliverablesOf,
   projectIssuesOf,
   projectMilestonesOf,
+  projectRequirementsOf,
   projectTasksOf,
+  requirementChangesOf,
 } from './project-validate'
 import { CHORE_STATUSES, categoryOf, choreStatusOf, courseArraysProblem, courseTermOf, courseWorkOf } from './study-validate'
 
@@ -64,7 +66,7 @@ const WRITABLE: Record<RecordKind, readonly string[]> = {
   literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'format', 'doi', 'arxivId', 'arxivVersion', 'versions', 'reading', 'external', 'related', 'materials'],
   research: ['title', 'method', 'question', 'purpose', 'hypothesis', 'steps', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'conclusionBasis', 'conclusionScope', 'conclusionEvidence', 'related', 'materials', 'template'],
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
-  project: ['title', 'summary', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
+  project: ['title', 'summary', 'requirements', 'requirementChanges', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
   course: ['title', 'term', 'code', 'teacher', 'schedule', 'notes', 'work', 'related', 'materials'],
   chore: ['title', 'category', 'status', 'due', 'note', 'related', 'materials'],
   topic: ['title', 'question', 'goal', 'hypothesis', 'judgment', 'nextStep', 'questions', 'related', 'materials'],
@@ -494,6 +496,8 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.deliverables !== undefined) out.deliverables = projectDeliverablesOf(input.deliverables, 'deliverables')
   if (input.communications !== undefined) out.communications = projectCommunicationsOf(input.communications, 'communications')
   if (input.issues !== undefined) out.issues = projectIssuesOf(input.issues, 'issues')
+  if (input.requirements !== undefined) out.requirements = projectRequirementsOf(input.requirements, 'requirements')
+  if (input.requirementChanges !== undefined) out.requirementChanges = requirementChangesOf(input.requirementChanges, 'requirementChanges')
   if (input.term !== undefined || (kind === 'course' && mode === 'create')) out.term = courseTermOf(input.term, 'term')
   if (input.work !== undefined) out.work = courseWorkOf(input.work, 'work')
   if (input.code !== undefined) out.code = kind === 'run' ? runCodeOf(input.code) : textOf(input.code, 'code')

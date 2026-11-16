@@ -31,9 +31,11 @@
   },
   "scripts": [
     "project-model.js",
+    "requirements.js",
     "copy.js",
     "view.js",
     "rows.js",
+    "deep-rows.js",
     "editor.js"
   ],
   "props": {
@@ -390,8 +392,8 @@
       "en": "Remove"
     },
     "invalidRows": {
-      "zh": "事项、交付物、沟通、节点与问题要填完整；交付物要写名称与版本，版本不超过 32 字，节点名称不超过 60 字。",
-      "en": "Tasks, deliverables, notes, milestones and questions must be complete; deliverables need a name and a version within 32 characters, and milestone names stay within 60 characters."
+      "zh": "事项、交付物、沟通、节点、问题、需求与变更要填完整；交付物要写名称与版本，版本不超过 32 字，节点名称不超过 60 字。",
+      "en": "Tasks, deliverables, notes, milestones, questions, requirements and changes must be complete; deliverables need a name and a version within 32 characters, and milestone names stay within 60 characters."
     },
     "close": {
       "zh": "关闭",
@@ -468,6 +470,366 @@
     "titleRequired": {
       "zh": "标题不能是空的。",
       "en": "The title is required."
+    },
+    "saveFirst": {
+      "zh": "先保存这条项目，再转行动项。",
+      "en": "Save the project before creating an action."
+    },
+    "requirements": {
+      "zh": "需求清单",
+      "en": "Requirements"
+    },
+    "requirementsCount": {
+      "zh": "需求 {n}",
+      "en": "{n} requirements"
+    },
+    "addRequirement": {
+      "zh": "添加需求",
+      "en": "Add requirement"
+    },
+    "requirementNo": {
+      "zh": "编号",
+      "en": "No."
+    },
+    "requirementTitle": {
+      "zh": "需求标题",
+      "en": "Requirement"
+    },
+    "requirementVersion": {
+      "zh": "版本",
+      "en": "Version"
+    },
+    "requirementStatus": {
+      "zh": "需求状态",
+      "en": "Requirement status"
+    },
+    "requirementPending": {
+      "zh": "待确认",
+      "en": "Pending"
+    },
+    "requirementConfirmed": {
+      "zh": "已确认",
+      "en": "Confirmed"
+    },
+    "requirementCancelled": {
+      "zh": "已取消",
+      "en": "Cancelled"
+    },
+    "requirementDescription": {
+      "zh": "需求描述",
+      "en": "Description"
+    },
+    "requirementMetric": {
+      "zh": "验收指标",
+      "en": "Metric"
+    },
+    "requirementUnit": {
+      "zh": "单位",
+      "en": "Unit"
+    },
+    "requirementThreshold": {
+      "zh": "阈值或判定",
+      "en": "Threshold or judgement"
+    },
+    "requirementTestMethod": {
+      "zh": "测试方法",
+      "en": "Test method"
+    },
+    "requirementSources": {
+      "zh": "来源记录",
+      "en": "Sources"
+    },
+    "requirementSourceKind": {
+      "zh": "记录类型",
+      "en": "Record kind"
+    },
+    "requirementSourceId": {
+      "zh": "记录 id",
+      "en": "Record id"
+    },
+    "addSource": {
+      "zh": "添加来源",
+      "en": "Add source"
+    },
+    "sourceMissing": {
+      "zh": "来源已不在",
+      "en": "Source missing"
+    },
+    "requirementMaterials": {
+      "zh": "需求材料",
+      "en": "Requirement materials"
+    },
+    "requirementTasks": {
+      "zh": "关联事项",
+      "en": "Linked tasks"
+    },
+    "requirementTasksHint": {
+      "zh": "事项在下面「负责事项」里勾选关联需求；需求升版不影响已建立的事项。",
+      "en": "Link tasks to a requirement in My tasks below; raising the version leaves existing tasks as they are."
+    },
+    "requirementTemplates": {
+      "zh": "模板",
+      "en": "Templates"
+    },
+    "tplAlgorithm": {
+      "zh": "算法实现",
+      "en": "Algorithm"
+    },
+    "tplSimulation": {
+      "zh": "仿真验证",
+      "en": "Simulation"
+    },
+    "tplPrototype": {
+      "zh": "原型软件",
+      "en": "Prototype software"
+    },
+    "tplTestReport": {
+      "zh": "测试报告",
+      "en": "Test report"
+    },
+    "tplTechnical": {
+      "zh": "技术报告",
+      "en": "Technical report"
+    },
+    "tplDemo": {
+      "zh": "演示材料",
+      "en": "Demo materials"
+    },
+    "applyTemplate": {
+      "zh": "套用模板",
+      "en": "Use template"
+    },
+    "requirementChanges": {
+      "zh": "需求变更",
+      "en": "Requirement changes"
+    },
+    "addChange": {
+      "zh": "记录变更",
+      "en": "Record change"
+    },
+    "changeRequirement": {
+      "zh": "需求",
+      "en": "Requirement"
+    },
+    "changeFrom": {
+      "zh": "原版本",
+      "en": "From"
+    },
+    "changeTo": {
+      "zh": "新版本",
+      "en": "To"
+    },
+    "changeAt": {
+      "zh": "变更日期",
+      "en": "Date"
+    },
+    "changeReason": {
+      "zh": "变更原因",
+      "en": "Reason"
+    },
+    "changeImpact": {
+      "zh": "影响范围",
+      "en": "Impact"
+    },
+    "changeCommunication": {
+      "zh": "沟通依据",
+      "en": "Communication basis"
+    },
+    "changeConfirmation": {
+      "zh": "确认情况",
+      "en": "Confirmation"
+    },
+    "applyChange": {
+      "zh": "应用变更",
+      "en": "Apply change"
+    },
+    "changeApplied": {
+      "zh": "已应用变更",
+      "en": "Change applied"
+    },
+    "versionConflict": {
+      "zh": "新版本要和原版本不同，且需求要选对。",
+      "en": "Pick a requirement and a new version that differs from the old one."
+    },
+    "delivery": {
+      "zh": "交付与验收",
+      "en": "Delivery and acceptance"
+    },
+    "deliverableRequirements": {
+      "zh": "依据需求",
+      "en": "Requirement basis"
+    },
+    "deliverableRequirementPick": {
+      "zh": "选择需求",
+      "en": "Choose a requirement"
+    },
+    "testReports": {
+      "zh": "测试报告",
+      "en": "Test reports"
+    },
+    "testReportsCount": {
+      "zh": "{n} 份测试报告",
+      "en": "{n} test reports"
+    },
+    "testReportUrl": {
+      "zh": "报告地址",
+      "en": "Report URL"
+    },
+    "testReportTitle": {
+      "zh": "报告说明",
+      "en": "Report title"
+    },
+    "addTestReport": {
+      "zh": "添加测试报告",
+      "en": "Add test report"
+    },
+    "limitations": {
+      "zh": "已知限制",
+      "en": "Known limitations"
+    },
+    "deliveredAt": {
+      "zh": "交付时间",
+      "en": "Delivered at"
+    },
+    "acceptances": {
+      "zh": "验收记录",
+      "en": "Acceptance records"
+    },
+    "acceptanceOpinion": {
+      "zh": "验收意见",
+      "en": "Opinion"
+    },
+    "acceptancePassed": {
+      "zh": "通过",
+      "en": "Passed"
+    },
+    "acceptanceFailed": {
+      "zh": "未通过",
+      "en": "Failed"
+    },
+    "acceptancePending": {
+      "zh": "待补事项",
+      "en": "To fix"
+    },
+    "addAcceptance": {
+      "zh": "记录验收",
+      "en": "Add acceptance"
+    },
+    "acceptanceCount": {
+      "zh": "验收 {passed} 通过 / {failed} 未通过",
+      "en": "Accepted {passed} / failed {failed}"
+    },
+    "freeze": {
+      "zh": "冻结材料",
+      "en": "Freeze materials"
+    },
+    "frozen": {
+      "zh": "冻结于 {date}",
+      "en": "Frozen at {date}"
+    },
+    "freezeEmpty": {
+      "zh": "没有可冻结的测试报告或材料。",
+      "en": "No test reports or materials to freeze."
+    },
+    "evidenceBasis": {
+      "zh": "依据 {versions}",
+      "en": "Basis {versions}"
+    },
+    "chain": {
+      "zh": "追溯",
+      "en": "Traceability"
+    },
+    "chainHint": {
+      "zh": "需求、事项、测试、交付与验收在同一处核对；这里不判断合同履约，也不管审批与经费。",
+      "en": "Requirement, tasks, tests, delivery and acceptance in one place; contract acceptance, approval and budget stay out of scope."
+    },
+    "chainEmpty": {
+      "zh": "没有可追溯的需求。",
+      "en": "No requirement to trace."
+    },
+    "chainTasks": {
+      "zh": "事项",
+      "en": "Tasks"
+    },
+    "chainDeliveries": {
+      "zh": "交付",
+      "en": "Deliveries"
+    },
+    "chainChanges": {
+      "zh": "变更",
+      "en": "Changes"
+    },
+    "chainMissing": {
+      "zh": "引用的需求不在清单里：{ids}",
+      "en": "Referenced requirements missing: {ids}"
+    },
+    "chainNoTasks": {
+      "zh": "没有关联事项",
+      "en": "No linked tasks"
+    },
+    "chainNoDeliveries": {
+      "zh": "没有交付",
+      "en": "No deliveries"
+    },
+    "chainNoChanges": {
+      "zh": "没有变更",
+      "en": "No changes"
+    },
+    "chainBound": {
+      "zh": "依据 {version}",
+      "en": "Basis {version}"
+    },
+    "chainAcceptance": {
+      "zh": "验收",
+      "en": "Acceptance"
+    },
+    "toAction": {
+      "zh": "转行动项",
+      "en": "To action"
+    },
+    "actionLinked": {
+      "zh": "已关联行动项",
+      "en": "Action linked"
+    },
+    "actionFailed": {
+      "zh": "创建行动项失败",
+      "en": "Could not create the action"
+    },
+    "convertPreview": {
+      "zh": "将新建行动项「{title}」；同一来源已有时回到原事项。",
+      "en": "A new action \"{title}\" will be created; an existing one from the same entry is reused."
+    },
+    "requirementPick": {
+      "zh": "不关联需求",
+      "en": "No requirement"
+    },
+    "sourceKindMeeting": {
+      "zh": "会议",
+      "en": "Meeting"
+    },
+    "sourceKindAction": {
+      "zh": "行动项",
+      "en": "Action"
+    },
+    "sourceKindManuscript": {
+      "zh": "稿件",
+      "en": "Manuscript"
+    },
+    "sourceKindResearch": {
+      "zh": "课题",
+      "en": "Topic"
+    },
+    "sourceKindProject": {
+      "zh": "横向项目",
+      "en": "Project"
+    },
+    "invalidRequirement": {
+      "zh": "需求要有标题、版本与状态；变更要有需求、前后版本与原因。",
+      "en": "Requirements need a title, version and status; changes need a requirement, both versions and a reason."
+    },
+    "invalidDelivery": {
+      "zh": "交付依据、测试报告与验收记录要填完整：验收意见必填，报告要写地址与说明。",
+      "en": "Delivery basis, test reports and acceptances must be complete: acceptances need an opinion and reports need a URL and title."
     }
   }
 }

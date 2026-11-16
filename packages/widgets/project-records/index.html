@@ -48,6 +48,18 @@
       </label>
 
       <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-requirements">需求清单</legend>
+        <ul class="pj__line-list" data-role="requirements"></ul>
+        <button class="pj__ghost" type="button" data-action="add-requirement">添加需求</button>
+      </fieldset>
+
+      <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-changes">需求变更</legend>
+        <ul class="pj__line-list" data-role="changes"></ul>
+        <button class="pj__ghost" type="button" data-action="add-change">记录变更</button>
+      </fieldset>
+
+      <fieldset class="pj__group">
         <legend class="pj__label" data-role="label-tasks">负责事项</legend>
         <ul class="pj__line-list" data-role="tasks"></ul>
         <button class="pj__ghost" type="button" data-action="add-task">添加事项</button>
@@ -76,6 +88,12 @@
         <legend class="pj__label" data-role="label-issues">待确认问题</legend>
         <ul class="pj__line-list" data-role="issues"></ul>
         <button class="pj__ghost" type="button" data-action="add-issue">添加问题</button>
+      </fieldset>
+
+      <fieldset class="pj__group">
+        <legend class="pj__label" data-role="label-chain">追溯</legend>
+        <div data-role="chain"></div>
+        <p class="pj__note-line" data-role="chain-hint"></p>
       </fieldset>
 
       <fieldset class="pj__group">

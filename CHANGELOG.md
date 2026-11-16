@@ -11,6 +11,7 @@
 <h3 id="cn-unreleased">新增功能</h3>
 
 - 小论文卡的投稿轮次增加期限、用户定义的材料检查表与冻结时间：检查项有稳定 id、标签、缺/已就绪状态与可选版本说明，一轮最多 40 项；冻结只写日期并锁住该轮的检查表、期限与版本控件，解冻由人再点一次，旧轮次不被后续编辑覆盖。修回条目增加审稿人称呼、意见编号、修改位置、回复草稿与不采纳理由，标为不采纳时理由必填；意见可转行动项，按稿件与修回条目 id 重复点击回到已有行动项。按选定轮次导出 Markdown，逐项列出检查表、缺失数、意见、改动、回复、证据标题与缺失项。毕业论文的章节可关联课题、稿件与研究记录，待补实验可写方案并指向行动项，完成状态仍由人维护。记录契约、宿主读写校验、检索、导出导入、两张卡片与单元测试同步覆盖，旧投稿记录照常读取。
+- 横向项目卡的 project 记录增加需求与版本变更：每条需求有稳定 id、编号、标题、描述、版本、待确认/已确认/已取消状态、来源记录与材料、验收指标、单位、阈值、测试方法、关联事项和转行动项；需求变更只追加前后版本、原因、日期、影响、沟通依据与确认情况，旧版本不被原位覆盖。交付物可绑定需求及建立时的版本、单列测试报告、写明已知限制与实际交付日期，并保留每一次验收（通过与否、意见、待补事项）与冻结的材料清单快照；需求后来升级不改写旧交付的依据。项目事项、待确认问题与需求都可以转成共享行动项，按稳定来源去重。宿主校验、检索、导出导入重映射、项目卡列表与详情、编辑面板和单元测试同步覆盖，旧记录没有这些字段照常读写。
 
 ### 问题修复
 
@@ -19,6 +20,7 @@
 <h3 id="en-unreleased">New Features</h3>
 
 - Manuscript submission rounds now carry a deadline, a user-defined material checklist and a freeze date: each check has a stable id, label, missing/ready status and optional version note, up to 40 per round; freezing records the date and locks that round's checklist, deadline and version controls until a person unfreezes it, so older rounds are not overwritten by later edits. Revision items gained reviewer, comment number, location, reply draft and a decline reason, which is required when an item is marked declined; an item can be converted to an action, and repeated clicks return to the existing action for the same manuscript and item. A selected round exports to Markdown with the checklist, missing count, comments, changes, replies, evidence titles and missing items. Thesis chapters can link topics, manuscripts and research notes, and experiments can record a plan and link an action, while completion stays manual. Contracts, host validation, search, export/import, both cards and unit tests cover the new fields, and older submission records still load.
+- Project records now carry requirements and versioned requirement changes: each requirement has a stable id, number, title, description, version, pending/confirmed/cancelled status, source records and materials, acceptance metric, unit, threshold, test method, linked tasks and an action link; changes only append the from/to versions, reason, date, impact, communication basis and user-recorded confirmation, never overwriting older versions. Deliverables can bind requirement ids with the version at creation time, list test reports separately, record known limitations and the actual delivery date, and keep every acceptance (pass/fail, opinion, pending items) plus a frozen material snapshot, so a later requirement upgrade does not rewrite the basis of an older delivery. Project tasks, open questions and requirements can each become a shared action, deduplicated by stable source. Host validation, search, export/import remapping, the project card list and detail view, the editor and unit tests cover the new fields, and older records without them still load.
 
 ### Bug Fixes
 

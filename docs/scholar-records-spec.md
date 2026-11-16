@@ -291,6 +291,8 @@ S07 补齐。横向项目记录的是「我负责什么、交付到哪、和谁�
 |---|---|---|---|
 | title | string ≤200 | 是 | 项目名称 |
 | summary | string | 否 | 需求摘要，一段短文本 |
+| requirements | `ProjectRequirement[]` | 否 | 需求与验收口径（S18） |
+| requirementChanges | `ProjectRequirementChange[]` | 否 | 需求版本变更（S18） |
 | tasks | `ProjectTask[]` | 否 | 个人负责的事项 |
 | deliverables | `ProjectDeliverable[]` | 否 | 交付物及其版本 |
 | communications | `ProjectCommunication[]` | 否 | 沟通结论，来源会议走 `related` |
@@ -299,13 +301,15 @@ S07 补齐。横向项目记录的是「我负责什么、交付到哪、和谁�
 | related | `Ref[]` | 否 | 十一种可关联类型互指，模板不参与（S11、S13） |
 | materials | `MaterialRef[]` | 否 | 需求摘要、方案与交付材料的链接 |
 
-- `ProjectTask` 为 `{ id, title ≤200, status, due?, note?, materials? }`。`status` 只能是待办 todo、进行中 doing、受阻 blocked、完成 done。
-- `ProjectDeliverable` 为 `{ id, name ≤200, version ≤32, status, due?, note?, materials? }`。`status` 只能是草稿 draft、评审中 review、已交付 delivered、已验收 accepted；版本按文字原样保存（如 `v0.3`、`草案 1`），宿主不解析也不排序。
+- `ProjectTask` 为 `{ id, title ≤200, status, due?, note?, materials?, requirement?, actionId? }`。`status` 只能是待办 todo、进行中 doing、受阻 blocked、完成 done。`requirement` 指向本项目的一条需求 id，需求删除后保留原值并在详情标为缺失；`actionId` 指向由该事项转出的共享行动项，重复点击回到同一条。
+- `ProjectDeliverable` 为 `{ id, name ≤200, version ≤32, status, due?, note?, materials?, requirements?, testReports?, limitations?, deliveredAt?, acceptances?, frozen? }`。`status` 只能是草稿 draft、评审中 review、已交付 delivered、已验收 accepted；版本按文字原样保存（如 `v0.3`、`草案 1`），宿主不解析也不排序。`requirements` 是建立交付物时绑定的需求 id 与版本，需求后来升级也不改写这份依据；`testReports` 是测试报告材料，与实现材料分开列；`limitations` 是已知限制（≤1000）；`deliveredAt` 是实际交付日期，与计划 `due` 分开；`acceptances` 是验收记录（每项含 id、可选日期、必填意见、通过与否、可选待补事项），失败也留档；`frozen` 是材料清单快照（必填冻结日期与材料引用），只存引用与当时字段，不复制外部正文。
+- `ProjectRequirement` 为 `{ id, no?, title ≤200, description?, version ≤32, status, sources?, materials?, metric?, unit?, threshold?, testMethod?, tasks?, actionId? }`。`status` 只能是待确认 pending、已确认 confirmed、已取消 cancelled；`description ≤2000`、`metric ≤200`、`unit ≤32`、`threshold ≤400`、`testMethod ≤1000`。`sources` 指向来源记录，`tasks` 指向服务这条需求的事项 id（去重，删除后保留并在追溯区标缺失）；`actionId` 指向由需求转出的共享行动项。每条记录的 `requirements` 最多 100 项。
+- `ProjectRequirementChange` 为 `{ id, requirementId, fromVersion ≤32, toVersion ≤32, at?, reason, impact?, communication?, confirmation? }`。`reason` 必填（≤2000），`impact` 与 `communication` 各 ≤2000，`confirmation ≤200`；变更只追加，不改写旧版本。每条记录最多 200 条变更。
 - `ProjectCommunication` 为 `{ id, summary ≤200, at?, note? }`。`summary` 是一句话结论；沟通来源的会议通过 `related` 指向会议记录，不复制会议正文。
 - `ProjectMilestone` 为 `{ id, label ≤60, status, due?, note? }`，`status` 只能是待办 todo、进行中 doing、完成 done。节点名称、日期与状态都由用户维护，不预设合同规则，也不判断合同履约。
-- `ProjectIssue` 为 `{ id, title ≤200, status, note? }`，`status` 只能是待确认 open、沟通中 doing、已解决 resolved。
+- `ProjectIssue` 为 `{ id, title ≤200, status, note?, actionId? }`，`status` 只能是待确认 open、沟通中 doing、已解决 resolved；`actionId` 指向由该问题转出的共享行动项。
 - 默认模板不收合同金额、报价、付款节点与其他敏感业务详情；多人审批与经费管理另行决定。事项、交付物、节点与问题是否完成都由用户维护，界面不按日期推断。
-- 搜索匹配需求摘要、事项标题与说明、交付物名称与版本、沟通结论与说明、节点名称、问题标题与说明，以及材料和关联记录。
+- 搜索匹配需求摘要、需求编号与验收口径、需求变更原因与影响、事项标题与说明、交付物名称、版本与已知限制、验收意见与待补事项、沟通结论与说明、节点名称、问题标题与说明，以及材料和关联记录（S18）。
 - 列表行显示事项进度、未解决问题数与最近的验收节点，以及第一件交付物及其版本；没有节点时写「没有未完成的验收节点」。
 
 ### 课程 course

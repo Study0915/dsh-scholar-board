@@ -236,6 +236,11 @@
   color: var(--w-tone-ok, #067647);
 }
 
+.pj__tag[data-tone="danger"] {
+  background: color-mix(in srgb, var(--w-tone-danger, #b42318) 12%, transparent);
+  color: var(--w-tone-danger, #b42318);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .pj__row:hover .pj__row-title {
     color: var(--w-color-accent, #2563eb);
@@ -400,6 +405,112 @@
 }
 
 .pj__note-line {
+  margin: 0;
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.pj__line-requirement,
+.pj__line-change,
+.pj__line-deliverable {
+  flex-wrap: wrap;
+}
+
+.pj__line-requirement-pick {
+  flex: 0 0 132px;
+  min-width: 0;
+}
+
+.pj__deep {
+  flex: 1 1 100%;
+  min-width: 0;
+  border-top: 1px dashed color-mix(in srgb, var(--w-color-fg, #0b1016) 10%, transparent);
+  padding-top: 2px;
+}
+
+.pj__deep-summary {
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.pj__deep-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--w-space-xs, 4px);
+  margin: var(--w-space-xs, 4px) 0;
+}
+
+.pj__deep-field {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pj__deep-label {
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.pj__deep-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pj__deep-item {
+  display: flex;
+  align-items: center;
+  gap: var(--w-space-xs, 4px);
+  min-width: 0;
+  font-size: 12px;
+}
+
+.pj__deep-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pj__deep-meta,
+.pj__deep-empty,
+.pj__deep-hint {
+  margin: 0;
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.pj__deep-title {
+  margin: 6px 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.pj__chain {
+  border-top: 1px dashed color-mix(in srgb, var(--w-color-fg, #0b1016) 10%, transparent);
+  padding: var(--w-space-xs, 4px) 0;
+}
+
+.pj__chain-head {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.pj__chain-line {
   margin: 0;
   color: var(--w-color-muted, #6b7684);
   font-size: 11px;

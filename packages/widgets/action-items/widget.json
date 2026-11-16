@@ -74,6 +74,7 @@
     "sourceMeeting": { "zh": "来自会议", "en": "From meeting" },
     "sourceManuscript": { "zh": "来自小论文", "en": "From manuscript" },
     "sourceTopic": { "zh": "来自课题", "en": "From topic" },
+    "sourceProject": { "zh": "来自横向项目", "en": "From project" },
     "sourceMissing": { "zh": "来源缺失", "en": "Source missing" },
     "sourceTrashed": { "zh": "来源已在回收站", "en": "Source in trash" },
     "sourceEntryMissing": { "zh": "问题条目已移除", "en": "Question entry removed" },
