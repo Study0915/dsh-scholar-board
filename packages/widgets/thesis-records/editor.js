@@ -68,7 +68,7 @@
       for (var at = 0; at < fields.length; at += 1) if (fields[at] !== null) fields[at].disabled = trashed
       var buttons = ctx.card.querySelectorAll('[data-action="add-chapter"], [data-action="add-result"], [data-action="add-experiment"], [data-action="add-milestone"], [data-action="add-action"], [data-action="add-material"]')
       for (var buttonAt = 0; buttonAt < buttons.length; buttonAt += 1) buttons[buttonAt].disabled = trashed
-      var nested = ctx.card.querySelectorAll('.ts__line input, .ts__line select, .ts__line-remove, .ts__related-remove, .ts__material-remove')
+      var nested = ctx.card.querySelectorAll('.ts__line input, .ts__line select, .ts__line textarea, .ts__line-remove, .ts__link-remove, .ts__related-remove, .ts__material-remove')
       for (var nestedAt = 0; nestedAt < nested.length; nestedAt += 1) nested[nestedAt].disabled = trashed
       nodes.saveButton.disabled = trashed
       nodes.saveButton.textContent = t('save')
@@ -83,6 +83,9 @@
 
     function openRecord(record) {
       app.related = Array.isArray(record.related) ? record.related.slice() : []
+      app.sources = []
+      app.topics = []
+      app.actions = []
       app.editing = true
       app.baseline = record
       app.draftId = null
@@ -98,6 +101,9 @@
 
     function openNew() {
       app.related = []
+      app.sources = []
+      app.topics = []
+      app.actions = []
       app.editing = true
       app.baseline = null
       app.draftId = null
@@ -111,19 +117,21 @@
       })
     }
 
-    /** 可选的稿件、研究记录与行动项；读不到时保留空列表，成果来源会显式显示缺失。 */
+    /** 可选的稿件、研究记录、行动项与课题；读不到时保留空列表，成果来源会显式显示缺失。 */
     function loadSources() {
       if (!live) return
-      var kinds = ['manuscript', 'research', 'action']
+      var kinds = ['manuscript', 'research', 'action', 'topic']
       var requests = kinds.map(function (kind) {
         return widget.call(READ, { kind: kind, includeArchived: true })
       })
       Promise.all(requests).then(function (results) {
         var sources = []
         var actions = []
+        var topics = []
         var manuscripts = results[0] !== null && typeof results[0] === 'object' && Array.isArray(results[0].records) ? results[0].records : []
         var research = results[1] !== null && typeof results[1] === 'object' && Array.isArray(results[1].records) ? results[1].records : []
         actions = results[2] !== null && typeof results[2] === 'object' && Array.isArray(results[2].records) ? results[2].records : []
+        topics = results[3] !== null && typeof results[3] === 'object' && Array.isArray(results[3].records) ? results[3].records : []
         sources = manuscripts.concat(research)
         app.sources = sources.filter(function (entry) {
           return entry !== null && typeof entry === 'object' && typeof entry.id === 'string'
@@ -131,7 +139,12 @@
         app.actions = actions.filter(function (entry) {
           return entry !== null && typeof entry === 'object' && typeof entry.id === 'string'
         })
+        app.topics = topics.filter(function (entry) {
+          return entry !== null && typeof entry === 'object' && typeof entry.id === 'string'
+        })
         rows.renderResults()
+        rows.renderChapters()
+        rows.renderExperiments()
         rows.renderActionOptions()
         rows.renderRelated()
         showDetail(app.baseline, false)

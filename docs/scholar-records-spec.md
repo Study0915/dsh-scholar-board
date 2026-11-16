@@ -98,10 +98,14 @@ S05 补齐三个内嵌数组，反馈、改动与证据在同一条稿件里串�
 
 - `ManuscriptFigure` 为 `{ id, kind: 'figure'|'table', label ≤32, title ≤200, note?, runs?, plot?, conclusion?, materials? }`。`label` 是「图 1」「表 2」这样的编号，`title` 是图表标题；没有图表时不写这个字段，界面不虚构编号。S14 起 `runs` 引用这条图对应的运行（每条 `{ kind: 'run', id }`，单图 ≤20 条、id 不重复），`plot` 记录绘图代码的 `{ repository?, commit? }`，`conclusion` 是图表结论说明；仓库、提交与结论都只是文字记录，不拉取代码、不执行绘图。
 - 图表编号保留原形：排序、筛选与新增不改写已有 `label`，也不自动重编号。
-- `SubmissionRound` 为 `{ id, venue, decision, submittedAt?, decidedAt?, note? }`。`decision` 只能是待定 pending、小修 minor、大修 major、接收 accepted、拒稿 rejected、撤稿 withdrawn、转投 transferred；日期沿用 `Due` 形状。
-- `RevisionItem` 为 `{ id, roundId, feedback, change?, status, materials? }`。`roundId` 必须指向本稿件 `submissions` 里的一轮；`status` 只能是待改 todo、处理中 doing、已完成 done、不改 declined。`feedback` 必填且不超过 2000 字符，`change` 与证据可留空。
+- `SubmissionRound` 为 `{ id, venue, decision, submittedAt?, decidedAt?, deadline?, checklist?, frozenAt?, note? }`。`decision` 只能是待定 pending、小修 minor、大修 major、接收 accepted、拒稿 rejected、撤稿 withdrawn、转投 transferred；日期沿用 `Due` 形状。S17 起一轮还能写投稿期限 `deadline`、用户定义的材料检查表 `checklist` 与冻结时间 `frozenAt`。
+- 检查项 `SubmissionCheckItem` 为 `{ id, label ≤200, status, version? }`，`status` 只能是缺 missing、已就绪 ready；`label` 由用户定义（正文、补充材料、声明、图表、代码数据说明等），`version` 是材料版本说明，不超过 80 字符。一轮最多 40 项，id 在一轮内唯一；具体期刊要求由用户维护，不把通用模板当强制规定。
+- 冻结只记 `frozenAt` 这个日期，表示当轮提交材料清单与版本说明不再改；界面在冻结后锁住该轮的检查表、期限与版本控件，解冻只是人再点一次，旧轮次的清单不被后续编辑覆盖。提交与接收状态仍由用户维护，不登录投稿系统。
+- `RevisionItem` 为 `{ id, roundId, reviewer?, commentNo?, feedback, change?, location?, reply?, status, reason?, actionId?, materials? }`。`roundId` 必须指向本稿件 `submissions` 里的一轮；`status` 只能是待改 todo、处理中 doing、已完成 done、不改 declined。`feedback` 必填且不超过 2000 字符，`change`、`reply` 与证据可留空；`reviewer`（审稿人称呼，≤80）、`commentNo`（意见编号，≤40）与 `location`（修改位置，≤200）都是文字记录。`status` 为 declined 时 `reason` 必填；`actionId` 指向由这条意见转出的行动项，重复点击回到同一条，行动项完成不自动表示回复已完成。
+- 意见转行动项时 `source` 写 `{ kind: 'manuscript', id }`、`sourceEntry` 写修回条目 id，与课题问题转行动项同一套幂等规则。
 - 删除一轮投稿时，界面连带移除指向该轮的修回事项；宿主在读盘时也拒绝指向不存在轮次的记录。修回已完成但没写改动或没附证据时，界面写「未记改动」「未附证据」，不用具名结论顶替。
-- 搜索匹配图表编号、标题、备注、结论说明、绘图代码仓库与提交，以及图表材料标题，轮次的刊会与备注，修回的反馈、改动与材料标题。
+- 按选定轮次导出 Markdown：轮次刊会、决定、投稿与决定日期、期限、冻结日期与说明，检查表逐项写 `[x]`/`[ ]`、版本与缺失数，再列该轮每条意见的审稿人、编号、反馈、位置、改动、回复、不采纳理由、关联行动项与证据标题；导出只是文本，不改记录。
+- 搜索匹配图表编号、标题、备注、结论说明、绘图代码仓库与提交，以及图表材料标题，轮次的刊会与备注、检查项标签与版本，修回的反馈、改动、审稿人、编号、位置、回复、理由与材料标题。
 
 ### 文献 literature
 
@@ -272,11 +276,11 @@ S06 补齐。毕业论文记录的是「写到哪、还差什么、材料在哪�
 | related | `Ref[]` | 否 | 十一种可关联类型互指，模板不参与（S11、S13） |
 | materials | `MaterialRef[]` | 否 | 论文提纲、图表与全文的链接 |
 
-- `ThesisChapter` 为 `{ id, title ≤200, status, question?, note? }`。`status` 只能是计划 planned、撰写 drafting、修订 revising、完成 done；章节顺序就是数组顺序，宿主不重排也不补编号。
+- `ThesisChapter` 为 `{ id, title ≤200, status, question?, note?, links? }`。`status` 只能是计划 planned、撰写 drafting、修订 revising、完成 done；章节顺序就是数组顺序，宿主不重排也不补编号。S17 起章节可用 `links` 关联课题、稿件与研究记录（每条 `{ kind, id }`，最多 20 条、同一记录只留一次），界面的下拉只列这三类可选项，来源不在时照常显示原 id。
 - `ThesisResult` 为 `{ id, kind: 'manuscript'|'research', recordId, note? }`。成果只存来源记录的 id，指向稿件或研究记录；来源还没建好时也允许保存，读的时候界面显示「来源缺失」，不级联删除也不改写成一段文字摘要。
-- `ThesisExperiment` 为 `{ id, title ≤200, status, note? }`，`status` 只能是待补 todo、进行中 doing、完成 done。
+- `ThesisExperiment` 为 `{ id, title ≤200, status, plan?, actionId?, note? }`，`status` 只能是待补 todo、进行中 doing、完成 done。`plan` 是实验方案（不超过 2000 字符），`actionId` 指向关联行动项；完成行动项不自动把实验标成完成，实验状态仍由用户维护。
 - `ThesisMilestone` 为 `{ id, label ≤60, status, due?, note? }`，`status` 与待补实验相同。`label` 是用户给节点起的名字（如「预答辩」），`due` 沿用 `Due` 形状。学位要求由用户维护，不预设学校规则，也不根据节点完成情况判断毕业资格。
-- 搜索匹配章节标题、问题与说明，成果来源的说明，待补实验与学位节点的标题、说明，以及论文问题与关联行动项。列表行显示章节进度、未完成实验数与最近的学位节点；没有节点时写「未定节点」。
+- 搜索匹配章节标题、问题与说明，成果来源的说明，待补实验的标题、方案与说明，学位节点的标题、说明，以及论文问题与关联行动项。列表行显示章节进度、未完成实验数与最近的学位节点；没有节点时写「未定节点」。
 - 材料只是链接，不复制文件、不下载；一个节点或实验是否算完成由用户勾选，界面不按日期推断。
 
 ### 横向项目 project
@@ -377,7 +381,9 @@ S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查�
 | 单条 figure.runs（图表引用运行，id 在图表内唯一） | 20 |
 | 单条 conclusionEvidence（结论证据，id 不重复） | 50 |
 | 单条 submissions | 50 |
+| 单条 submission.checklist（检查项，id 在一轮内唯一） | 40 |
 | 单条 revisions | 200 |
+| 单条 chapters 的 links（同一记录只留一次） | 20 |
 | 单条 stageHistory | 200 |
 | 单条 chapters / results / experiments | 各 100 |
 | 单条 tasks / deliverables / communications / issues | 各 100 |

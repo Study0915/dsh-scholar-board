@@ -99,6 +99,7 @@
         <p class="ms__empty-hint" data-role="submissions-empty" hidden>还没有投稿记录。</p>
         <ul class="ms__deep-list" data-role="submissions"></ul>
         <button class="ms__ghost" type="button" data-action="add-round" data-deep>添加投稿</button>
+        <button class="ms__ghost" type="button" data-action="export-markdown" data-deep>导出 Markdown</button>
       </section>
       <section class="ms__deep" data-role="revisions-section">
         <h3 class="ms__label" data-role="label-revisions">修回事项</h3>
@@ -136,6 +137,20 @@
     <div class="ms__dialog-actions">
       <button class="ms__ghost" type="button" data-action="conflict-keep">继续编辑</button>
       <button class="ms__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <dialog class="ms__dialog ms__export" data-role="export">
+    <h3 class="ms__label" data-role="export-title">导出 Markdown</h3>
+    <p class="ms__empty-hint" data-role="export-hint"></p>
+    <label class="ms__deep-date">
+      <span class="ms__label" data-role="label-export-round">投稿轮次</span>
+      <select class="ms__select" data-role="export-round"></select>
+    </label>
+    <textarea class="ms__input ms__textarea" data-role="export-text" rows="12" readonly></textarea>
+    <div class="ms__dialog-actions">
+      <button class="ms__ghost" type="button" data-action="export-select">全选</button>
+      <button class="ms__primary" type="button" data-action="export-close">关闭</button>
     </div>
   </dialog>
 

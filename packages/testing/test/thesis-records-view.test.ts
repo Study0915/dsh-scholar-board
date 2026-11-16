@@ -14,10 +14,14 @@ interface ThesisModel {
   CHAPTER_STATUSES: string[]
   ITEM_STATUSES: string[]
   RESULT_KINDS: string[]
+  LINK_KINDS: string[]
   MAX_ITEMS: number
   MAX_MILESTONES: number
+  MAX_LINKS: number
   LABEL_LENGTH: number
   TITLE_LENGTH: number
+  PLAN_LENGTH: number
+  ACTION_ID_LENGTH: number
   chapterKey(status: unknown): string
   itemKey(status: unknown): string
   resultKey(kind: unknown): string
@@ -38,6 +42,8 @@ interface ThesisModel {
   resultLine(result: unknown, title: unknown, text: { t: (key: string) => string }): string
   daysLeft(record: unknown, now?: number): number | null
   viewRows(records: unknown, view: string): Array<Record<string, unknown>>
+  linkKey(ref: unknown): string
+  cleanLinks(rows: unknown): Array<Record<string, unknown>> | null
   cleanChapters(rows: unknown): Array<Record<string, unknown>> | null
   cleanResults(rows: unknown): Array<Record<string, unknown>> | null
   cleanExperiments(rows: unknown): Array<Record<string, unknown>> | null
@@ -89,6 +95,7 @@ describe('状态与缺失内容的说法', () => {
     expect(model.CHAPTER_STATUSES).toEqual(['planned', 'drafting', 'revising', 'done'])
     expect(model.ITEM_STATUSES).toEqual(['todo', 'doing', 'done'])
     expect(model.RESULT_KINDS).toEqual(['manuscript', 'research'])
+    expect(model.LINK_KINDS).toEqual(['topic', 'manuscript', 'research'])
     expect(model.chapterKey('drafting')).toBe('chapterDrafting')
     expect(model.chapterKey('revising')).toBe('chapterRevising')
     expect(model.chapterKey('done')).toBe('chapterDone')
@@ -194,6 +201,32 @@ describe('保存前的整理', () => {
     expect(model.cleanChapters([])).toEqual([])
   })
 
+  it('章节关联只收课题、稿件与研究记录，同一记录只留一次', () => {
+    expect(model.cleanLinks([
+      { kind: 'topic', id: ' t1 ' },
+      { kind: 'manuscript', id: 'm1' },
+      { kind: 'topic', id: 't1' },
+      { kind: 'research', id: 'r1' },
+    ])).toEqual([
+      { kind: 'topic', id: 't1' },
+      { kind: 'manuscript', id: 'm1' },
+      { kind: 'research', id: 'r1' },
+    ])
+    expect(model.cleanLinks([{ kind: 'meeting', id: 'm1' }])).toBeNull()
+    expect(model.cleanLinks([{ kind: 'topic', id: '' }])).toBeNull()
+    expect(model.cleanLinks(null)).toEqual([])
+    expect(model.cleanChapters([
+      { id: 'c1', title: '绪论', status: 'done', links: [{ kind: 'topic', id: 't1' }, { kind: 'manuscript', id: 'm1' }] },
+      { id: 'c2', title: '系统模型', status: 'planned', links: [] },
+    ])).toEqual([
+      { id: 'c1', title: '绪论', status: 'done', links: [{ kind: 'topic', id: 't1' }, { kind: 'manuscript', id: 'm1' }] },
+      { id: 'c2', title: '系统模型', status: 'planned' },
+    ])
+    expect(model.cleanChapters([{ id: 'c1', title: '绪论', status: 'done', links: [{ kind: 'meeting', id: 'm1' }] }])).toBeNull()
+    expect(model.linkKey({ kind: 'topic', id: 't1' })).toBe('topic:t1')
+    expect(model.linkKey(null)).toBe('')
+  })
+
   it('成果要有来源类型与来源记录，说明可以没有', () => {
     expect(model.cleanResults([
       { id: 'x1', kind: 'manuscript', recordId: ' manuscript-1 ', note: ' 第二、三章 ' },
@@ -208,12 +241,18 @@ describe('保存前的整理', () => {
     expect(model.cleanResults(null)).toEqual([])
   })
 
-  it('实验要有标题与状态', () => {
+  it('实验要有标题与状态，方案与关联行动项可留空', () => {
     expect(model.cleanExperiments([
       { id: 'e1', title: ' 补基线 ', status: 'doing', note: ' 需要两天 ' },
-    ])).toEqual([{ id: 'e1', title: '补基线', status: 'doing', note: '需要两天' }])
+      { id: 'e2', title: '扩展到多小区', status: 'todo', plan: ' 先跑两小区，再扩到七小区 ', actionId: ' a1 ' },
+    ])).toEqual([
+      { id: 'e1', title: '补基线', status: 'doing', note: '需要两天' },
+      { id: 'e2', title: '扩展到多小区', status: 'todo', plan: '先跑两小区，再扩到七小区', actionId: 'a1' },
+    ])
     expect(model.cleanExperiments([{ id: 'e1', title: '', status: 'todo' }])).toBeNull()
     expect(model.cleanExperiments([{ id: 'e1', title: '补基线', status: 'blocked' }])).toBeNull()
+    expect(model.cleanExperiments([{ id: 'e1', title: '补基线', status: 'todo', plan: 'x'.repeat(model.PLAN_LENGTH + 1) }])).toBeNull()
+    expect(model.cleanExperiments([{ id: 'e1', title: '补基线', status: 'todo', actionId: 'x'.repeat(model.ACTION_ID_LENGTH + 1) }])).toBeNull()
     expect(model.cleanExperiments([])).toEqual([])
   })
 

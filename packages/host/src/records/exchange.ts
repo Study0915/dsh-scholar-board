@@ -160,7 +160,7 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
   for (const record of pkg.records) mapping.set(record.id, randomUUID())
   const at = new Date(now).toISOString()
   const remapped = pkg.records.map((record) => {
-    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string, questions?: { actionId?: string }[], plan?: { kind: RecordKind, id: string }, results?: { sources?: string[] }[], versions?: { kind: RecordKind, id: string }[], reading?: { actionId?: string }[] }
+    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string, questions?: { actionId?: string }[], plan?: { kind: RecordKind, id: string }, results?: { sources?: string[] }[], versions?: { kind: RecordKind, id: string }[], reading?: { actionId?: string }[], revisions?: { actionId?: string }[], experiments?: { actionId?: string }[], chapters?: { links?: { kind: RecordKind, id: string }[] }[] }
     copy.id = mapping.get(record.id) as string
     copy.revision = 1
     copy.updatedAt = at
@@ -193,6 +193,21 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
     if (Array.isArray(copy.reading)) {
       for (const entry of copy.reading) {
         if (typeof entry.actionId === 'string') entry.actionId = mapping.get(entry.actionId) ?? entry.actionId
+      }
+    }
+    if (Array.isArray(copy.revisions)) {
+      for (const entry of copy.revisions) {
+        if (typeof entry.actionId === 'string') entry.actionId = mapping.get(entry.actionId) ?? entry.actionId
+      }
+    }
+    if (Array.isArray(copy.experiments)) {
+      for (const entry of copy.experiments) {
+        if (typeof entry.actionId === 'string') entry.actionId = mapping.get(entry.actionId) ?? entry.actionId
+      }
+    }
+    if (Array.isArray(copy.chapters)) {
+      for (const entry of copy.chapters) {
+        if (Array.isArray(entry.links)) entry.links = entry.links.map(link => ({ ...link, id: mapping.get(link.id) ?? link.id }))
       }
     }
     return copy as DomainRecord

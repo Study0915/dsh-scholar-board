@@ -274,9 +274,9 @@ export async function openRecords(file: string, options: { now?: () => number, l
         const kind = input.kind as RecordKind
         const { kind: _ignored, ...fieldsInput } = input
         const fields = normalizeInput(kind, fieldsInput, 'create')
-        // 课题问题或阅读疑问重复转行动项时回到同一事项：按来源与条目 id 找回已有的那条，不再新建。
+        // 课题问题、阅读疑问或修回意见重复转行动项时回到同一事项：按来源与条目 id 找回已有的那条，不再新建。
         if (kind === 'action' && isRecord(fields.source)
-          && (fields.source.kind === 'topic' || fields.source.kind === 'literature')
+          && (fields.source.kind === 'topic' || fields.source.kind === 'literature' || fields.source.kind === 'manuscript')
           && typeof fields.sourceEntry === 'string') {
           const sourceId = fields.source.id as string
           const sourceIdKind = fields.source.kind

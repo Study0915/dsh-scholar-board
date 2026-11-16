@@ -11,13 +11,17 @@
   var CHAPTER_STATUSES = ['planned', 'drafting', 'revising', 'done']
   var ITEM_STATUSES = ['todo', 'doing', 'done']
   var RESULT_KINDS = ['manuscript', 'research']
+  var LINK_KINDS = ['topic', 'manuscript', 'research']
   var DAY = 86400000
   var DRAFT_DELAY = 700
   var LOAD_TIMEOUT = 4000
   var MAX_ITEMS = 100
   var MAX_MILESTONES = 50
+  var MAX_LINKS = 20
   var LABEL_LENGTH = 60
   var TITLE_LENGTH = 200
+  var PLAN_LENGTH = 2000
+  var ACTION_ID_LENGTH = 64
 
   /** 章节状态对应的文案键。 */
   function chapterKey(status) {
@@ -212,10 +216,37 @@
     return rows
   }
 
+  /** 引用的一行键：`kind:id`，同一记录只出现一次。 */
+  function linkKey(ref) {
+    if (ref === null || typeof ref !== 'object') return ''
+    if (typeof ref.kind !== 'string' || typeof ref.id !== 'string' || ref.id === '') return ''
+    return ref.kind + ':' + ref.id
+  }
+
+  /** 章节关联的成果与课题：同一记录只留一次，条数不超过上限。 */
+  function cleanLinks(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var out = []
+    var seen = {}
+    for (var at = 0; at < list.length; at += 1) {
+      var row = list[at]
+      if (row === null || typeof row !== 'object') return null
+      if (!isResultKind(row.kind) && row.kind !== 'topic') return null
+      var id = textOf(row.id)
+      if (id === '' || id.length > 64) return null
+      var key = row.kind + ':' + id
+      if (seen[key] === true) continue
+      seen[key] = true
+      out.push({ kind: row.kind, id: id })
+      if (out.length > MAX_LINKS) return null
+    }
+    return out
+  }
+
   /**
    * 把编辑面板里的章节行整理成可保存的样子；缺标题或状态不认识时返回 null。
    *
-   * @param {Array} rows - `{ id, title, status, question, note }` 行。
+   * @param {Array} rows - `{ id, title, status, question, note, links }` 行。
    * @returns {Array|null} 归一后的章节；有问题时是 null。
    */
   function cleanChapters(rows) {
@@ -230,6 +261,9 @@
       var entry = { id: String(row.id), title: title, status: row.status }
       if (textOf(row.question) !== '') entry.question = textOf(row.question)
       if (textOf(row.note) !== '') entry.note = textOf(row.note)
+      var links = cleanLinks(row.links)
+      if (links === null) return null
+      if (links.length > 0) entry.links = links
       out.push(entry)
       if (out.length > MAX_ITEMS) return null
     }
@@ -260,9 +294,9 @@
   }
 
   /**
-   * 待补实验：标题与状态；缺标题时返回 null。
+   * 待补实验：标题与状态；方案与关联行动项可留空，方案不超过两千字。
    *
-   * @param {Array} rows - `{ id, title, status, note }` 行。
+   * @param {Array} rows - `{ id, title, status, plan, actionId, note }` 行。
    * @returns {Array|null} 归一后的实验；有问题时是 null。
    */
   function cleanExperiments(rows) {
@@ -274,7 +308,13 @@
       var title = textOf(row.title)
       if (title === '' || [...title].length > TITLE_LENGTH) return null
       if (!isItemStatus(row.status)) return null
+      var plan = textOf(row.plan)
+      if ([...plan].length > PLAN_LENGTH) return null
+      var actionId = textOf(row.actionId)
+      if (actionId.length > ACTION_ID_LENGTH) return null
       var entry = { id: String(row.id), title: title, status: row.status }
+      if (plan !== '') entry.plan = plan
+      if (actionId !== '') entry.actionId = actionId
       if (textOf(row.note) !== '') entry.note = textOf(row.note)
       out.push(entry)
       if (out.length > MAX_ITEMS) return null
@@ -341,13 +381,17 @@
     CHAPTER_STATUSES: CHAPTER_STATUSES,
     ITEM_STATUSES: ITEM_STATUSES,
     RESULT_KINDS: RESULT_KINDS,
+    LINK_KINDS: LINK_KINDS,
     DAY: DAY,
     DRAFT_DELAY: DRAFT_DELAY,
     LOAD_TIMEOUT: LOAD_TIMEOUT,
     MAX_ITEMS: MAX_ITEMS,
     MAX_MILESTONES: MAX_MILESTONES,
+    MAX_LINKS: MAX_LINKS,
     LABEL_LENGTH: LABEL_LENGTH,
     TITLE_LENGTH: TITLE_LENGTH,
+    PLAN_LENGTH: PLAN_LENGTH,
+    ACTION_ID_LENGTH: ACTION_ID_LENGTH,
     chapterKey: chapterKey,
     itemKey: itemKey,
     resultKey: resultKey,
@@ -369,6 +413,8 @@
     resultLine: resultLine,
     daysLeft: daysLeft,
     viewRows: viewRows,
+    linkKey: linkKey,
+    cleanLinks: cleanLinks,
     cleanChapters: cleanChapters,
     cleanResults: cleanResults,
     cleanExperiments: cleanExperiments,

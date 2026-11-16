@@ -1,14 +1,17 @@
 /** 稿件图表、投稿轮次和修回条目的校验（D36）。 */
-import type { FigureKind, ManuscriptFigure, PlotCode, RecordRef, RevisionItem, RevisionStatus, SubmissionDecision, SubmissionRound } from '@dsh-scholar-board/contracts'
+import type { FigureKind, ManuscriptFigure, PlotCode, RecordRef, RevisionItem, RevisionStatus, SubmissionCheckItem, SubmissionCheckStatus, SubmissionDecision, SubmissionRound } from '@dsh-scholar-board/contracts'
 import { RECORDS_LIMITS, RELATION_KINDS } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
-import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
+import { boundedTextOf, dueOf, fail, materialsOf, textOf, titleOf } from './fields'
 
 /** 图表目录里的两种条目。 */
 export const FIGURE_KINDS: readonly FigureKind[] = ['figure', 'table']
 
 /** 投稿轮次的七种结果；拒稿、撤稿与转投都留在历史里。 */
 export const SUBMISSION_DECISIONS: readonly SubmissionDecision[] = ['pending', 'minor', 'major', 'accepted', 'rejected', 'withdrawn', 'transferred']
+
+/** 投稿检查项的两种状态。 */
+export const SUBMISSION_CHECK_STATUSES: readonly SubmissionCheckStatus[] = ['missing', 'ready']
 
 /** 修回事项的四种状态。 */
 export const REVISION_STATUSES: readonly RevisionStatus[] = ['todo', 'doing', 'done', 'declined']
@@ -135,7 +138,38 @@ export function figuresOf(value: unknown, field: string): ManuscriptFigure[] | n
 }
 
 /**
- * 投稿轮次：刊会必填，结果必填，投稿与决定日期可留空。
+ * 一轮投稿的检查表：名称必填，状态只认未备与已备，版本说明可留空。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns 检查项；未填时是 `null`。
+ */
+function checklistOf(value: unknown, field: string): SubmissionCheckItem[] | null {
+  if (value === null) return null
+  if (!Array.isArray(value)) fail(`${field} 要是数组`)
+  if (value.length > RECORDS_LIMITS.roundChecklist) fail(`${field} 最多 ${String(RECORDS_LIMITS.roundChecklist)} 项`)
+  const seen = new Set<string>()
+  return value.map((entry, index) => {
+    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { id, label, status }`)
+    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
+    if (seen.has(entry.id)) fail(`${field} 里的 id 重复`)
+    seen.add(entry.id)
+    const label = titleOf(entry.label, `${field}[${String(index)}].label`)
+    if (typeof entry.status !== 'string' || !SUBMISSION_CHECK_STATUSES.includes(entry.status as SubmissionCheckStatus)) {
+      fail(`${field}[${String(index)}].status 只能是 ${SUBMISSION_CHECK_STATUSES.join('、')}`)
+    }
+    const version = entry.version === undefined ? null : boundedTextOf(entry.version, `${field}[${String(index)}].version`, RECORDS_LIMITS.materialVersionLength)
+    return {
+      id: entry.id,
+      label,
+      status: entry.status as SubmissionCheckStatus,
+      ...(version === null ? {} : { version }),
+    }
+  })
+}
+
+/**
+ * 投稿轮次：刊会必填，结果必填，投稿与决定日期可留空；期限、检查表与冻结日期可选。
  *
  * @param value - 外来值。
  * @param field - 出错时指人。
@@ -157,6 +191,9 @@ export function submissionsOf(value: unknown, field: string): SubmissionRound[] 
     }
     const submittedAt = entry.submittedAt === undefined ? null : dueOf(entry.submittedAt, `${field}[${String(index)}].submittedAt`)
     const decidedAt = entry.decidedAt === undefined ? null : dueOf(entry.decidedAt, `${field}[${String(index)}].decidedAt`)
+    const deadline = entry.deadline === undefined ? null : dueOf(entry.deadline, `${field}[${String(index)}].deadline`)
+    const frozenAt = entry.frozenAt === undefined ? null : dueOf(entry.frozenAt, `${field}[${String(index)}].frozenAt`)
+    const checklist = entry.checklist === undefined ? null : checklistOf(entry.checklist, `${field}[${String(index)}].checklist`)
     const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
     return {
       id: entry.id,
@@ -164,6 +201,9 @@ export function submissionsOf(value: unknown, field: string): SubmissionRound[] 
       decision: entry.decision as SubmissionDecision,
       ...(submittedAt === null ? {} : { submittedAt }),
       ...(decidedAt === null ? {} : { decidedAt }),
+      ...(deadline === null ? {} : { deadline }),
+      ...(checklist === null ? {} : { checklist }),
+      ...(frozenAt === null ? {} : { frozenAt }),
       ...(note === null ? {} : { note }),
     }
   })
@@ -187,18 +227,32 @@ export function revisionsOf(value: unknown, field: string): RevisionItem[] | nul
     if (seen.has(entry.id)) fail(`${field} 里的 id 重复`)
     seen.add(entry.id)
     if (typeof entry.roundId !== 'string' || entry.roundId === '' || entry.roundId.length > 64) fail(`${field}[${String(index)}].roundId 不合法`)
-    const feedback = revisionTextOf(entry.feedback, `${field}[${String(index)}].feedback`, true)
-    const change = entry.change === undefined ? null : revisionTextOf(entry.change, `${field}[${String(index)}].change`, false)
+    const at = `${field}[${String(index)}]`
+    const feedback = revisionTextOf(entry.feedback, `${at}.feedback`, true)
+    const change = entry.change === undefined ? null : revisionTextOf(entry.change, `${at}.change`, false)
+    const reviewer = entry.reviewer === undefined ? null : boundedTextOf(entry.reviewer, `${at}.reviewer`, RECORDS_LIMITS.reviewerLength)
+    const commentNo = entry.commentNo === undefined ? null : boundedTextOf(entry.commentNo, `${at}.commentNo`, RECORDS_LIMITS.commentNoLength)
+    const location = entry.location === undefined ? null : boundedTextOf(entry.location, `${at}.location`, RECORDS_LIMITS.locationLength)
+    const reply = entry.reply === undefined ? null : revisionTextOf(entry.reply, `${at}.reply`, false)
+    const reason = entry.reason === undefined ? null : revisionTextOf(entry.reason, `${at}.reason`, false)
     if (typeof entry.status !== 'string' || !REVISION_STATUSES.includes(entry.status as RevisionStatus)) {
-      fail(`${field}[${String(index)}].status 只能是 ${REVISION_STATUSES.join('、')}`)
+      fail(`${at}.status 只能是 ${REVISION_STATUSES.join('、')}`)
     }
-    const materials = entry.materials === undefined ? null : materialsOf(entry.materials, `${field}[${String(index)}].materials`)
+    if (entry.status === 'declined' && reason === null) fail(`${at}.reason 在标为不采纳时不能是空的`)
+    const actionId = entry.actionId === undefined ? null : boundedTextOf(entry.actionId, `${at}.actionId`, 64)
+    const materials = entry.materials === undefined ? null : materialsOf(entry.materials, `${at}.materials`)
     return {
       id: entry.id,
       roundId: entry.roundId,
       feedback: feedback as string,
       status: entry.status as RevisionStatus,
+      ...(reviewer === null ? {} : { reviewer }),
+      ...(commentNo === null ? {} : { commentNo }),
       ...(change === null ? {} : { change }),
+      ...(location === null ? {} : { location }),
+      ...(reply === null ? {} : { reply }),
+      ...(reason === null ? {} : { reason }),
+      ...(actionId === null ? {} : { actionId }),
       ...(materials === null ? {} : { materials }),
     }
   })
@@ -236,6 +290,25 @@ export function manuscriptArraysProblem(value: Record<string, unknown>): string 
       roundIds.add(entry.id)
       if (typeof entry.venue !== 'string' || entry.venue === '') return 'submissions 的条目缺少刊会'
       if (typeof entry.decision !== 'string' || !SUBMISSION_DECISIONS.includes(entry.decision as SubmissionDecision)) return 'submissions 的 decision 不认识'
+      for (const field of ['submittedAt', 'decidedAt', 'deadline', 'frozenAt'] as const) {
+        if (entry[field] !== undefined) {
+          if (!isRecord(entry[field])) return `submissions 的 ${field} 不合法`
+          const date = entry[field].kind === 'date' && typeof entry[field].date === 'string'
+          const instant = entry[field].kind === 'instant' && typeof entry[field].at === 'string'
+          if (!date && !instant) return `submissions 的 ${field} 不合法`
+        }
+      }
+      if (entry.checklist !== undefined) {
+        if (!Array.isArray(entry.checklist)) return 'submissions 的 checklist 不是数组'
+        const checks = new Set<string>()
+        for (const check of entry.checklist as unknown[]) {
+          if (!isRecord(check) || typeof check.id !== 'string' || check.id === '') return 'submissions 的 checklist 条目不合法'
+          if (checks.has(check.id)) return 'submissions 的 checklist id 重复'
+          checks.add(check.id)
+          if (typeof check.label !== 'string' || check.label === '') return 'submissions 的 checklist 缺少名称'
+          if (typeof check.status !== 'string' || !SUBMISSION_CHECK_STATUSES.includes(check.status as SubmissionCheckStatus)) return 'submissions 的 checklist 状态不认识'
+        }
+      }
     }
   }
   if (value.revisions !== undefined) {
@@ -249,6 +322,10 @@ export function manuscriptArraysProblem(value: Record<string, unknown>): string 
       if (typeof entry.roundId !== 'string' || !roundIds.has(entry.roundId)) return '修回事项指向的投稿轮次不存在'
       if (typeof entry.feedback !== 'string' || entry.feedback === '') return 'revisions 的条目缺少反馈'
       if (typeof entry.status !== 'string' || !REVISION_STATUSES.includes(entry.status as RevisionStatus)) return 'revisions 的 status 不认识'
+      if (entry.status === 'declined' && (typeof entry.reason !== 'string' || entry.reason === '')) return 'revisions 标为不采纳时缺少理由'
+      for (const field of ['reviewer', 'commentNo', 'location', 'reply', 'reason', 'actionId'] as const) {
+        if (entry[field] !== undefined && typeof entry[field] !== 'string') return `revisions 的 ${field} 不合法`
+      }
     }
   }
   return null

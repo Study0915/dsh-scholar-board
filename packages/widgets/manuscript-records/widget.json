@@ -5,8 +5,8 @@
     "en": "Manuscripts"
   },
   "description": {
-    "zh": "记下一篇小论文的阶段、下一步、阻碍、目标刊会与投稿期限：投稿轮次、修回事项与图表目录都在详情里，图表还能引用运行、数据材料、绘图代码仓库与提交并写下结论。列表按阶段筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。缺失的内容显示「未知」，这里只记录不执行绘图。",
-    "en": "Records a manuscript's stage, next step, blockers, target venue and submission date: submission rounds, revision items and the figure list live in the detail, and a figure can reference runs, data materials, a plot repository and commit, and a conclusion. The list filters by stage, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. Missing content shows as unknown, and nothing is plotted here."
+    "zh": "记下一篇小论文的阶段、下一步、阻碍、目标刊会与投稿期限：投稿轮次带期限与可冻结的材料检查表，修回事项记审稿人、意见编号、改动位置、回复草稿与证据，并可转成行动项；图表目录能引用运行、数据材料、绘图代码仓库与提交并写下结论，选一轮投稿可导出 Markdown 清单。列表按阶段筛选，也能搜索、归档与移入回收站；详情直接编辑并在输入时自动存草稿，保存失败保留输入，修订冲突可以载入最新记录。缺失的内容显示「未知」，这里只记录不执行绘图。",
+    "en": "Records a manuscript's stage, next step, blockers, target venue and submission date: submission rounds carry a deadline and a freezable material checklist, revision items record reviewer, comment number, location, reply draft and evidence and can become a shared action; the figure list references runs, data materials, a plot repository and commit, and a conclusion, and any round exports as a Markdown checklist. The list filters by stage, also searches, archives and trashes; the detail edits in place, keeps a draft while you type, keeps your input when saving fails, and offers the latest record on a revision conflict. Missing content shows as unknown, and nothing is plotted here."
   },
   "author": "dsh-scholar-board",
   "version": "0.1.0",
@@ -34,6 +34,7 @@
     "copy.js",
     "view.js",
     "figure-panel.js",
+    "editor-reviews.js",
     "editor-deep.js",
     "editor.js"
   ],
@@ -414,6 +415,74 @@
       "zh": "已删除该轮投稿，连带移除了 {n} 条修回事项。",
       "en": "Removed the round and {n} revision items."
     },
+    "roundDeadline": {
+      "zh": "修回期限",
+      "en": "Revision deadline"
+    },
+    "roundFrozenAt": {
+      "zh": "冻结日期",
+      "en": "Frozen"
+    },
+    "roundFrozen": {
+      "zh": "本轮材料版本已冻结；解冻后才能改检查表与材料。",
+      "en": "This round is frozen; unfreeze to edit the checklist and materials."
+    },
+    "frozenTag": {
+      "zh": "已冻结 {date}",
+      "en": "Frozen {date}"
+    },
+    "freezeRound": {
+      "zh": "冻结本轮",
+      "en": "Freeze round"
+    },
+    "unfreezeRound": {
+      "zh": "解冻",
+      "en": "Unfreeze"
+    },
+    "checklist": {
+      "zh": "投稿检查表",
+      "en": "Submission checklist"
+    },
+    "checklistEmpty": {
+      "zh": "还没有检查项；按目标刊会加正文、补充材料、声明、图件与代码数据可用性说明。",
+      "en": "No checklist items yet; add body, supplement, declarations, figures and code/data availability as the venue requires."
+    },
+    "checkLabel": {
+      "zh": "检查项",
+      "en": "Check item"
+    },
+    "checkStatus": {
+      "zh": "状态",
+      "en": "Status"
+    },
+    "checkMissing": {
+      "zh": "待备",
+      "en": "Missing"
+    },
+    "checkReady": {
+      "zh": "已备",
+      "en": "Ready"
+    },
+    "checkVersion": {
+      "zh": "版本（可选）",
+      "en": "Version (optional)"
+    },
+    "checkAdd": {
+      "zh": "添加检查项",
+      "en": "Add check item"
+    },
+    "checkInvalid": {
+      "zh": "检查项要写名称，状态只认待备与已备。",
+      "en": "A check item needs a label and a missing/ready status."
+    },
+    "checkLimit": {
+      "zh": "检查项最多 {n} 项。",
+      "en": "At most {n} checklist items."
+    },
+    "checkMissingCount": {
+      "zh": "{n} 项待备",
+      "en": "{n} missing"
+    },
     "revisions": {
       "zh": "修回事项",
       "en": "Revision items"
@@ -433,6 +502,126 @@
     "revisionChange": {
       "zh": "改动",
       "en": "Change"
+    },
+    "revisionReviewer": {
+      "zh": "审稿人",
+      "en": "Reviewer"
+    },
+    "revisionCommentNo": {
+      "zh": "意见编号",
+      "en": "Comment #"
+    },
+    "revisionLocation": {
+      "zh": "改动位置",
+      "en": "Location"
+    },
+    "revisionReply": {
+      "zh": "回复草稿",
+      "en": "Reply draft"
+    },
+    "revisionReason": {
+      "zh": "不采纳理由",
+      "en": "Reason for declining"
+    },
+    "revisionDeclinedReason": {
+      "zh": "不改要写理由",
+      "en": "Declined items need a reason"
+    },
+    "revisionDeclinedRequired": {
+      "zh": "标为不改的修回要写理由。",
+      "en": "Declined revision items need a reason."
+    },
+    "revisionAction": {
+      "zh": "行动项",
+      "en": "Action item"
+    },
+    "revisionActionCreate": {
+      "zh": "转为行动项",
+      "en": "Create action"
+    },
+    "revisionActionLinked": {
+      "zh": "已有关联行动项",
+      "en": "Action linked"
+    },
+    "revisionActionCreated": {
+      "zh": "已创建行动项",
+      "en": "Action created"
+    },
+    "revisionActionFailed": {
+      "zh": "行动项创建失败",
+      "en": "Could not create the action"
+    },
+    "revisionActionNeedsSave": {
+      "zh": "先保存稿件，再建行动项。",
+      "en": "Save the manuscript before creating an action."
+    },
+    "exportMarkdown": {
+      "zh": "导出 Markdown",
+      "en": "Export Markdown"
+    },
+    "exportRound": {
+      "zh": "投稿轮次",
+      "en": "Round"
+    },
+    "exportHint": {
+      "zh": "选一轮投稿导出；缺项与证据都写进去。",
+      "en": "Pick a round; missing items and evidence are included."
+    },
+    "exportEmpty": {
+      "zh": "还没有投稿轮次可导出。",
+      "en": "No rounds to export yet."
+    },
+    "exportAll": {
+      "zh": "全选",
+      "en": "Select all"
+    },
+    "mdRound": {
+      "zh": "投稿轮次",
+      "en": "Submission round"
+    },
+    "mdChecklist": {
+      "zh": "检查表",
+      "en": "Checklist"
+    },
+    "mdRevisions": {
+      "zh": "修回事项",
+      "en": "Revision items"
+    },
+    "mdFeedback": {
+      "zh": "反馈",
+      "en": "Feedback"
+    },
+    "mdLocation": {
+      "zh": "位置",
+      "en": "Location"
+    },
+    "mdChange": {
+      "zh": "改动",
+      "en": "Change"
+    },
+    "mdReply": {
+      "zh": "回复",
+      "en": "Reply"
+    },
+    "mdReason": {
+      "zh": "不采纳理由",
+      "en": "Reason"
+    },
+    "mdAction": {
+      "zh": "行动项",
+      "en": "Action"
+    },
+    "mdEvidence": {
+      "zh": "证据",
+      "en": "Evidence"
+    },
+    "mdMissing": {
+      "zh": "待备",
+      "en": "Missing"
+    },
+    "mdNone": {
+      "zh": "没有修回事项。",
+      "en": "No revision items."
     },
     "revisionStatus": {
       "zh": "状态",

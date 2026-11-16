@@ -578,6 +578,25 @@
 .ms__deep-row .ms__textarea { min-height: 38px; font-size: var(--w-type-caption, 12px); line-height: 18px; }
 .ms__deep-row .ms__label { font-size: 11px; line-height: 16px; }
 
+.ms__checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ms__check .ms__input,
+.ms__check .ms__select { font-size: var(--w-type-caption, 12px); line-height: 18px; }
+.ms__check-version { flex: none; width: 96px; }
+.ms__comment-no { flex: none; width: 96px; }
+.ms__check-add { display: flex; }
+
+.ms__export { width: min(92%, 520px); }
+.ms__export .ms__textarea { width: 100%; margin: var(--w-space-sm, 8px) 0; font-family: var(--w-font-mono, ui-monospace, monospace); }
+.ms__export .ms__deep-date { margin-bottom: var(--w-space-sm, 8px); }
+
 .ms__material-list {
   display: flex;
   flex-direction: column;

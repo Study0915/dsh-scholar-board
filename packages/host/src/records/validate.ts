@@ -11,7 +11,6 @@ import type {
   LiteratureStage,
   ManuscriptStage,
   RecordKind,
-  RecordRef,
   ResearchEntry,
   ResearchMethod,
   RunCode,
@@ -32,7 +31,7 @@ import { evidenceOf, evidenceProblem, evidenceTextOf } from './evidence-validate
 import { literatureFieldsOf, literatureProblem } from './literature-validate'
 import { actionSourceOf, actionSourceProblem } from './action-source'
 import { isRecord } from '../guards'
-import { dueOf, fail, materialsOf, textOf, titleOf } from './fields'
+import { dueOf, fail, materialsOf, refsOf, textOf, titleOf } from './fields'
 import { chaptersOf, experimentsOf, thesisArraysProblem, thesisMilestonesOf, thesisResultsOf } from './thesis-validate'
 import { topicArraysProblem, topicQuestionsOf } from './topic-validate'
 import {
@@ -87,32 +86,6 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   topic: RELATION_KINDS,
   run: RELATION_KINDS,
   template: [],
-}
-
-/**
- * 一组指向前向记录的引用。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @param allowed - 这种记录允许指向的类型。
- * @returns 引用表；未填时是 `null`。
- */
-function refsOf(value: unknown, field: string, allowed: readonly RecordKind[]): RecordRef[] | null {
-  if (value === null) return null
-  if (!Array.isArray(value)) fail(`${field} 要是数组`)
-  if (value.length > RECORDS_LIMITS.related) fail(`${field} 最多 ${String(RECORDS_LIMITS.related)} 项`)
-  const seen = new Set<string>()
-  return value.map((entry, index) => {
-    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { kind, id }`)
-    if (typeof entry.kind !== 'string' || !allowed.includes(entry.kind as RecordKind)) {
-      fail(`${field}[${String(index)}].kind 只能是 ${allowed.join('、')}`)
-    }
-    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
-    const key = `${entry.kind}:${entry.id}`
-    if (seen.has(key)) fail(`${field} 里有重复的引用`)
-    seen.add(key)
-    return { kind: entry.kind as RecordKind, id: entry.id }
-  })
 }
 
 /**

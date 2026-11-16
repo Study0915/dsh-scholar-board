@@ -46,6 +46,7 @@ interface ManuscriptModel {
   openRevisionCount(record: unknown): number
   roundLabel(round: unknown, text: { t: (key: string) => string }): string
   dateValue(text: unknown, timeZone?: string): unknown
+  todayIn(timeZone: string, stamp?: number): string
 }
 
 const model = (globalThis as unknown as { Manuscripts: ManuscriptModel }).Manuscripts
@@ -130,6 +131,13 @@ describe('期限与材料', () => {
     expect(model.materialValid('file:///tmp/paper.pdf', '正文')).toBe(false)
     expect(model.materialValid('https://example.com', '')).toBe(false)
     expect(model.dateValue('2026-12-15', 'Asia/Shanghai')).toEqual({ kind: 'date', date: '2026-12-15', timeZone: 'Asia/Shanghai' })
+  })
+
+  it('冻结日期按卡片时区取当天，不按 UTC 截断', () => {
+    const stamp = Date.parse('2026-11-15T23:30:00.000Z')
+    expect(model.todayIn('Asia/Shanghai', stamp)).toBe('2026-11-16')
+    expect(model.todayIn('UTC', stamp)).toBe('2026-11-15')
+    expect(model.todayIn('Asia/Shanghai')).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 })
 
@@ -278,7 +286,7 @@ describe('样例与清单', () => {
       'widget-board:records.draft',
       'widget-board:records.open',
     ])
-    expect(manifest.scripts).toEqual(['manuscript-model.js', 'copy.js', 'view.js', 'figure-panel.js', 'editor-deep.js', 'editor.js'])
+    expect(manifest.scripts).toEqual(['manuscript-model.js', 'copy.js', 'view.js', 'figure-panel.js', 'editor-reviews.js', 'editor-deep.js', 'editor.js'])
     expect(Object.keys(manifest.text).sort()).toEqual(Object.keys(copy).sort())
   })
 })

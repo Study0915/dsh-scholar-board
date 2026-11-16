@@ -4,6 +4,7 @@
  * 学位要求由用户维护，这里只校验形状、状态与上限，不预设学校规则，也不判断毕业资格。
  */
 import type {
+  RecordKind,
   ThesisChapter,
   ThesisChapterStatus,
   ThesisExperiment,
@@ -14,7 +15,7 @@ import type {
 } from '@dsh-scholar-board/contracts'
 import { RECORDS_LIMITS } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
-import { fail, idItemsOf, labeledMilestonesOf, materialsOf, textOf, titledNoteRowsOf, titledRowsOf } from './fields'
+import { boundedTextOf, fail, idItemsOf, labeledMilestonesOf, materialsOf, refsOf, textOf, titledRowsOf } from './fields'
 
 /** 毕业论文章节的四种状态。 */
 export const THESIS_CHAPTER_STATUSES: readonly ThesisChapterStatus[] = ['planned', 'drafting', 'revising', 'done']
@@ -24,6 +25,9 @@ export const THESIS_ITEM_STATUSES: readonly ThesisItemStatus[] = ['todo', 'doing
 
 /** 已有成果能指向的两种记录。 */
 export const THESIS_RESULT_KINDS: readonly ThesisResultKind[] = ['manuscript', 'research']
+
+/** 章节能挂靠的成果：课题、稿件与研究记录。 */
+export const THESIS_LINK_KINDS: readonly RecordKind[] = ['topic', 'manuscript', 'research']
 
 /**
  * 章节：标题必填，状态只认四种，问题与说明可留空。
@@ -38,12 +42,14 @@ export function chaptersOf(value: unknown, field: string): ThesisChapter[] | nul
   return rows.map(({ entry, index, title }) => {
     const question = entry.question === undefined ? null : textOf(entry.question, `${field}[${String(index)}].question`)
     const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
+    const links = entry.links === undefined ? null : refsOf(entry.links, `${field}[${String(index)}].links`, THESIS_LINK_KINDS, RECORDS_LIMITS.chapterLinks)
     return {
       id: entry.id as string,
       title,
       status: entry.status as ThesisChapterStatus,
       ...(question === null ? {} : { question }),
       ...(note === null ? {} : { note }),
+      ...(links === null ? {} : { links }),
     }
   })
 }
@@ -83,14 +89,21 @@ export function thesisResultsOf(value: unknown, field: string): ThesisResult[] |
  * @returns 实验表；未填时是 `null`。
  */
 export function experimentsOf(value: unknown, field: string): ThesisExperiment[] | null {
-  const rows = titledNoteRowsOf(value, field, RECORDS_LIMITS.thesisItems, THESIS_ITEM_STATUSES)
+  const rows = titledRowsOf(value, field, RECORDS_LIMITS.thesisItems, THESIS_ITEM_STATUSES)
   if (rows === null) return null
-  return rows.map(({ id, title, status, note }) => ({
-    id,
-    title,
-    status: status as ThesisItemStatus,
-    ...(note === undefined ? {} : { note }),
-  }))
+  return rows.map(({ entry, index, title }) => {
+    const note = entry.note === undefined ? null : textOf(entry.note, `${field}[${String(index)}].note`)
+    const plan = entry.plan === undefined ? null : boundedTextOf(entry.plan, `${field}[${String(index)}].plan`, RECORDS_LIMITS.revisionText)
+    const actionId = entry.actionId === undefined ? null : boundedTextOf(entry.actionId, `${field}[${String(index)}].actionId`, 64)
+    return {
+      id: entry.id as string,
+      title,
+      status: entry.status as ThesisItemStatus,
+      ...(plan === null ? {} : { plan }),
+      ...(actionId === null ? {} : { actionId }),
+      ...(note === null ? {} : { note }),
+    }
+  })
 }
 
 /**
@@ -130,6 +143,16 @@ export function thesisArraysProblem(value: Record<string, unknown>): string | nu
       ids.add(entry.id)
       if (typeof entry.title !== 'string' || entry.title === '') return 'chapters 的条目缺少标题'
       if (typeof entry.status !== 'string' || !THESIS_CHAPTER_STATUSES.includes(entry.status as ThesisChapterStatus)) return 'chapters 的 status 不认识'
+      if (entry.links !== undefined) {
+        if (!Array.isArray(entry.links)) return 'chapters 的 links 不是数组'
+        const refs = new Set<string>()
+        for (const link of entry.links as unknown[]) {
+          if (!isRecord(link) || typeof link.kind !== 'string' || !THESIS_LINK_KINDS.includes(link.kind as RecordKind) || typeof link.id !== 'string' || link.id === '') return 'chapters 的 links 不合法'
+          const key = `${link.kind}:${link.id}`
+          if (refs.has(key)) return 'chapters 的 links 有重复的引用'
+          refs.add(key)
+        }
+      }
     }
   }
   const results = value.results
@@ -156,6 +179,9 @@ export function thesisArraysProblem(value: Record<string, unknown>): string | nu
       ids.add(entry.id)
       if (typeof entry.title !== 'string' || entry.title === '') return 'experiments 的条目缺少标题'
       if (typeof entry.status !== 'string' || !THESIS_ITEM_STATUSES.includes(entry.status as ThesisItemStatus)) return 'experiments 的 status 不认识'
+      for (const field of ['plan', 'actionId'] as const) {
+        if (entry[field] !== undefined && typeof entry[field] !== 'string') return `experiments 的 ${field} 不合法`
+      }
     }
   }
   const milestones = value.milestones

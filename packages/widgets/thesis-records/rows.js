@@ -53,6 +53,15 @@
         }
       } else if (part === 'due') {
         entry.due = hit.target.value === '' ? null : hit.target.value
+      } else if (part === 'action') {
+        entry.actionId = hit.target.value
+      } else if (part === 'link-add') {
+        if (hit.target.value === '') return
+        var colon = hit.target.value.indexOf(':')
+        if (colon <= 0) return
+        if (!Array.isArray(entry.links)) entry.links = []
+        entry.links.push({ kind: hit.target.value.slice(0, colon), id: hit.target.value.slice(colon + 1) })
+        render(hit.kind)
       } else {
         entry[part] = hit.target.value
       }
@@ -61,6 +70,11 @@
 
     function remove(event) {
       if (!(event.target instanceof Element)) return
+      var link = event.target.closest('.ts__link-remove')
+      if (link !== null) {
+        removeLink(link)
+        return
+      }
       var button = event.target.closest('.ts__line-remove')
       if (button === null) return
       var row = button.closest('.ts__line')
@@ -69,6 +83,20 @@
       var index = Number(row.dataset.index)
       if (!Array.isArray(list) || !Number.isInteger(index) || list[index] === undefined) return
       list.splice(index, 1)
+      render(row.dataset.kind)
+      ctx.onInput()
+    }
+
+    function removeLink(button) {
+      var row = button.closest('.ts__line')
+      if (row === null) return
+      var list = app[row.dataset.kind]
+      var index = Number(row.dataset.index)
+      if (!Array.isArray(list) || !Number.isInteger(index) || list[index] === undefined) return
+      var key = String(button.getAttribute('data-link-kind')) + ':' + String(button.getAttribute('data-link-id'))
+      var entry = list[index]
+      if (!Array.isArray(entry.links)) return
+      entry.links = entry.links.filter(function (ref) { return pure.linkKey(ref) !== key })
       render(row.dataset.kind)
       ctx.onInput()
     }
@@ -82,9 +110,9 @@
       if (!Array.isArray(list)) return
       var limit = kind === 'milestones' ? pure.MAX_MILESTONES : pure.MAX_ITEMS
       if (list.length >= limit) return
-      if (kind === 'chapters') list.push({ id: newId('c'), title: '', status: 'planned' })
+      if (kind === 'chapters') list.push({ id: newId('c'), title: '', status: 'planned', links: [] })
       else if (kind === 'results') list.push({ id: newId('x'), kind: 'manuscript', recordId: '', note: '' })
-      else if (kind === 'experiments') list.push({ id: newId('e'), title: '', status: 'todo' })
+      else if (kind === 'experiments') list.push({ id: newId('e'), title: '', status: 'todo', plan: '', actionId: '' })
       else if (kind === 'milestones') list.push({ id: newId('m'), label: '', status: 'todo', due: null })
       render(kind)
       var listNode = nodes[kind]
@@ -116,7 +144,7 @@
       var list = nodes.chapters
       if (list === null) return
       var items = []
-      for (var at = 0; at < app.chapters.length; at += 1) items.push(view.chapterRow(app.chapters[at], at, text))
+      for (var at = 0; at < app.chapters.length; at += 1) items.push(view.chapterRow(app.chapters[at], at, linkSources(), text))
       list.replaceChildren.apply(list, items)
     }
 
@@ -132,8 +160,18 @@
       var list = nodes.experiments
       if (list === null) return
       var items = []
-      for (var at = 0; at < app.experiments.length; at += 1) items.push(view.experimentRow(app.experiments[at], at, text))
+      for (var at = 0; at < app.experiments.length; at += 1) items.push(view.experimentRow(app.experiments[at], at, app.actions, text))
       list.replaceChildren.apply(list, items)
+    }
+
+    /** 章节可关联的课题、稿件与研究记录。 */
+    function linkSources() {
+      var out = []
+      var sources = Array.isArray(app.sources) ? app.sources : []
+      var topics = Array.isArray(app.topics) ? app.topics : []
+      for (var at = 0; at < topics.length; at += 1) out.push(topics[at])
+      for (var sourceAt = 0; sourceAt < sources.length; sourceAt += 1) out.push(sources[sourceAt])
+      return out
     }
 
     function renderMilestones() {
@@ -262,7 +300,16 @@
       var out = []
       for (var at = 0; at < record[field].length; at += 1) {
         var entry = record[field][at]
-        if (entry !== null && typeof entry === 'object') out.push(Object.assign({}, entry))
+        if (entry === null || typeof entry !== 'object') continue
+        var copy = Object.assign({}, entry)
+        if (Array.isArray(entry.links)) {
+          copy.links = []
+          for (var linkAt = 0; linkAt < entry.links.length; linkAt += 1) {
+            var ref = entry.links[linkAt]
+            if (ref !== null && typeof ref === 'object') copy.links.push({ kind: ref.kind, id: ref.id })
+          }
+        }
+        out.push(copy)
       }
       return out
     }
@@ -317,7 +364,9 @@
     return {
       fill: fill,
       renderAll: renderAll,
+      renderChapters: renderChapters,
       renderResults: renderResults,
+      renderExperiments: renderExperiments,
       renderRelated: renderRelated,
       renderActionOptions: renderActionOptions,
       renderMaterials: renderMaterials,
