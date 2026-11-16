@@ -3,7 +3,7 @@
  *
  * 这些判定被多种记录类型共用；放在这里让记录校验与论文字段校验读同一份规则。
  */
-import type { MaterialRef } from '@dsh-scholar-board/contracts'
+import type { MaterialRef, RecordKind, RecordRef } from '@dsh-scholar-board/contracts'
 import type { Due } from '@dsh-scholar-board/contracts/campus'
 import { RECORDS_LIMITS, isLocalPath, isOpenableUrl } from '@dsh-scholar-board/contracts'
 import { validZone } from '@dsh-scholar-board/model'
@@ -84,6 +84,50 @@ export function dueOf(value: unknown, field: string): Due | null {
 }
 
 /**
+ * 一组条目：数组与容量由这里统一把关，再逐条交给调用方。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @param limit - 条数上限。
+ * @param entryOf - 逐条检查并产出结果。
+ * @returns 条目数组；未填时是 `null`。
+ */
+function arrayOf<T>(value: unknown, field: string, limit: number, entryOf: (entry: unknown, index: number) => T): T[] | null {
+  if (value === null) return null
+  if (!Array.isArray(value)) fail(`${field} 要是数组`)
+  if (value.length > limit) fail(`${field} 最多 ${String(limit)} 项`)
+  return value.map(entryOf)
+}
+
+/**
+ * 条目里的稳定 id：非空、不超过 64 字符，并且在这一组里只出现一次。
+ *
+ * 引用表用「类型:id」去重，普通条目只用 id，重复时的说法由调用方给。
+ *
+ * @param entry - 一条已确认是对象的条目。
+ * @param field - 出错时指人。
+ * @param index - 条目下标。
+ * @param seen - 这一组里已经出现过的去重键。
+ * @param keyOf - 从 id 得到去重键。
+ * @param duplicate - 重复时的说法。
+ * @returns 通过检查的 id。
+ */
+function checkedIdOf(
+  entry: Record<string, unknown>,
+  field: string,
+  index: number,
+  seen: Set<string>,
+  keyOf: (id: string) => string,
+  duplicate: string,
+): string {
+  if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
+  const key = keyOf(entry.id)
+  if (seen.has(key)) fail(duplicate)
+  seen.add(key)
+  return entry.id
+}
+
+/**
  * 一组材料引用：网页给地址、本地给路径，记录内局部键不重复。
  *
  * 旧记录只有 `url`，按网页读；本地路径只校验文本形状，不检查磁盘、不执行。
@@ -93,15 +137,10 @@ export function dueOf(value: unknown, field: string): Due | null {
  * @returns 材料表；未填时是 `null`。
  */
 export function materialsOf(value: unknown, field: string): MaterialRef[] | null {
-  if (value === null) return null
-  if (!Array.isArray(value)) fail(`${field} 要是数组`)
-  if (value.length > RECORDS_LIMITS.materials) fail(`${field} 最多 ${String(RECORDS_LIMITS.materials)} 项`)
   const seen = new Set<string>()
-  return value.map((entry, index) => {
+  return arrayOf(value, field, RECORDS_LIMITS.materials, (entry, index) => {
     if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { id, title, kind, url 或 path }`)
-    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
-    if (seen.has(entry.id)) fail(`${field} 里的材料 id 重复`)
-    seen.add(entry.id)
+    const id = checkedIdOf(entry, field, index, seen, (key) => key, `${field} 里的材料 id 重复`)
     const title = titleOf(entry.title, `${field}[${String(index)}].title`)
     const declared = entry.kind
     if (declared !== undefined && declared !== 'web' && declared !== 'local') fail(`${field}[${String(index)}].kind 只能是 web 或 local`)
@@ -123,7 +162,7 @@ export function materialsOf(value: unknown, field: string): MaterialRef[] | null
     const version = boundedTextOf(entry.version, `${field}[${String(index)}].version`, RECORDS_LIMITS.materialVersionLength)
     const checkedAt = entry.checkedAt === undefined || entry.checkedAt === null ? null : dateTextOf(entry.checkedAt, `${field}[${String(index)}].checkedAt`)
     return {
-      id: entry.id,
+      id,
       kind,
       title,
       ...(url === undefined ? {} : { url }),
@@ -145,11 +184,32 @@ export function materialsOf(value: unknown, field: string): MaterialRef[] | null
  * @param limit - 最多几个字符。
  * @returns 文字；未填时是 `null`。
  */
-function boundedTextOf(value: unknown, field: string, limit: number): string | null {
+export function boundedTextOf(value: unknown, field: string, limit: number): string | null {
   const text = value === undefined ? null : textOf(value, field)
   if (text === null) return null
   if ([...text].length > limit) fail(`${field} 最多 ${String(limit)} 个字符`)
   return text
+}
+
+/**
+ * 一组指向前向记录的引用：只认给定的类型，同一记录只留一次。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @param allowed - 这种字段允许指向的类型。
+ * @param limit - 最多几项。
+ * @returns 引用表；未填时是 `null`。
+ */
+export function refsOf(value: unknown, field: string, allowed: readonly RecordKind[], limit: number = RECORDS_LIMITS.related): RecordRef[] | null {
+  const seen = new Set<string>()
+  return arrayOf(value, field, limit, (entry, index) => {
+    if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 { kind, id }`)
+    if (typeof entry.kind !== 'string' || !allowed.includes(entry.kind as RecordKind)) {
+      fail(`${field}[${String(index)}].kind 只能是 ${allowed.join('、')}`)
+    }
+    const id = checkedIdOf(entry, field, index, seen, (key) => `${String(entry.kind)}:${key}`, `${field} 里有重复的引用`)
+    return { kind: entry.kind as RecordKind, id }
+  })
 }
 
 /**
@@ -174,15 +234,10 @@ function dateTextOf(value: unknown, field: string): string {
  * @returns 条目数组；未填时是 `null`。
  */
 export function idItemsOf(value: unknown, field: string, limit: number, shape: string): Record<string, unknown>[] | null {
-  if (value === null) return null
-  if (!Array.isArray(value)) fail(`${field} 要是数组`)
-  if (value.length > limit) fail(`${field} 最多 ${String(limit)} 项`)
   const seen = new Set<string>()
-  return value.map((entry, index) => {
+  return arrayOf(value, field, limit, (entry, index) => {
     if (!isRecord(entry)) fail(`${field}[${String(index)}] 要写成 ${shape}`)
-    if (typeof entry.id !== 'string' || entry.id === '' || entry.id.length > 64) fail(`${field}[${String(index)}].id 不合法`)
-    if (seen.has(entry.id)) fail(`${field} 里的 id 重复`)
-    seen.add(entry.id)
+    checkedIdOf(entry, field, index, seen, (key) => key, `${field} 里的 id 重复`)
     return entry
   })
 }

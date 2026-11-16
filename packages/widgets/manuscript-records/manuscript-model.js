@@ -23,6 +23,13 @@
   var PLOT_REPOSITORY = 2048
   var PLOT_COMMIT = 200
   var FIGURE_CONCLUSION = 2000
+  var MAX_CHECKLIST = 40
+  var CHECK_LABEL_LENGTH = 200
+  var CHECK_VERSION_LENGTH = 80
+  var REVIEWER_LENGTH = 80
+  var COMMENT_NO_LENGTH = 40
+  var LOCATION_LENGTH = 200
+  var CHECK_STATUSES = ['missing', 'ready']
 
   /** 阶段读成文案键。 */
   function stageKey(stage) {
@@ -285,7 +292,29 @@
     return out
   }
 
-  /** 投稿轮次：刊会、决定与两个日期；不认识的条目跳过。 */
+  /** 投稿检查表：名称、已备或待备与可选的版本说明；不认识的条目跳过。 */
+  function cleanChecklist(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var seen = {}
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var item = list[at]
+      if (item === null || typeof item !== 'object') continue
+      if (typeof item.id !== 'string' || item.id === '' || seen[item.id] === true) continue
+      var label = textOf(item.label)
+      if (label === '' || label.length > CHECK_LABEL_LENGTH) continue
+      if (CHECK_STATUSES.indexOf(item.status) === -1) continue
+      if (out.length >= MAX_CHECKLIST) break
+      seen[item.id] = true
+      var entry = { id: item.id, label: label, status: item.status }
+      var version = textOf(item.version)
+      if (version !== '' && version.length <= CHECK_VERSION_LENGTH) entry.version = version
+      out.push(entry)
+    }
+    return out
+  }
+
+  /** 投稿轮次：刊会、决定与日期；检查表与冻结日期可选，不认识的条目跳过。 */
   function cleanRounds(rows) {
     var list = Array.isArray(rows) ? rows : []
     var seen = {}
@@ -300,6 +329,10 @@
       var entry = { id: round.id, venue: venue, decision: round.decision }
       if (round.submittedAt !== null && typeof round.submittedAt === 'object' && round.submittedAt.kind === 'date') entry.submittedAt = round.submittedAt
       if (round.decidedAt !== null && typeof round.decidedAt === 'object' && round.decidedAt.kind === 'date') entry.decidedAt = round.decidedAt
+      if (round.deadline !== null && typeof round.deadline === 'object' && round.deadline.kind === 'date') entry.deadline = round.deadline
+      var checklist = cleanChecklist(round.checklist)
+      if (checklist.length > 0) entry.checklist = checklist
+      if (round.frozenAt !== null && typeof round.frozenAt === 'object' && round.frozenAt.kind === 'date') entry.frozenAt = round.frozenAt
       var note = textOf(round.note)
       if (note !== '') entry.note = note
       out.push(entry)
@@ -307,7 +340,7 @@
     return out
   }
 
-  /** 修回事项：反馈、改动与证据；指向不存在的轮次时丢弃。 */
+  /** 修回事项：反馈、改动与证据；指向不存在的轮次时丢弃，标为不改时必须写理由。 */
   function cleanRevisions(rows, rounds) {
     var list = Array.isArray(rows) ? rows : []
     var roundIds = {}
@@ -325,8 +358,21 @@
       if (feedback === '' || feedback.length > REVISION_TEXT || !isRevisionStatus(revision.status)) continue
       seen[revision.id] = true
       var entry = { id: revision.id, roundId: revision.roundId, feedback: feedback, status: revision.status }
+      var reviewer = textOf(revision.reviewer)
+      if (reviewer !== '' && reviewer.length <= REVIEWER_LENGTH) entry.reviewer = reviewer
+      var commentNo = textOf(revision.commentNo)
+      if (commentNo !== '' && commentNo.length <= COMMENT_NO_LENGTH) entry.commentNo = commentNo
       var change = textOf(revision.change)
       if (change !== '' && change.length <= REVISION_TEXT) entry.change = change
+      var location = textOf(revision.location)
+      if (location !== '' && location.length <= LOCATION_LENGTH) entry.location = location
+      var reply = textOf(revision.reply)
+      if (reply !== '' && reply.length <= REVISION_TEXT) entry.reply = reply
+      var reason = textOf(revision.reason)
+      if (reason !== '' && reason.length <= REVISION_TEXT) entry.reason = reason
+      if (revision.status === 'declined' && entry.reason === undefined) continue
+      var actionId = textOf(revision.actionId)
+      if (actionId !== '' && actionId.length <= 64) entry.actionId = actionId
       var materials = cleanMaterials(revision.materials)
       if (materials.length > 0) entry.materials = materials
       out.push(entry)
@@ -352,6 +398,103 @@
     return text.t(decisionKey(round.decision)) + ' · ' + venue
   }
 
+  /** 一个日期或时刻读成 `YYYY-MM-DD`；读不出来时是空串。 */
+  function dueDateOf(due) {
+    if (due === null || typeof due !== 'object') return ''
+    if (due.kind === 'date' && typeof due.date === 'string') return due.date
+    if (due.kind === 'instant' && typeof due.at === 'string') return dateOf(due.at)
+    return ''
+  }
+
+  /** 检查项状态读成文案键。 */
+  function checkStatusKey(status) {
+    return status === 'ready' ? 'checkReady' : 'checkMissing'
+  }
+
+  /**
+   * 选中的一轮投稿写成 Markdown：刊会、决定、日期、检查表与这一轮的修回事项。
+   *
+   * 没备齐的检查项与没填的回复都照实写出来，复制出去就是一份可直接核对的清单。
+   *
+   * @param {object} record - 一条稿件。
+   * @param {string} roundId - 选中的投稿轮次。
+   * @param {{ t: function(string): string }} text - 文案。
+   * @returns {string} Markdown 文本；轮次不存在时是空串。
+   */
+  function roundMarkdown(record, roundId, text) {
+    if (record === null || typeof record !== 'object') return ''
+    var rounds = Array.isArray(record.submissions) ? record.submissions : []
+    var round = null
+    for (var at = 0; at < rounds.length; at += 1) {
+      if (rounds[at] !== null && typeof rounds[at] === 'object' && rounds[at].id === roundId) round = rounds[at]
+    }
+    if (round === null) return ''
+    var lines = ['# ' + text.t('mdRound') + ' · ' + String(record.title), '']
+    lines.push('- ' + text.t('venue') + '：' + String(round.venue))
+    lines.push('- ' + text.t('decision') + '：' + text.t(decisionKey(round.decision)))
+    var submitted = dueDateOf(round.submittedAt)
+    if (submitted !== '') lines.push('- ' + text.t('submittedAt') + '：' + submitted)
+    var decided = dueDateOf(round.decidedAt)
+    if (decided !== '') lines.push('- ' + text.t('decidedAt') + '：' + decided)
+    var deadline = dueDateOf(round.deadline)
+    if (deadline !== '') lines.push('- ' + text.t('roundDeadline') + '：' + deadline)
+    var frozen = dueDateOf(round.frozenAt)
+    if (frozen !== '') lines.push('- ' + text.t('roundFrozenAt') + '：' + frozen)
+    var note = textOf(round.note)
+    if (note !== '') lines.push('- ' + text.t('roundNote') + '：' + note)
+    var checklist = Array.isArray(round.checklist) ? round.checklist : []
+    lines.push('', '## ' + text.t('mdChecklist'))
+    if (checklist.length === 0) lines.push(text.t('checklistEmpty'))
+    var missing = 0
+    for (var check = 0; check < checklist.length; check += 1) {
+      var item = checklist[check]
+      if (item === null || typeof item !== 'object') continue
+      var label = textOf(item.label)
+      if (label === '') continue
+      if (item.status === 'missing') missing += 1
+      var version = textOf(item.version)
+      lines.push('- ' + (item.status === 'ready' ? '[x] ' : '[ ] ') + label + (version !== '' ? '（' + version + '）' : ''))
+    }
+    if (missing > 0) lines.push('- ' + text.t('mdMissing') + '：' + String(missing))
+    var revisions = []
+    if (Array.isArray(record.revisions)) {
+      for (var rev = 0; rev < record.revisions.length; rev += 1) {
+        var revision = record.revisions[rev]
+        if (revision !== null && typeof revision === 'object' && revision.roundId === roundId) revisions.push(revision)
+      }
+    }
+    lines.push('', '## ' + text.t('mdRevisions'))
+    if (revisions.length === 0) lines.push(text.t('mdNone'))
+    for (var index = 0; index < revisions.length; index += 1) {
+      var entry = revisions[index]
+      var reviewer = textOf(entry.reviewer)
+      var commentNo = textOf(entry.commentNo)
+      var head = '### ' + String(index + 1) + '.'
+      if (reviewer !== '') head += ' ' + reviewer
+      if (commentNo !== '') head += ' · ' + text.t('revisionCommentNo') + ' ' + commentNo
+      if (reviewer === '' && commentNo === '') head += ' ' + text.t('revisionFeedback')
+      lines.push('', head)
+      lines.push('- ' + text.t('revisionStatus') + '：' + text.t(revisionKey(entry.status)))
+      lines.push('- ' + text.t('mdFeedback') + '：' + textOf(entry.feedback))
+      var location = textOf(entry.location)
+      if (location !== '') lines.push('- ' + text.t('mdLocation') + '：' + location)
+      var change = textOf(entry.change)
+      if (change !== '') lines.push('- ' + text.t('mdChange') + '：' + change)
+      var reply = textOf(entry.reply)
+      if (reply !== '') lines.push('- ' + text.t('mdReply') + '：' + reply)
+      var reason = textOf(entry.reason)
+      if (reason !== '') lines.push('- ' + text.t('mdReason') + '：' + reason)
+      if (typeof entry.actionId === 'string' && entry.actionId !== '') lines.push('- ' + text.t('mdAction') + '：' + entry.actionId)
+      var materials = Array.isArray(entry.materials) ? entry.materials : []
+      for (var mat = 0; mat < materials.length; mat += 1) {
+        var material = materials[mat]
+        if (material === null || typeof material !== 'object') continue
+        lines.push('- ' + text.t('mdEvidence') + '：' + String(material.title) + ' — ' + String(material.url))
+      }
+    }
+    return lines.join('\n') + '\n'
+  }
+
   /** 日期输入与记录里的 `{ kind: 'date' }` 互转。 */
   function dateValue(text, timeZone) {
     return typeof text === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(text)
@@ -364,6 +507,17 @@
       return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
     } catch (error) {
       return 'UTC'
+    }
+  }
+
+  /** 某个时区里的今天，`YYYY-MM-DD`；冻结轮次时用它记日期。 */
+  function todayIn(timeZone, stamp) {
+    var at = typeof stamp === 'number' && isFinite(stamp) ? new Date(stamp) : new Date()
+    var name = typeof timeZone === 'string' && timeZone !== '' ? timeZone : 'UTC'
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: name, year: 'numeric', month: '2-digit', day: '2-digit' }).format(at)
+    } catch (error) {
+      return new Date(at.getTime()).toISOString().slice(0, 10)
     }
   }
 
@@ -394,11 +548,19 @@
     PLOT_REPOSITORY: PLOT_REPOSITORY,
     PLOT_COMMIT: PLOT_COMMIT,
     FIGURE_CONCLUSION: FIGURE_CONCLUSION,
+    MAX_CHECKLIST: MAX_CHECKLIST,
+    CHECK_LABEL_LENGTH: CHECK_LABEL_LENGTH,
+    CHECK_VERSION_LENGTH: CHECK_VERSION_LENGTH,
+    REVIEWER_LENGTH: REVIEWER_LENGTH,
+    COMMENT_NO_LENGTH: COMMENT_NO_LENGTH,
+    LOCATION_LENGTH: LOCATION_LENGTH,
+    CHECK_STATUSES: CHECK_STATUSES,
     stageKey: stageKey,
     isStage: isStage,
     figureKey: figureKey,
     decisionKey: decisionKey,
     revisionKey: revisionKey,
+    checkStatusKey: checkStatusKey,
     isFigureKind: isFigureKind,
     isDecision: isDecision,
     isRevisionStatus: isRevisionStatus,
@@ -413,12 +575,16 @@
     cleanFigureRuns: cleanFigureRuns,
     cleanPlot: cleanPlot,
     cleanFigures: cleanFigures,
+    cleanChecklist: cleanChecklist,
     cleanRounds: cleanRounds,
     cleanRevisions: cleanRevisions,
     openRevisionCount: openRevisionCount,
     roundLabel: roundLabel,
+    dueDateOf: dueDateOf,
+    roundMarkdown: roundMarkdown,
     dateValue: dateValue,
     zone: zone,
+    todayIn: todayIn,
     fill: fill
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)

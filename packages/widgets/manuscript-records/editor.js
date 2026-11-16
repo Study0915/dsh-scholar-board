@@ -209,7 +209,9 @@
       if (nodes.meetingPicker !== null) nodes.meetingPicker.disabled = trashed
       if (nodes.actionPicker !== null) nodes.actionPicker.disabled = trashed
       var deepControls = ctx.card.querySelectorAll('[data-deep]')
-      for (var at = 0; at < deepControls.length; at += 1) deepControls[at].disabled = trashed
+      if (trashed) {
+        for (var at = 0; at < deepControls.length; at += 1) deepControls[at].disabled = true
+      }
       nodes.saveButton.disabled = trashed
       nodes.saveButton.textContent = t('save')
       if (trashed) {
@@ -678,11 +680,18 @@
       addRound: deep.addRound,
       updateRound: deep.updateRound,
       removeRound: deep.removeRound,
+      toggleFreeze: deep.toggleFreeze,
+      addCheck: deep.addCheck,
+      removeCheck: deep.removeCheck,
       addRevision: deep.addRevision,
       updateRevision: deep.updateRevision,
       removeRevision: deep.removeRevision,
       addRevisionMaterial: deep.addRevisionMaterial,
-      removeRevisionMaterial: deep.removeRevisionMaterial
+      removeRevisionMaterial: deep.removeRevisionMaterial,
+      convertRevisionToAction: deep.convertRevisionToAction,
+      openExport: deep.openExport,
+      renderExport: deep.renderExport,
+      selectExport: deep.selectExport
     }
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)

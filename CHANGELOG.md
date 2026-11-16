@@ -8,11 +8,19 @@
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">问题修复</h3>
+<h3 id="cn-unreleased">新增功能</h3>
+
+- 小论文卡的投稿轮次增加期限、用户定义的材料检查表与冻结时间：检查项有稳定 id、标签、缺/已就绪状态与可选版本说明，一轮最多 40 项；冻结只写日期并锁住该轮的检查表、期限与版本控件，解冻由人再点一次，旧轮次不被后续编辑覆盖。修回条目增加审稿人称呼、意见编号、修改位置、回复草稿与不采纳理由，标为不采纳时理由必填；意见可转行动项，按稿件与修回条目 id 重复点击回到已有行动项。按选定轮次导出 Markdown，逐项列出检查表、缺失数、意见、改动、回复、证据标题与缺失项。毕业论文的章节可关联课题、稿件与研究记录，待补实验可写方案并指向行动项，完成状态仍由人维护。记录契约、宿主读写校验、检索、导出导入、两张卡片与单元测试同步覆盖，旧投稿记录照常读取。
+
+### 问题修复
 
 - 发布管线沿用 CHANGELOG 里已有的版本段：打包的版本已经由发布提交写进 CHANGELOG 时，不再插一个只有占位说明的空段，发布说明取完整原文；这一版还有待发布条目时直接报错，不丢条目。
 
-<h3 id="en-unreleased">Bug Fixes</h3>
+<h3 id="en-unreleased">New Features</h3>
+
+- Manuscript submission rounds now carry a deadline, a user-defined material checklist and a freeze date: each check has a stable id, label, missing/ready status and optional version note, up to 40 per round; freezing records the date and locks that round's checklist, deadline and version controls until a person unfreezes it, so older rounds are not overwritten by later edits. Revision items gained reviewer, comment number, location, reply draft and a decline reason, which is required when an item is marked declined; an item can be converted to an action, and repeated clicks return to the existing action for the same manuscript and item. A selected round exports to Markdown with the checklist, missing count, comments, changes, replies, evidence titles and missing items. Thesis chapters can link topics, manuscripts and research notes, and experiments can record a plan and link an action, while completion stays manual. Contracts, host validation, search, export/import, both cards and unit tests cover the new fields, and older submission records still load.
+
+### Bug Fixes
 
 - The release pipeline reuses the version section already in the CHANGELOG: when the packaged version was recorded by the release commit, it no longer prepends a placeholder-only section and the release notes use the full text; pending fragments for an already recorded version now fail the run instead of being dropped.
 

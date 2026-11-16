@@ -68,6 +68,11 @@ export const RECORDS_LIMITS = {
   materialDeviceLength: 80,
   materialVersionLength: 80,
   literatureExternal: 4,
+  roundChecklist: 40,
+  reviewerLength: 80,
+  commentNoLength: 40,
+  locationLength: 200,
+  chapterLinks: 20,
 } as const
 
 /** 领域记录的十二种类型；`template` 只由模板面板读写，不出现在关联选择器里。 */
@@ -136,24 +141,58 @@ export interface EvidenceRef {
 /** 一轮投稿的结果；拒稿、撤稿与转投都留在这里，旧轮次不删。 */
 export type SubmissionDecision = 'pending' | 'minor' | 'major' | 'accepted' | 'rejected' | 'withdrawn' | 'transferred'
 
+/** 投稿检查项的状态：未备与已备。 */
+export type SubmissionCheckStatus = 'missing' | 'ready'
+
+/**
+ * 一轮投稿里的提交材料检查项：正文、补充、声明、图表与代码数据说明等由用户自己定义。
+ *
+ * 版本说明是这一轮冻结时的快照；旧轮次的清单不因后来的修改而变。
+ */
+export interface SubmissionCheckItem {
+  id: string
+  label: string
+  status: SubmissionCheckStatus
+  version?: string
+}
+
 export interface SubmissionRound {
   id: string
   venue: string
   submittedAt?: Due
   decision: SubmissionDecision
   decidedAt?: Due
+  /** 这一轮要交出去的期限。 */
+  deadline?: Due
+  /** 提交材料检查表；冻结后不再随别的轮次改动。 */
+  checklist?: SubmissionCheckItem[]
+  /** 清单冻结的日期；只记录，不阻止用户手动解冻。 */
+  frozenAt?: Due
   note?: string
 }
 
 /** 一条修回事项：审稿反馈、对应改动与证据材料。 */
 export type RevisionStatus = 'todo' | 'doing' | 'done' | 'declined'
 
+/**
+ * 审稿意见的一条：审稿人称呼与意见编号只是用户写的标签，不是认证身份。
+ *
+ * `actionId` 指向由这条意见转出的行动项；同一意见按稳定条目 id 去重，不重复创建。
+ * 行动项完成不等于回复已完成，回复仍需单独填写。
+ */
 export interface RevisionItem {
   id: string
   roundId: string
+  reviewer?: string
+  commentNo?: string
   feedback: string
   change?: string
+  location?: string
+  reply?: string
   status: RevisionStatus
+  /** 不采纳时的理由；标为不采纳时必填。 */
+  reason?: string
+  actionId?: string
   materials?: MaterialRef[]
 }
 
@@ -391,6 +430,8 @@ export interface ThesisChapter {
   status: ThesisChapterStatus
   question?: string
   note?: string
+  /** 这一章用到课题、稿件或研究记录；删除章节不会删除这些成果。 */
+  links?: RecordRef[]
 }
 
 /** 已有成果：指向一条小论文或研究记录，标题由宿主现取。 */
@@ -411,6 +452,10 @@ export interface ThesisExperiment {
   id: string
   title: string
   status: ThesisItemStatus
+  /** 补这项实验用的方案；只记文字，不启动实验。 */
+  plan?: string
+  /** 对应的行动项；完成行动项不自动把实验标成做完。 */
+  actionId?: string
   note?: string
 }
 

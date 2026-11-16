@@ -93,6 +93,11 @@
     confirmText: card.querySelector('[data-role="confirm-text"]'),
     conflict: card.querySelector('[data-role="conflict"]'),
     conflictText: card.querySelector('[data-role="conflict-text"]'),
+    exportDialog: card.querySelector('[data-role="export"]'),
+    exportHint: card.querySelector('[data-role="export-hint"]'),
+    exportRound: card.querySelector('[data-role="export-round"]'),
+    exportText: card.querySelector('[data-role="export-text"]'),
+    exportSelectButton: card.querySelector('[data-action="export-select"]'),
     sr: card.querySelector('[data-role="sr"]')
   }
   if (nodes.detailState !== null) nodes.detailState.setAttribute('role', 'status')
@@ -206,6 +211,11 @@
     put(nodes.addFigure, t('addFigure'))
     put(nodes.addRound, t('addRound'))
     put(nodes.addRevision, t('addRevision'))
+    put(card.querySelector('[data-action="export-markdown"]'), t('exportMarkdown'))
+    put(card.querySelector('[data-role="export-title"]'), t('exportMarkdown'))
+    put(card.querySelector('[data-role="label-export-round"]'), t('exportRound'))
+    put(card.querySelector('[data-action="export-select"]'), t('exportAll'))
+    put(card.querySelector('[data-action="export-close"]'), t('close'))
     put(card.querySelector('[data-action="close"]'), t('close'))
     put(card.querySelector('[data-action="add-material"]'), t('addMaterial'))
     put(card.querySelector('[data-action="add-meeting"]'), t('add'))
@@ -459,7 +469,21 @@
   nodes.addRound.addEventListener('click', function () { editor.addRound() })
   nodes.addRevision.addEventListener('click', function () { editor.addRevision() })
   wireDeep(nodes.figures, 'data-figure', function (id, field, value) { editor.updateFigure(id, field, value) })
-  wireDeep(nodes.submissions, 'data-round', function (id, field, value) { editor.updateRound(id, field, value) })
+  if (nodes.submissions !== null) {
+    var applyRound = function (event) {
+      var target = event.target
+      if (!(target instanceof Element)) return
+      if (event.type === 'input' && target.tagName === 'SELECT') return
+      if (event.type === 'change' && target.tagName !== 'SELECT') return
+      var row = target.closest('[data-round]')
+      if (row === null) return
+      var field = target.getAttribute('data-field')
+      if (field === null) return
+      editor.updateRound(row.getAttribute('data-round'), field, target.value, row.getAttribute('data-check'))
+    }
+    nodes.submissions.addEventListener('input', applyRound)
+    nodes.submissions.addEventListener('change', applyRound)
+  }
   wireDeep(nodes.revisions, 'data-revision', function (id, field, value) { editor.updateRevision(id, field, value) })
   if (nodes.figures !== null) {
     nodes.figures.addEventListener('click', function (event) {
@@ -494,8 +518,14 @@
     nodes.submissions.addEventListener('click', function (event) {
       var target = event.target
       if (!(target instanceof Element)) return
-      var remove = target.closest('[data-action="remove-round"]')
-      if (remove !== null) editor.removeRound(remove.getAttribute('data-round'))
+      var action = target.closest('[data-action]')
+      if (action === null) return
+      var name = action.getAttribute('data-action')
+      if (name === 'remove-round') editor.removeRound(action.getAttribute('data-round'))
+      else if (name === 'freeze-round') editor.toggleFreeze(action.getAttribute('data-round'))
+      else if (name === 'add-check') editor.addCheck(action.getAttribute('data-round'))
+      else if (name === 'remove-check') editor.removeCheck(action.getAttribute('data-round'), action.getAttribute('data-check'))
+      else if (name === 'export-markdown') editor.openExport()
     })
   }
   if (nodes.revisions !== null) {
@@ -513,6 +543,7 @@
       if (name === 'remove-revision') editor.removeRevision(action.getAttribute('data-revision'))
       else if (name === 'add-revision-material') editor.addRevisionMaterial(action.getAttribute('data-revision'))
       else if (name === 'remove-revision-material') editor.removeRevisionMaterial(action.getAttribute('data-revision'), action.getAttribute('data-material'))
+      else if (name === 'revision-to-action') editor.convertRevisionToAction(action.getAttribute('data-revision'))
     })
   }
   nodes.confirm.querySelector('[data-action="confirm-keep"]').addEventListener('click', function () { nodes.confirm.close() })
@@ -525,6 +556,10 @@
     nodes.conflict.close()
     editor.reloadLatest()
   })
+  if (nodes.exportRound !== null) nodes.exportRound.addEventListener('change', function () { editor.renderExport() })
+  if (nodes.exportSelectButton !== null) nodes.exportSelectButton.addEventListener('click', function () { editor.selectExport() })
+  var exportClose = card.querySelector('[data-action="export-close"]')
+  if (exportClose !== null && nodes.exportDialog !== null) exportClose.addEventListener('click', function () { nodes.exportDialog.close() })
   var inputs = [nodes.titleInput, nodes.question, nodes.next, nodes.blockers, nodes.target, nodes.dueInput, nodes.stageNote]
   for (var inputAt = 0; inputAt < inputs.length; inputAt += 1) inputs[inputAt].addEventListener('input', function () { editor.onInput() })
   if (nodes.stageSelect !== null) nodes.stageSelect.addEventListener('change', function () { editor.onInput() })

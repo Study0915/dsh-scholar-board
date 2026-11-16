@@ -99,10 +99,16 @@ export function searchTextOf(record: DomainRecord): string {
   for (const round of (Array.isArray(entry.submissions) ? entry.submissions : []) as SubmissionRound[]) {
     if (typeof round?.venue === 'string') parts.push(round.venue)
     if (typeof round?.note === 'string') parts.push(round.note)
+    for (const check of Array.isArray(round?.checklist) ? round.checklist : []) {
+      if (typeof check?.label === 'string') parts.push(check.label)
+      if (typeof check?.version === 'string') parts.push(check.version)
+    }
   }
   for (const revision of (Array.isArray(entry.revisions) ? entry.revisions : []) as RevisionItem[]) {
-    if (typeof revision?.feedback === 'string') parts.push(revision.feedback)
-    if (typeof revision?.change === 'string') parts.push(revision.change)
+    for (const field of ['reviewer', 'commentNo', 'feedback', 'location', 'change', 'reply', 'reason'] as const) {
+      const value = revision?.[field]
+      if (typeof value === 'string') parts.push(value)
+    }
     for (const material of Array.isArray(revision?.materials) ? revision.materials : []) {
       if (typeof material?.title === 'string') parts.push(material.title)
     }
@@ -121,6 +127,7 @@ export function searchTextOf(record: DomainRecord): string {
   for (const experiment of (Array.isArray(entry.experiments) ? entry.experiments : []) as ThesisExperiment[]) {
     if (typeof experiment?.title === 'string') parts.push(experiment.title)
     if (typeof experiment?.note === 'string') parts.push(experiment.note)
+    if (typeof experiment?.plan === 'string') parts.push(experiment.plan)
   }
   for (const milestone of (Array.isArray(entry.milestones) ? entry.milestones : []) as ThesisMilestone[]) {
     if (typeof milestone?.label === 'string') parts.push(milestone.label)

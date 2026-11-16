@@ -121,16 +121,105 @@
     return remove
   }
 
+  /** 章节关联的一行：类型与标题；记录不在可选列表里时直接说明。 */
+  function linkChip(ref, sources, text) {
+    var chip = document.createElement('span')
+    chip.className = 'ts__link'
+    chip.dataset.tone = ref.kind === 'topic' ? 'topic' : 'result'
+    var kind = document.createElement('span')
+    kind.className = 'ts__link-kind'
+    kind.textContent = text.t(linkKindKey(ref.kind))
+    var title = document.createElement('span')
+    title.className = 'ts__link-title'
+    title.textContent = sourceTitle(linkSourceOf(ref, sources), text)
+    var remove = document.createElement('button')
+    remove.type = 'button'
+    remove.className = 'ts__link-remove'
+    remove.textContent = text.t('removeRow')
+    remove.setAttribute('data-link-kind', ref.kind)
+    remove.setAttribute('data-link-id', ref.id)
+    chip.append(kind, title, remove)
+    return chip
+  }
+
+  function linkKindKey(kind) {
+    return kind === 'topic' ? 'linkTopic' : model.resultKey(kind)
+  }
+
+  function linkSourceOf(ref, sources) {
+    var list = Array.isArray(sources) ? sources : []
+    for (var at = 0; at < list.length; at += 1) {
+      var source = list[at]
+      if (source !== null && typeof source === 'object' && source.kind === ref.kind && source.id === ref.id) return source
+    }
+    return null
+  }
+
   /**
-   * 一行章节：标题、状态与移除。
+   * 一行章节：标题、状态、关联成果与课题，以及移除。
    *
-   * @param {object} chapter - `{ title, status }`。
+   * @param {object} chapter - `{ title, status, links }`。
    * @param {number} index - 在组里的位置。
+   * @param {Array} sources - 可关联的课题、稿件与研究记录。
    * @param {{ t: function(string): string }} text - 文案。
    * @returns {HTMLLIElement} 章节行。
    */
-  function chapterRow(chapter, index, text) {
-    return lineOf('chapters', index, text.t('chapterTitle'), chapter, model.chapterKey, model.CHAPTER_STATUSES, text)
+  function chapterRow(chapter, index, sources, text) {
+    var row = document.createElement('li')
+    row.className = 'ts__line ts__line-chapter'
+    row.dataset.kind = 'chapters'
+    row.dataset.index = String(index)
+    var main = document.createElement('div')
+    main.className = 'ts__line-main'
+    var input = document.createElement('input')
+    input.type = 'text'
+    input.className = 'ts__input ts__line-title'
+    input.dataset.part = 'title'
+    input.value = typeof chapter.title === 'string' ? chapter.title : ''
+    input.placeholder = text.t('chapterTitle')
+    input.setAttribute('aria-label', text.t('chapterTitle'))
+    input.maxLength = model.TITLE_LENGTH
+    input.autocomplete = 'off'
+    main.appendChild(input)
+    main.appendChild(statusOf(chapter.status, 'status', model.CHAPTER_STATUSES, model.chapterKey, text))
+    main.appendChild(removeOf(text.t('removeRow')))
+    row.appendChild(main)
+    var links = Array.isArray(chapter.links) ? chapter.links : []
+    if (links.length > 0) {
+      var list = document.createElement('span')
+      list.className = 'ts__links'
+      for (var at = 0; at < links.length; at += 1) list.appendChild(linkChip(links[at], sources, text))
+      row.appendChild(list)
+    }
+    row.appendChild(linkAddOf(links, sources, text))
+    return row
+  }
+
+  /** 关联下拉：列出还没关联的课题、稿件与研究记录。 */
+  function linkAddOf(links, sources, text) {
+    var select = document.createElement('select')
+    select.className = 'ts__input ts__line-link-add'
+    select.dataset.part = 'link-add'
+    select.setAttribute('aria-label', text.t('chapterLinks'))
+    var placeholder = document.createElement('option')
+    placeholder.value = ''
+    placeholder.textContent = links.length === 0 ? text.t('chapterLinksPlaceholder') : text.t('chapterLinksAdd')
+    select.appendChild(placeholder)
+    var list = Array.isArray(sources) ? sources : []
+    for (var at = 0; at < list.length; at += 1) {
+      var source = list[at]
+      if (source === null || typeof source !== 'object' || typeof source.id !== 'string') continue
+      var ref = { kind: source.kind, id: source.id }
+      if (model.linkKey(ref) === '') continue
+      var used = false
+      for (var linkAt = 0; linkAt < links.length; linkAt += 1) if (model.linkKey(links[linkAt]) === model.linkKey(ref)) used = true
+      if (used) continue
+      var option = document.createElement('option')
+      option.value = model.linkKey(ref)
+      option.textContent = sourceTitle(source, text) + ' · ' + text.t(linkKindKey(source.kind))
+      select.appendChild(option)
+    }
+    return select
   }
 
   /**
@@ -187,15 +276,75 @@
   }
 
   /**
-   * 一行待补实验：标题、状态与移除。
+   * 一行待补实验：标题、状态、方案与关联行动项，以及移除。
    *
-   * @param {object} experiment - `{ title, status }`。
+   * @param {object} experiment - `{ title, status, plan, actionId }`。
    * @param {number} index - 在组里的位置。
+   * @param {Array} actions - 可关联的行动项。
    * @param {{ t: function(string): string }} text - 文案。
    * @returns {HTMLLIElement} 实验行。
    */
-  function experimentRow(experiment, index, text) {
-    return lineOf('experiments', index, text.t('experimentTitle'), experiment, model.itemKey, model.ITEM_STATUSES, text)
+  function experimentRow(experiment, index, actions, text) {
+    var row = document.createElement('li')
+    row.className = 'ts__line ts__line-experiment'
+    row.dataset.kind = 'experiments'
+    row.dataset.index = String(index)
+    var main = document.createElement('div')
+    main.className = 'ts__line-main'
+    var input = document.createElement('input')
+    input.type = 'text'
+    input.className = 'ts__input ts__line-title'
+    input.dataset.part = 'title'
+    input.value = typeof experiment.title === 'string' ? experiment.title : ''
+    input.placeholder = text.t('experimentTitle')
+    input.setAttribute('aria-label', text.t('experimentTitle'))
+    input.maxLength = model.TITLE_LENGTH
+    input.autocomplete = 'off'
+    main.appendChild(input)
+    main.appendChild(statusOf(experiment.status, 'status', model.ITEM_STATUSES, model.itemKey, text))
+    main.appendChild(removeOf(text.t('removeRow')))
+    row.appendChild(main)
+    var plan = document.createElement('textarea')
+    plan.className = 'ts__input ts__textarea ts__line-plan'
+    plan.rows = 2
+    plan.dataset.part = 'plan'
+    plan.value = typeof experiment.plan === 'string' ? experiment.plan : ''
+    plan.placeholder = text.t('experimentPlan')
+    plan.setAttribute('aria-label', text.t('experimentPlan'))
+    row.appendChild(plan)
+    row.appendChild(actionSelectOf(experiment.actionId, actions, text))
+    return row
+  }
+
+  /** 实验关联的行动项下拉；行动项不在可选列表里时保留一行「行动项已不在」。 */
+  function actionSelectOf(actionId, actions, text) {
+    var select = document.createElement('select')
+    select.className = 'ts__input ts__line-action'
+    select.dataset.part = 'action'
+    select.setAttribute('aria-label', text.t('experimentAction'))
+    var placeholder = document.createElement('option')
+    placeholder.value = ''
+    placeholder.textContent = text.t('actionPlaceholder')
+    select.appendChild(placeholder)
+    var list = Array.isArray(actions) ? actions : []
+    var found = false
+    for (var at = 0; at < list.length; at += 1) {
+      var action = list[at]
+      if (action === null || typeof action !== 'object' || typeof action.id !== 'string') continue
+      var option = document.createElement('option')
+      option.value = action.id
+      option.textContent = typeof action.title === 'string' && action.title !== '' ? action.title : action.id
+      if (action.id === actionId) found = true
+      select.appendChild(option)
+    }
+    if (!found && typeof actionId === 'string' && actionId !== '') {
+      var missing = document.createElement('option')
+      missing.value = actionId
+      missing.textContent = text.t('actionMissing') + ' · ' + actionId
+      select.appendChild(missing)
+    }
+    select.value = typeof actionId === 'string' ? actionId : ''
+    return select
   }
 
   /**
