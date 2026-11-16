@@ -19,11 +19,16 @@
   var MAX_ITEMS = 100
   var MAX_MILESTONES = 50
   var MAX_ACCEPTANCES = 20
+  var MAX_REVIEWS = 100
+  var MAX_HANDOVERS = 50
+  var ASSIGNMENT_REFS = 20
   var LABEL_LENGTH = 60
   var VERSION_LENGTH = 32
   var TITLE_LENGTH = 200
   var TEXT_LENGTH = 2000
   var OPINION_LENGTH = 1000
+  var REVIEW_OPINION_LENGTH = 2000
+  var REVIEW_DECISION_LENGTH = 200
 
   /** 负责事项的状态文案键。 */
   function taskKey(status) {
@@ -262,11 +267,26 @@
     return text.length > 64 ? '' : text
   }
 
-  /** 一段可选的说明：去掉首尾空白，超过上限时拒绝。 */
+  /** 一组可选说明：去掉首尾空白，超过上限时拒绝。 */
   function noteOf(value, limit) {
     var text = textOf(value)
     if ([...text].length > limit) return null
     return text
+  }
+
+  /** 一组成员 id：去空白、不超过 64 字符、不重复；不是数组时当空。 */
+  function idsOfValue(value) {
+    var list = Array.isArray(value) ? value : []
+    var out = []
+    var seen = {}
+    for (var at = 0; at < list.length; at += 1) {
+      var id = linkOf(list[at])
+      if (id === '' || seen[id] === true) return null
+      seen[id] = true
+      out.push(id)
+      if (out.length > ASSIGNMENT_REFS) return null
+    }
+    return out
   }
 
   /** 一组材料引用：地址只收 http/https，说明必填。 */
@@ -358,6 +378,14 @@
       if (requirement !== '') entry.requirement = requirement
       var actionId = linkOf(row.actionId)
       if (actionId !== '') entry.actionId = actionId
+      var owner = linkOf(row.owner)
+      if (owner !== '') entry.owner = owner
+      var collaborators = idsOfValue(row.collaborators)
+      if (collaborators === null) return null
+      if (collaborators.length > 0) entry.collaborators = collaborators
+      var confirmers = idsOfValue(row.confirmers)
+      if (confirmers === null) return null
+      if (confirmers.length > 0) entry.confirmers = confirmers
       out.push(entry)
       if (out.length > MAX_ITEMS) return null
     }
@@ -501,6 +529,85 @@
     }
   }
 
+  /**
+   * 评审：对象、意见与结论必填；对象是交付物或需求时还要写对象 id。
+   *
+   * @param {Array} rows - `{ id, target, targetId, targetVersion, reviewer, at, opinion, decision, followUp }`。
+   * @returns {Array|null} 归一后的评审；有问题时是 null。
+   */
+  function cleanReviews(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var out = []
+    var seen = {}
+    for (var at = 0; at < list.length; at += 1) {
+      var row = list[at]
+      if (row === null || typeof row !== 'object') return null
+      var id = linkOf(row.id)
+      var target = inList(['project', 'deliverable', 'requirement'], row.target) ? row.target : ''
+      if (id === '' || seen[id] === true || target === '') return null
+      seen[id] = true
+      var targetId = linkOf(row.targetId)
+      if (target !== 'project' && targetId === '') return null
+      var versionText = textOf(row.targetVersion)
+      var targetVersion = versionText === '' ? '' : labelOf(versionText, VERSION_LENGTH)
+      if (targetVersion === null) return null
+      var opinion = labelOf(row.opinion, REVIEW_OPINION_LENGTH)
+      var decision = labelOf(row.decision, REVIEW_DECISION_LENGTH)
+      var when = dueOf(row, 'at')
+      var followUp = noteOf(row.followUp, REVIEW_OPINION_LENGTH)
+      if (opinion === null || decision === null || when === null || followUp === null) return null
+      var entry = { id: id, target: target }
+      if (targetId !== '') entry.targetId = targetId
+      if (targetVersion !== '') entry.targetVersion = targetVersion
+      var reviewer = linkOf(row.reviewer)
+      if (reviewer !== '') entry.reviewer = reviewer
+      if (when !== undefined) entry.at = when
+      entry.opinion = opinion
+      entry.decision = decision
+      if (followUp !== '') entry.followUp = followUp
+      out.push(entry)
+      if (out.length > MAX_REVIEWS) return null
+    }
+    return out
+  }
+
+  /**
+   * 交接：确认状态必填；未确认时不写确认时间。
+   *
+   * @param {Array} rows - `{ id, receiver, at, progress, materials, instructions, issues, todos, confirmed, confirmedAt }`。
+   * @returns {Array|null} 归一后的交接；有问题时是 null。
+   */
+  function cleanHandovers(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var out = []
+    var seen = {}
+    for (var at = 0; at < list.length; at += 1) {
+      var row = list[at]
+      if (row === null || typeof row !== 'object') return null
+      var id = linkOf(row.id)
+      if (id === '' || seen[id] === true || typeof row.confirmed !== 'boolean') return null
+      seen[id] = true
+      var when = dueOf(row, 'at')
+      var confirmedAt = dueOf(row, 'confirmedAt')
+      if (when === null || confirmedAt === null) return null
+      if (confirmedAt !== undefined && row.confirmed !== true) return null
+      var entry = { id: id, confirmed: row.confirmed }
+      var receiver = linkOf(row.receiver)
+      if (receiver !== '') entry.receiver = receiver
+      if (when !== undefined) entry.at = when
+      var fields = ['progress', 'materials', 'instructions', 'issues', 'todos']
+      for (var fieldAt = 0; fieldAt < fields.length; fieldAt += 1) {
+        var text = noteOf(row[fields[fieldAt]], TEXT_LENGTH)
+        if (text === null) return null
+        if (text !== '') entry[fields[fieldAt]] = text
+      }
+      if (confirmedAt !== undefined) entry.confirmedAt = confirmedAt
+      out.push(entry)
+      if (out.length > MAX_HANDOVERS) return null
+    }
+    return out
+  }
+
   /** 文案里的 `{name}` 替换。 */
   function fill(text, values) {
     var out = text
@@ -523,11 +630,16 @@
     MAX_ITEMS: MAX_ITEMS,
     MAX_MILESTONES: MAX_MILESTONES,
     MAX_ACCEPTANCES: MAX_ACCEPTANCES,
+    MAX_REVIEWS: MAX_REVIEWS,
+    MAX_HANDOVERS: MAX_HANDOVERS,
+    ASSIGNMENT_REFS: ASSIGNMENT_REFS,
     LABEL_LENGTH: LABEL_LENGTH,
     VERSION_LENGTH: VERSION_LENGTH,
     TITLE_LENGTH: TITLE_LENGTH,
     TEXT_LENGTH: TEXT_LENGTH,
     OPINION_LENGTH: OPINION_LENGTH,
+    REVIEW_OPINION_LENGTH: REVIEW_OPINION_LENGTH,
+    REVIEW_DECISION_LENGTH: REVIEW_DECISION_LENGTH,
     taskKey: taskKey,
     deliverableKey: deliverableKey,
     milestoneKey: milestoneKey,
@@ -563,6 +675,9 @@
     cleanCommunications: cleanCommunications,
     cleanMilestones: cleanMilestones,
     cleanIssues: cleanIssues,
+    cleanReviews: cleanReviews,
+    cleanHandovers: cleanHandovers,
+    idsOfValue: idsOfValue,
     materialValid: materialValid,
     openableUrl: openableUrl,
     linkOf: linkOf,

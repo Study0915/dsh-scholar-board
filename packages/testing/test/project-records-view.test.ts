@@ -53,6 +53,11 @@ interface ProjectModel {
   cleanCommunications(rows: unknown): Array<Record<string, unknown>> | null
   cleanMilestones(rows: unknown): Array<Record<string, unknown>> | null
   cleanIssues(rows: unknown): Array<Record<string, unknown>> | null
+  cleanReviews(rows: unknown): Array<Record<string, unknown>> | null
+  cleanHandovers(rows: unknown): Array<Record<string, unknown>> | null
+  idsOfValue(value: unknown): string[] | null
+  MAX_REVIEWS: number
+  MAX_HANDOVERS: number
   materialValid(url: unknown, title: unknown): boolean
   openableUrl(url: unknown): boolean
   fill(text: string, values: Record<string, unknown>): string
@@ -296,6 +301,52 @@ describe('保存前的整理', () => {
     expect(model.cleanIssues([{ id: 'i1', title: '待确认', status: 'closed' }])).toBeNull()
     expect(model.cleanIssues([])).toEqual([])
   })
+
+  it('事项的分工用成员 id；重复或空的 id 时拒绝', () => {
+    expect(model.cleanTasks([
+      { id: 'p1', title: '搭建仿真', status: 'doing', owner: 'm1', collaborators: ['m2', 'm3'], confirmers: ['m4'] },
+    ])).toEqual([
+      { id: 'p1', title: '搭建仿真', status: 'doing', owner: 'm1', collaborators: ['m2', 'm3'], confirmers: ['m4'] },
+    ])
+    expect(model.cleanTasks([{ id: 'p1', title: '搭建仿真', status: 'todo', owner: '' }])).toEqual([
+      { id: 'p1', title: '搭建仿真', status: 'todo' },
+    ])
+    expect(model.cleanTasks([{ id: 'p1', title: '搭建仿真', status: 'todo', collaborators: ['m2', 'm2'] }])).toBeNull()
+    expect(model.cleanTasks([{ id: 'p1', title: '搭建仿真', status: 'todo', confirmers: [''] }])).toBeNull()
+    expect(model.idsOfValue(['m1', 'm2'])).toEqual(['m1', 'm2'])
+    expect(model.idsOfValue(undefined)).toEqual([])
+  })
+
+  it('评审要有对象、意见与结论；指向交付物或需求时还要写对象 id', () => {
+    expect(model.cleanReviews([
+      { id: 'rv1', target: 'project', reviewer: 'm1', at: '2026-11-12', opinion: ' 范围合适 ', decision: '通过', followUp: '下月复评' },
+      { id: 'rv2', target: 'deliverable', targetId: 'd1', targetVersion: 'v0.3', opinion: '验收通过', decision: '通过' },
+    ])).toEqual([
+      { id: 'rv1', target: 'project', reviewer: 'm1', at: expect.objectContaining({ kind: 'date', date: '2026-11-12' }), opinion: '范围合适', decision: '通过', followUp: '下月复评' },
+      { id: 'rv2', target: 'deliverable', targetId: 'd1', targetVersion: 'v0.3', opinion: '验收通过', decision: '通过' },
+    ])
+    expect(model.cleanReviews([{ id: 'rv1', target: 'deliverable', opinion: 'x', decision: 'y' }])).toBeNull()
+    expect(model.cleanReviews([{ id: 'rv1', target: 'project', opinion: '', decision: 'y' }])).toBeNull()
+    expect(model.cleanReviews([{ id: 'rv1', target: 'project', opinion: 'x', decision: '' }])).toBeNull()
+    expect(model.cleanReviews([{ id: 'rv1', target: 'other', opinion: 'x', decision: 'y' }])).toBeNull()
+    expect(model.cleanReviews([
+      { id: 'rv1', target: 'project', opinion: 'x', decision: 'y' },
+      { id: 'rv1', target: 'project', opinion: 'x', decision: 'y' },
+    ])).toBeNull()
+    expect(model.cleanReviews([])).toEqual([])
+  })
+
+  it('交接的确认状态必填，未确认时不写确认时间', () => {
+    expect(model.cleanHandovers([
+      { id: 'ho1', receiver: 'm2', at: '2026-11-12', progress: '仿真链路跑通', materials: '代码包 v0.3', instructions: '先看回归记录', issues: '数据范围', todos: '补单小区结果', confirmed: true, confirmedAt: '2026-11-13' },
+    ])).toEqual([
+      { id: 'ho1', receiver: 'm2', at: expect.objectContaining({ kind: 'date', date: '2026-11-12' }), progress: '仿真链路跑通', materials: '代码包 v0.3', instructions: '先看回归记录', issues: '数据范围', todos: '补单小区结果', confirmed: true, confirmedAt: expect.objectContaining({ kind: 'date', date: '2026-11-13' }) },
+    ])
+    expect(model.cleanHandovers([{ id: 'ho1', confirmed: false, confirmedAt: '2026-11-13' }])).toBeNull()
+    expect(model.cleanHandovers([{ id: 'ho1' }])).toBeNull()
+    expect(model.cleanHandovers([{ id: 'ho1', confirmed: false }])).toEqual([{ id: 'ho1', confirmed: false }])
+    expect(model.cleanHandovers([])).toEqual([])
+  })
 })
 
 describe('回收倒计时、地址与文案', () => {
@@ -512,7 +563,7 @@ describe('样例与清单', () => {
       'widget-board:records.draft',
       'widget-board:records.open',
     ])
-    expect(manifest.scripts).toEqual(['project-model.js', 'requirements.js', 'copy.js', 'view.js', 'rows.js', 'deep-rows.js', 'editor.js'])
+    expect(manifest.scripts).toEqual(['project-model.js', 'requirements.js', 'copy.js', 'view.js', 'rows.js', 'deep-rows.js', 'collab.js', 'editor.js'])
     expect(Object.keys(manifest.text).sort()).toEqual(Object.keys(copy).sort())
   })
 })

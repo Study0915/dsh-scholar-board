@@ -26,6 +26,8 @@
     var WRITE = 'widget-board:records.write'
     var DRAFT = 'widget-board:records.draft'
     var draftTimer = null
+    var directory = widget !== undefined && typeof widget.createMemberDirectory === 'function' ? widget.createMemberDirectory() : null
+    var membersReady = null
     var relations = widget.createRecordRelations({ container: nodes.detail,
       current: function () { return app.baseline },
       onChange: function (refs) { app.related = refs; onInput() }
@@ -53,6 +55,73 @@
     }
 
     var STATUS_KEYS = { todo: 'actionTodo', doing: 'actionDoing', blocked: 'actionBlocked', done: 'actionDone', cancelled: 'actionCancelled' }
+
+    /** 成员目录读一次；读失败时下次打开再试，已选的 id 不丢。 */
+    function loadMembers() {
+      if (directory === null) return Promise.resolve(false)
+      if (membersReady === null) {
+        membersReady = directory.load().then(function () {
+          return true
+        }, function () {
+          membersReady = null
+          return false
+        })
+      }
+      return membersReady
+    }
+
+    /** 参与者多选：先按缓存画，目录到了再补全；没有目录能力时只显示已记录的 id。 */
+    function renderParticipants() {
+      var select = nodes.participants
+      if (select === null) return
+      if (directory === null) {
+        var items = []
+        for (var at = 0; at < app.participants.length; at += 1) {
+          var option = document.createElement('option')
+          option.value = app.participants[at]
+          option.textContent = app.participants[at]
+          option.selected = true
+          items.push(option)
+        }
+        select.replaceChildren.apply(select, items)
+        return
+      }
+      directory.fill(select, app.participants, t('participantsEmpty'))
+      if (select.options.length === 0) {
+        var empty = document.createElement('option')
+        empty.value = ''
+        empty.textContent = t('participantsEmpty')
+        empty.disabled = true
+        select.append(empty)
+      }
+    }
+
+    function fillParticipants(list) {
+      app.participants = list.slice()
+      renderParticipants()
+      loadMembers().then(function (loaded) {
+        if (loaded) renderParticipants()
+      })
+    }
+
+    /** 读多选框当前选中的成员 id。 */
+    function chosenParticipants() {
+      var select = nodes.participants
+      if (select === null) return []
+      var out = []
+      for (var at = 0; at < select.selectedOptions.length; at += 1) {
+        var value = select.selectedOptions[at].value
+        if (value !== '') out.push(value)
+      }
+      return out
+    }
+
+    if (nodes.participants !== null) {
+      nodes.participants.addEventListener('change', function () {
+        app.participants = chosenParticipants()
+        onInput()
+      })
+    }
 
     /** 一条行动项的引用行：状态与标题，只读。 */
     function relatedRow(record) {
@@ -206,6 +275,7 @@
       relations.load(Array.isArray(form.related) ? form.related : app.related)
       nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
       nodes.dateInput.value = typeof form.date === 'string' ? form.date : ''
+      fillParticipants(Array.isArray(form.participants) ? form.participants : [])
       nodes.topics.value = typeof form.topics === 'string' ? form.topics : ''
       nodes.feedback.value = typeof form.feedback === 'string' ? form.feedback : ''
       nodes.questions.value = typeof form.questions === 'string' ? form.questions : ''
@@ -226,6 +296,7 @@
       nodes.trashAction.hidden = trashed
       nodes.titleInput.disabled = trashed
       nodes.dateInput.disabled = trashed
+      if (nodes.participants !== null) nodes.participants.disabled = trashed
       nodes.topics.disabled = trashed
       nodes.feedback.disabled = trashed
       nodes.questions.disabled = trashed
@@ -252,6 +323,7 @@
 
     function openRecord(record) {
       app.related = Array.isArray(record.related) ? record.related.slice() : []
+      app.participants = Array.isArray(record.participants) ? record.participants.slice() : []
       app.editing = true
       app.baseline = record
       app.draftId = null
@@ -263,6 +335,7 @@
       fillForm({
         title: record.title,
         date: pure.dateText(record),
+        participants: Array.isArray(record.participants) ? record.participants : [],
         topics: record.topics,
         feedback: record.feedback,
         questions: record.openQuestions
@@ -290,6 +363,7 @@
 
     function openNew() {
       app.related = []
+      app.participants = []
       app.editing = true
       app.baseline = null
       app.draftId = null
@@ -298,7 +372,7 @@
       app.derivedFrom = null
       app.derivedTitle = null
       app.materials = []
-      fillForm({ title: '', date: '', topics: '', feedback: '', questions: '' })
+      fillForm({ title: '', date: '', participants: [], topics: '', feedback: '', questions: '' })
       showDetail(null, true)
       renderDerived()
       if (extra.generatedSection !== null) extra.generatedSection.hidden = true
@@ -354,6 +428,7 @@
         related: relations.value(),
         title: nodes.titleInput.value,
         date: nodes.dateInput.value,
+        participants: app.participants,
         topics: nodes.topics.value,
         feedback: nodes.feedback.value,
         questions: nodes.questions.value,
@@ -402,6 +477,7 @@
         if (Array.isArray(form.related)) { app.related = form.related; relations.load(form.related) }
         nodes.titleInput.value = typeof form.title === 'string' ? form.title : ''
         nodes.dateInput.value = typeof form.date === 'string' ? form.date : ''
+        if (Array.isArray(form.participants)) fillParticipants(form.participants)
         nodes.topics.value = typeof form.topics === 'string' ? form.topics : ''
         nodes.feedback.value = typeof form.feedback === 'string' ? form.feedback : ''
         nodes.questions.value = typeof form.questions === 'string' ? form.questions : ''
@@ -426,6 +502,7 @@
       var fields = {
         title: title,
         date: nodes.dateInput.value === '' ? null : pure.dateValue(nodes.dateInput.value, pure.zone()),
+        participants: app.participants.length === 0 ? null : app.participants.slice(),
         topics: nodes.topics.value.trim() === '' ? null : nodes.topics.value.trim(),
         feedback: nodes.feedback.value.trim() === '' ? null : nodes.feedback.value.trim(),
         openQuestions: nodes.questions.value.trim() === '' ? null : nodes.questions.value.trim(),
@@ -527,6 +604,7 @@
       fillForm({
         title: latest.title,
         date: pure.dateText(latest),
+        participants: Array.isArray(latest.participants) ? latest.participants : [],
         topics: latest.topics,
         feedback: latest.feedback,
         questions: latest.openQuestions

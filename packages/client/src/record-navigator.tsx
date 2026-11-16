@@ -156,7 +156,7 @@ export function RecordNavigator({ anchor }: { anchor: HTMLElement | null }): Rea
           <h2>{record.title}{badge(record)}</h2>
           <dl>{Object.entries(record).filter(([key, value]) => key in labels && value !== undefined).map(([key, value]) =>
             <div key={key}><dt>{zh ? labels[key] : key}</dt><dd><RecordValue value={value} zh={zh} /></dd></div>)}</dl>
-          {record.materials?.length ? <><h3>{t('材料', 'Materials')}</h3><ul>{record.materials.map(material => <li key={material.id}><a href={material.url} target="_blank" rel="noopener noreferrer">{material.title}</a></li>)}</ul></> : null}
+          {record.kind !== 'member' && record.materials?.length ? <><h3>{t('材料', 'Materials')}</h3><ul>{record.materials.map(material => <li key={material.id}><a href={material.url} target="_blank" rel="noopener noreferrer">{material.title}</a></li>)}</ul></> : null}
           <h3>{t('关联与来源', 'Relations and sources')}</h3>
           <ul>{recordReferences(record).map(ref => row(ref, outgoing.find(value => value.kind === ref.kind && value.id === ref.id)))}</ul>
           <h3>{t('引用本记录', 'Incoming references')}</h3><ul>{incoming.map(value => row(value, value))}</ul>

@@ -63,6 +63,7 @@
     detailState: card.querySelector('[data-role="detail-state"]'),
     detailHint: card.querySelector('[data-role="detail-hint"]'),
     source: card.querySelector('[data-role="source"]'),
+    assign: card.querySelector('[data-role="assign"]'),
     blockedField: card.querySelector('[data-role="blocked-field"]'),
     doneField: card.querySelector('[data-role="done-field"]'),
     materials: card.querySelector('[data-role="materials"]'),
@@ -88,6 +89,7 @@
     title: card.querySelector('[data-role="label-title"]'),
     status: card.querySelector('[data-role="label-status"]'),
     due: card.querySelector('[data-role="label-due"]'),
+    assign: card.querySelector('[data-role="label-assign"]'),
     blocked: card.querySelector('[data-role="label-blocked"]'),
     done: card.querySelector('[data-role="label-done"]'),
     materials: card.querySelector('[data-role="label-materials"]')
@@ -111,6 +113,7 @@
     pendingLatest: null,
     draftId: null,
     materials: [],
+    assignment: {},
     dirty: false,
     saving: false,
     editing: false,
@@ -158,6 +161,7 @@
     put(labels.title, t('fieldTitle'))
     put(labels.status, t('statusLabel'))
     put(labels.due, t('due'))
+    put(labels.assign, t('assign'))
     put(labels.blocked, t('blockedNote'))
     put(labels.done, t('doneNote'))
     put(labels.materials, t('material'))

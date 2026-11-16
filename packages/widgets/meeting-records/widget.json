@@ -180,6 +180,14 @@
       "zh": "日期",
       "en": "Date"
     },
+    "participants": {
+      "zh": "参与者",
+      "en": "Participants"
+    },
+    "participantsEmpty": {
+      "zh": "还没有成员；先在成员目录里添加。",
+      "en": "No members yet; add them in the member directory first."
+    },
     "topics": {
       "zh": "汇报要点",
       "en": "Brief"

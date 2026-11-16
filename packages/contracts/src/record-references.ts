@@ -7,9 +7,42 @@ import type { DomainRecord, RecordRef } from './records'
  * @returns 去重后的引用，不改变原记录。
  */
 export function recordReferences(record: DomainRecord): RecordRef[] {
-  const refs: RecordRef[] = [...(record.related ?? [])]
-  if (record.kind === 'action' && record.source !== undefined) refs.push(record.source)
-  if (record.kind === 'meeting' && record.derivedFrom !== undefined) refs.push({ kind: 'meeting', id: record.derivedFrom })
+  const refs: RecordRef[] = record.kind === 'member' ? [] : [...(record.related ?? [])]
+  const memberRefs = (ids: readonly string[] | undefined): void => {
+    for (const id of ids ?? []) refs.push({ kind: 'member', id })
+  }
+  const assignmentRefs = (entry: { owner?: string, collaborators?: string[], confirmers?: string[] }): void => {
+    if (entry.owner !== undefined) refs.push({ kind: 'member', id: entry.owner })
+    memberRefs(entry.collaborators)
+    memberRefs(entry.confirmers)
+  }
+  if (record.kind === 'meeting') {
+    memberRefs(record.participants)
+    if (record.derivedFrom !== undefined) refs.push({ kind: 'meeting', id: record.derivedFrom })
+  }
+  if (record.kind === 'action') {
+    if (record.source !== undefined) refs.push(record.source)
+    assignmentRefs(record)
+  }
+  if (record.kind === 'project') {
+    for (const requirement of record.requirements ?? []) {
+      for (const source of requirement.sources ?? []) refs.push(source)
+      if (requirement.actionId !== undefined) refs.push({ kind: 'action', id: requirement.actionId })
+    }
+    for (const task of record.tasks ?? []) {
+      if (task.actionId !== undefined) refs.push({ kind: 'action', id: task.actionId })
+      assignmentRefs(task)
+    }
+    for (const issue of record.issues ?? []) {
+      if (issue.actionId !== undefined) refs.push({ kind: 'action', id: issue.actionId })
+    }
+    for (const review of record.reviews ?? []) {
+      if (review.reviewer !== undefined) refs.push({ kind: 'member', id: review.reviewer })
+    }
+    for (const handover of record.handovers ?? []) {
+      if (handover.receiver !== undefined) refs.push({ kind: 'member', id: handover.receiver })
+    }
+  }
   if (record.kind === 'thesis') {
     for (const result of record.results ?? []) refs.push({ kind: result.kind, id: result.recordId })
   }

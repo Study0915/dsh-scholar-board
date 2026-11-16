@@ -431,6 +431,33 @@
   opacity: 0.6;
 }
 
+.at__assign .w-member-assign {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--w-space-xs, 4px);
+}
+
+.at__assign .w-member-assign__field {
+  display: flex;
+  flex: 1 1 120px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.at__assign select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 90%, transparent);
+  border-radius: var(--w-radius-sm, 8px);
+  background: var(--w-color-bg, #f7f8fa);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
 .at__statuses {
   display: flex;
   flex-wrap: wrap;

@@ -9,6 +9,7 @@ import type {
   ProjectDeliverable,
   ProjectDeliverableStatus,
   ProjectFrozenMaterials,
+  ProjectHandover,
   ProjectIssue,
   ProjectIssueStatus,
   ProjectItemStatus,
@@ -17,11 +18,13 @@ import type {
   ProjectRequirementChange,
   ProjectRequirementRef,
   ProjectRequirementStatus,
+  ProjectReview,
+  ProjectReviewTarget,
   ProjectTask,
 } from '@dsh-scholar-board/contracts'
 import { RECORDS_LIMITS, RELATION_KINDS } from '@dsh-scholar-board/contracts'
 import { isRecord } from '../guards'
-import { boundedTextOf, dueOf, extrasOf, fail, idItemsOf, labeledMilestonesOf, materialsOf, refsOf, textOf, titleOf, titledRowsOf } from './fields'
+import { boundedTextOf, dueOf, extrasOf, fail, idItemsOf, idsOf, labeledMilestonesOf, materialsOf, refsOf, textOf, titleOf, titledRowsOf } from './fields'
 
 /** 个人负责事项的四种状态。 */
 export const PROJECT_TASK_STATUSES: readonly ProjectItemStatus[] = ['todo', 'doing', 'blocked', 'done']
@@ -32,6 +35,9 @@ export const PROJECT_DELIVERABLE_STATUSES: readonly ProjectDeliverableStatus[] =
 /** 验收节点与问题的状态。 */
 export const PROJECT_MILESTONE_STATUSES: readonly ProjectMilestone['status'][] = ['todo', 'doing', 'done']
 export const PROJECT_ISSUE_STATUSES: readonly ProjectIssueStatus[] = ['open', 'doing', 'resolved']
+
+/** 评审指向的对象。 */
+export const PROJECT_REVIEW_TARGETS: readonly ProjectReviewTarget[] = ['project', 'deliverable', 'requirement']
 
 /** 需求状态。 */
 export const PROJECT_REQUIREMENT_STATUSES: readonly ProjectRequirementStatus[] = ['pending', 'confirmed', 'cancelled']
@@ -79,26 +85,6 @@ function linkIdOf(value: unknown, field: string): string | undefined {
 }
 
 /**
- * 一组关联事项的 id：去重、不超过项目条目上限。
- *
- * @param value - 外来值。
- * @param field - 出错时指人。
- * @returns id 表；未填时是 `null`。
- */
-function taskLinksOf(value: unknown, field: string): string[] | null {
-  if (value === null) return null
-  if (!Array.isArray(value)) fail(`${field} 要是数组`)
-  if (value.length > RECORDS_LIMITS.projectItems) fail(`${field} 最多 ${String(RECORDS_LIMITS.projectItems)} 项`)
-  const seen = new Set<string>()
-  return value.map((entry, index) => {
-    if (typeof entry !== 'string' || entry === '' || entry.length > 64) fail(`${field}[${String(index)}] 不合法`)
-    if (seen.has(entry)) fail(`${field} 里的 id 重复`)
-    seen.add(entry)
-    return entry
-  })
-}
-
-/**
  * 个人负责事项：标题必填、状态只认四种，日期、说明与材料可留空。
  *
  * @param value - 外来值。
@@ -112,12 +98,18 @@ export function projectTasksOf(value: unknown, field: string): ProjectTask[] | n
     const at = `${field}[${String(index)}]`
     const requirement = linkIdOf(entry.requirement, `${at}.requirement`)
     const actionId = linkIdOf(entry.actionId, `${at}.actionId`)
+    const owner = linkIdOf(entry.owner, `${at}.owner`)
+    const collaborators = entry.collaborators === undefined ? null : idsOf(entry.collaborators, `${at}.collaborators`, RECORDS_LIMITS.assignmentRefs)
+    const confirmers = entry.confirmers === undefined ? null : idsOf(entry.confirmers, `${at}.confirmers`, RECORDS_LIMITS.assignmentRefs)
     return {
       id: entry.id as string,
       title,
       status: entry.status as ProjectItemStatus,
       ...(requirement === undefined ? {} : { requirement }),
       ...(actionId === undefined ? {} : { actionId }),
+      ...(owner === undefined ? {} : { owner }),
+      ...(collaborators === null ? {} : { collaborators }),
+      ...(confirmers === null ? {} : { confirmers }),
       ...extrasOf(entry, at),
     }
   })
@@ -245,7 +237,7 @@ export function projectRequirementsOf(value: unknown, field: string): ProjectReq
     const unit = boundedTextOf(entry.unit, `${at}.unit`, RECORDS_LIMITS.unitLength)
     const threshold = boundedTextOf(entry.threshold, `${at}.threshold`, RECORDS_LIMITS.requirementThresholdLength)
     const testMethod = boundedTextOf(entry.testMethod, `${at}.testMethod`, RECORDS_LIMITS.requirementTestMethodLength)
-    const tasks = entry.tasks === undefined ? null : taskLinksOf(entry.tasks, `${at}.tasks`)
+    const tasks = entry.tasks === undefined ? null : idsOf(entry.tasks, `${at}.tasks`, RECORDS_LIMITS.projectItems)
     const actionId = linkIdOf(entry.actionId, `${at}.actionId`)
     return {
       id: entry.id as string,
@@ -365,6 +357,82 @@ export function projectIssuesOf(value: unknown, field: string): ProjectIssue[] |
   })
 }
 
+/**
+ * 评审：对象与决定必填，评审人、日期、版本与后续行动可留空。
+ *
+ * 评审记录的是用户写下的意见与决定，不构成审批身份；`reviewer` 只是成员 id。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns 评审表；未填时是 `null`。
+ */
+export function projectReviewsOf(value: unknown, field: string): ProjectReview[] | null {
+  const rows = idItemsOf(value, field, RECORDS_LIMITS.projectReviews, '对象')
+  if (rows === null) return null
+  return rows.map((entry, index) => {
+    const at = `${field}[${String(index)}]`
+    if (typeof entry.target !== 'string' || !PROJECT_REVIEW_TARGETS.includes(entry.target as ProjectReviewTarget)) {
+      fail(`${at}.target 只能是 ${PROJECT_REVIEW_TARGETS.join('、')}`)
+    }
+    const targetId = linkIdOf(entry.targetId, `${at}.targetId`)
+    const targetVersion = entry.targetVersion === undefined ? null : versionOf(entry.targetVersion, `${at}.targetVersion`)
+    if (entry.target !== 'project' && targetId === undefined) fail(`${at}.targetId 在评审交付物或需求时不能是空的`)
+    const reviewer = linkIdOf(entry.reviewer, `${at}.reviewer`)
+    const when = entry.at === undefined ? null : dueOf(entry.at, `${at}.at`)
+    const followUp = boundedTextOf(entry.followUp, `${at}.followUp`, RECORDS_LIMITS.reviewFollowUpLength)
+    return {
+      id: entry.id as string,
+      target: entry.target as ProjectReviewTarget,
+      ...(targetId === undefined ? {} : { targetId }),
+      ...(targetVersion === null ? {} : { targetVersion }),
+      ...(reviewer === undefined ? {} : { reviewer }),
+      ...(when === null ? {} : { at: when }),
+      opinion: requiredTextOf(entry.opinion, `${at}.opinion`, RECORDS_LIMITS.reviewOpinionLength),
+      decision: requiredTextOf(entry.decision, `${at}.decision`, RECORDS_LIMITS.reviewDecisionLength),
+      ...(followUp === null ? {} : { followUp }),
+    }
+  })
+}
+
+/**
+ * 交接：接手人、进度等文字都可留空，确认状态必填。
+ *
+ * 交接确认由用户手动记录；只有 `confirmed` 为真时 `confirmedAt` 才有意义。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns 交接表；未填时是 `null`。
+ */
+export function projectHandoversOf(value: unknown, field: string): ProjectHandover[] | null {
+  const rows = idItemsOf(value, field, RECORDS_LIMITS.projectHandovers, '对象')
+  if (rows === null) return null
+  return rows.map((entry, index) => {
+    const at = `${field}[${String(index)}]`
+    if (typeof entry.confirmed !== 'boolean') fail(`${at}.confirmed 要是布尔值`)
+    const receiver = linkIdOf(entry.receiver, `${at}.receiver`)
+    const when = entry.at === undefined ? null : dueOf(entry.at, `${at}.at`)
+    const progress = boundedTextOf(entry.progress, `${at}.progress`, RECORDS_LIMITS.handoverText)
+    const materials = boundedTextOf(entry.materials, `${at}.materials`, RECORDS_LIMITS.handoverText)
+    const instructions = boundedTextOf(entry.instructions, `${at}.instructions`, RECORDS_LIMITS.handoverText)
+    const issues = boundedTextOf(entry.issues, `${at}.issues`, RECORDS_LIMITS.handoverText)
+    const todos = boundedTextOf(entry.todos, `${at}.todos`, RECORDS_LIMITS.handoverText)
+    const confirmedAt = entry.confirmedAt === undefined ? null : dueOf(entry.confirmedAt, `${at}.confirmedAt`)
+    if (confirmedAt !== null && entry.confirmed !== true) fail(`${at} 未确认时不能填 confirmedAt`)
+    return {
+      id: entry.id as string,
+      ...(receiver === undefined ? {} : { receiver }),
+      ...(when === null ? {} : { at: when }),
+      ...(progress === null ? {} : { progress }),
+      ...(materials === null ? {} : { materials }),
+      ...(instructions === null ? {} : { instructions }),
+      ...(issues === null ? {} : { issues }),
+      ...(todos === null ? {} : { todos }),
+      confirmed: entry.confirmed,
+      ...(confirmedAt === null ? {} : { confirmedAt }),
+    }
+  })
+}
+
 interface ArraySpec {
   field: string
   key: 'title' | 'label' | 'name' | 'summary' | 'reason'
@@ -448,6 +516,52 @@ function nestedRefsProblem(entry: Record<string, unknown>, name: string): string
 }
 
 /**
+ * 成员 id 的数组在盘上也要是一串非空字符串。
+ *
+ * @param value - 条目上的字段值。
+ * @param name - 出错时指人。
+ * @returns 不合格时是一句原因；合格时是 `null`。
+ */
+function memberIdsProblem(value: unknown, name: string): string | null {
+  if (value === undefined) return null
+  if (!Array.isArray(value)) return `${name} 不是数组`
+  const seen = new Set<string>()
+  for (const entry of value as unknown[]) {
+    if (typeof entry !== 'string' || entry === '') return `${name} 里有不合法的成员 id`
+    if (seen.has(entry)) return `${name} 里的成员 id 重复`
+    seen.add(entry)
+  }
+  return null
+}
+
+/**
+ * 评审与交接条目在盘上也要是认识的形状。
+ *
+ * @param field - `reviews` 或 `handovers`。
+ * @param entries - 记录上的数组。
+ * @returns 不合格时是一句原因；合格时是 `null`。
+ */
+function reviewEntryProblem(field: 'reviews' | 'handovers', entries: unknown[]): string | null {
+  const ids = new Set<string>()
+  for (const entry of entries) {
+    if (!isRecord(entry)) return `${field} 的条目不合法`
+    if (typeof entry.id !== 'string' || entry.id === '') return `${field} 的条目缺少 id`
+    if (ids.has(entry.id)) return `${field} 的 id 重复`
+    ids.add(entry.id)
+    if (field === 'reviews') {
+      if (typeof entry.target !== 'string' || !PROJECT_REVIEW_TARGETS.includes(entry.target as ProjectReviewTarget)) return 'reviews 的 target 不认识'
+      if (typeof entry.opinion !== 'string' || entry.opinion.trim() === '') return 'reviews 的条目缺少意见'
+      if (typeof entry.decision !== 'string' || entry.decision.trim() === '') return 'reviews 的条目缺少决定'
+      if (entry.target !== 'project' && (typeof entry.targetId !== 'string' || entry.targetId === '')) return 'reviews 的条目缺少 targetId'
+      continue
+    }
+    if (typeof entry.confirmed !== 'boolean') return 'handovers 的条目缺少确认状态'
+    if (entry.confirmed !== true && entry.confirmedAt !== undefined) return 'handovers 未确认时不能带 confirmedAt'
+  }
+  return null
+}
+
+/**
  * 横向项目的几组内嵌条目：形状、状态与 id 唯一。
  *
  * @param value - 一条记录。
@@ -474,6 +588,13 @@ export function projectArraysProblem(value: Record<string, unknown>): string | n
         if (typeof entry.toVersion !== 'string' || entry.toVersion === '') return 'requirementChanges 的条目缺少 toVersion'
         if (entry.at !== undefined && !isRecord(entry.at)) return 'requirementChanges 的 at 不合法'
       }
+      if (spec.field === 'tasks') {
+        if (entry.owner !== undefined && (typeof entry.owner !== 'string' || entry.owner === '')) return 'tasks 的 owner 不合法'
+        for (const name of ['collaborators', 'confirmers'] as const) {
+          const problem = memberIdsProblem(entry[name], `tasks 的 ${name}`)
+          if (problem !== null) return problem
+        }
+      }
       if (spec.field === 'deliverables') {
         const problem = deliverableAcceptancesProblem(entry)
         if (problem !== null) return problem
@@ -483,6 +604,13 @@ export function projectArraysProblem(value: Record<string, unknown>): string | n
         if (problem !== null) return problem
       }
     }
+  }
+  for (const field of ['reviews', 'handovers'] as const) {
+    const entries = value[field]
+    if (entries === undefined) continue
+    if (!Array.isArray(entries)) return `${field} 不是数组`
+    const problem = reviewEntryProblem(field, entries as unknown[])
+    if (problem !== null) return problem
   }
   return null
 }

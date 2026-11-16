@@ -22,6 +22,7 @@
     var t = ctx.t
     var pure = ctx.pure
     var rows = ctx.rows
+    var collab = ctx.collab
     var READ = 'widget-board:records.read'
     var WRITE = 'widget-board:records.write'
     var DRAFT = 'widget-board:records.draft'
@@ -40,6 +41,8 @@
         communications: app.communications,
         milestones: app.milestones,
         issues: app.issues,
+        reviews: app.reviews,
+        handovers: app.handovers,
         requirements: app.requirements,
         requirementChanges: app.requirementChanges,
         related: relations.value(),
@@ -69,10 +72,11 @@
       nodes.trashAction.hidden = record === null || trashed
       var fields = [nodes.titleInput, nodes.summary, nodes.materialUrl, nodes.materialTitle, nodes.relatedSelect]
       for (var at = 0; at < fields.length; at += 1) if (fields[at] !== null) fields[at].disabled = trashed
-      var buttons = ctx.card.querySelectorAll('[data-action="add-task"], [data-action="add-deliverable"], [data-action="add-communication"], [data-action="add-milestone"], [data-action="add-issue"], [data-action="add-requirement"], [data-action="add-change"], [data-action="add-related"], [data-action="add-material"]')
+      var buttons = ctx.card.querySelectorAll('[data-action="add-task"], [data-action="add-deliverable"], [data-action="add-communication"], [data-action="add-milestone"], [data-action="add-issue"], [data-action="add-review"], [data-action="add-handover"], [data-action="add-requirement"], [data-action="add-change"], [data-action="add-related"], [data-action="add-material"]')
       for (var buttonAt = 0; buttonAt < buttons.length; buttonAt += 1) buttons[buttonAt].disabled = trashed
       var nested = ctx.card.querySelectorAll('.pj__line input, .pj__line select, .pj__line textarea, .pj__line-remove, .pj__related-remove, .pj__material-remove, [data-deep-action], [data-remove-change]')
       for (var nestedAt = 0; nestedAt < nested.length; nestedAt += 1) nested[nestedAt].disabled = trashed
+      if (collab !== undefined && collab !== null) collab.setLocked(trashed)
       nodes.saveButton.disabled = trashed
       nodes.saveButton.textContent = t('save')
       if (trashed) {
@@ -236,9 +240,16 @@
         return
       }
       var cleaned = rows.cleaned()
+      var reviews = collab.cleanedReviews()
+      var handovers = collab.cleanedHandovers()
       if (cleaned === null) {
         nodes.rowsError.textContent = t('invalidRows')
         ctx.setStatus(t('invalidRows'), 'error')
+        return
+      }
+      if (reviews === null || handovers === null) {
+        nodes.rowsError.textContent = t('invalidCollab')
+        ctx.setStatus(t('invalidCollab'), 'error')
         return
       }
       nodes.rowsError.textContent = ''
@@ -250,6 +261,8 @@
         communications: cleaned.communications,
         milestones: cleaned.milestones,
         issues: cleaned.issues,
+        reviews: reviews.length === 0 ? null : reviews,
+        handovers: handovers.length === 0 ? null : handovers,
         requirements: cleaned.requirements,
         requirementChanges: cleaned.requirementChanges,
         related: cleaned.related,

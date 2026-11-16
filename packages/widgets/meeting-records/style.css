@@ -329,6 +329,11 @@
   resize: vertical;
 }
 
+.mt__select {
+  height: auto;
+  min-height: 62px;
+}
+
 .mt__input:focus-visible {
   outline: 2px solid var(--w-color-accent, #2563eb);
   outline-offset: 1px;

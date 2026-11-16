@@ -67,6 +67,10 @@
     communications: card.querySelector('[data-role="communications"]'),
     milestones: card.querySelector('[data-role="milestones"]'),
     issues: card.querySelector('[data-role="issues"]'),
+    reviews: card.querySelector('[data-role="reviews"]'),
+    handovers: card.querySelector('[data-role="handovers"]'),
+    addReview: card.querySelector('[data-action="add-review"]'),
+    addHandover: card.querySelector('[data-action="add-handover"]'),
     requirements: card.querySelector('[data-role="requirements"]'),
     changes: card.querySelector('[data-role="changes"]'),
     chain: card.querySelector('[data-role="chain"]'),
@@ -98,6 +102,8 @@
     communications: card.querySelector('[data-role="label-communications"]'),
     milestones: card.querySelector('[data-role="label-milestones"]'),
     issues: card.querySelector('[data-role="label-issues"]'),
+    reviews: card.querySelector('[data-role="label-reviews"]'),
+    handovers: card.querySelector('[data-role="label-handovers"]'),
     requirements: card.querySelector('[data-role="label-requirements"]'),
     changes: card.querySelector('[data-role="label-changes"]'),
     chain: card.querySelector('[data-role="label-chain"]'),
@@ -126,6 +132,8 @@
     communications: [],
     milestones: [],
     issues: [],
+    reviews: [],
+    handovers: [],
     requirements: [],
     requirementChanges: [],
     related: [],
@@ -162,8 +170,30 @@
     setStatus: setStatus,
     onInput: function () { editor.onInput() }
   })
-  view.rowExtra = function (kind, entry, index) { return deep.extraOf(kind, entry, index) }
-  rows.setOnFill(function () { deep.renderAll() })
+  var collab = root.createProjectCollab({
+    app: app,
+    nodes: nodes,
+    widget: widget,
+    live: live,
+    t: t,
+    pure: pure,
+    rows: rows,
+    onInput: function () { editor.onInput() }
+  })
+  view.rowExtra = function (kind, entry, index) {
+    var deepExtra = deep.extraOf(kind, entry, index)
+    var assign = collab.extraOf(kind, entry)
+    if (deepExtra === null && assign === null) return null
+    var box = document.createElement('div')
+    box.className = 'pj__extras'
+    if (deepExtra !== null) box.appendChild(deepExtra)
+    if (assign !== null) box.appendChild(assign)
+    return box
+  }
+  rows.setOnFill(function () {
+    deep.renderAll()
+    collab.renderAll()
+  })
 
   function persist(patch) {
     if (widget !== undefined && typeof widget.setState === 'function') widget.setState(patch)
@@ -196,6 +226,8 @@
     put(labels.communications, t('communications'))
     put(labels.milestones, t('milestones'))
     put(labels.issues, t('issues'))
+    put(labels.reviews, t('reviews'))
+    put(labels.handovers, t('handovers'))
     put(labels.requirements, t('requirements'))
     put(labels.changes, t('requirementChanges'))
     put(labels.chain, t('chain'))
@@ -209,6 +241,8 @@
     put(card.querySelector('[data-action="add-communication"]'), t('addCommunication'))
     put(card.querySelector('[data-action="add-milestone"]'), t('addMilestone'))
     put(card.querySelector('[data-action="add-issue"]'), t('addIssue'))
+    put(nodes.addReview, t('addReview'))
+    put(nodes.addHandover, t('addHandover'))
     put(card.querySelector('[data-action="add-requirement"]'), t('addRequirement'))
     put(card.querySelector('[data-action="add-change"]'), t('addChange'))
     put(card.querySelector('[data-action="add-related"]'), t('addRelated'))
@@ -337,6 +371,7 @@
     ui: ui,
     app: app,
     rows: rows,
+    collab: collab,
     t: t,
     pure: pure,
     view: view,

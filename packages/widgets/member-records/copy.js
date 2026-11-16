@@ -1,0 +1,58 @@
+/*
+ * 成员卡片的文案：范围、搜索、空态与详情表单的中英两份。
+ *
+ * 键与 widget.json 的 text 一一对应；称呼可以重复，界面只按 id 保存引用。
+ */
+;(function (root) {
+  'use strict'
+
+  root.MemberRecordsCopy = {
+    title: { zh: '成员', en: 'Members' },
+    kicker: { zh: '记录分工与交接里的称呼', en: 'Names used in assignments and handovers' },
+    new: { zh: '新建', en: 'New' },
+    search: { zh: '搜索称呼、角色与备注', en: 'Search names, roles and notes' },
+    active: { zh: '活跃', en: 'Active' },
+    archived: { zh: '归档', en: 'Archived' },
+    trash: { zh: '回收站', en: 'Trash' },
+    loading: { zh: '正在读取成员…', en: 'Reading members…' },
+    failed: { zh: '读取失败', en: 'Members unavailable' },
+    retry: { zh: '重试', en: 'Retry' },
+    emptyActive: { zh: '还没有成员；点「新建」记下协作时的称呼。', en: 'No members yet; use New to record the names you work with.' },
+    emptyArchived: { zh: '没有归档的成员。', en: 'No archived members.' },
+    emptyTrash: { zh: '回收站是空的。移入回收站的记录三十天后自动清除。', en: 'The trash is empty. Trashed records are cleared after thirty days.' },
+    emptySearch: { zh: '没有匹配的成员。', en: 'No matching members.' },
+    truncated: { zh: '只列出最近 {n} 条，共 {total} 条；用搜索找更早的成员。', en: 'Showing the latest {n} of {total}; search for older members.' },
+    quotaWarning: { zh: '记录已用到 {percent}%，先整理归档或回收站。', en: 'Records use {percent}% of the limit; tidy the archive or trash.' },
+    count: { zh: '{n} 位', en: '{n}' },
+    enabledTag: { zh: '启用', en: 'Enabled' },
+    disabledTag: { zh: '停用', en: 'Disabled' },
+    summaryEmpty: { zh: '暂无角色说明', en: 'No role noted' },
+    fieldTitle: { zh: '显示称呼', en: 'Display name' },
+    titlePlaceholder: { zh: '如「张老师」「李同学」', en: 'e.g. Prof. Zhang, Li' },
+    role: { zh: '角色说明', en: 'Role' },
+    rolePlaceholder: { zh: '如「负责仿真与数据」', en: 'e.g. simulation and data' },
+    enabled: { zh: '启用', en: 'Enabled' },
+    enabledHint: { zh: '停用后仍可查到，已有分工与历史评审保留。', en: 'Disabled members stay visible; existing assignments and reviews are kept.' },
+    note: { zh: '备注', en: 'Notes' },
+    notePlaceholder: { zh: '工作习惯、联系时间等，不必写真实姓名或电话。', en: 'Working habits or contact hours; real names and phone numbers are not required.' },
+    close: { zh: '关闭', en: 'Close' },
+    save: { zh: '保存', en: 'Save' },
+    saving: { zh: '保存中…', en: 'Saving…' },
+    saved: { zh: '已保存', en: 'Saved' },
+    saveFailed: { zh: '保存失败', en: 'Save failed' },
+    archive: { zh: '归档', en: 'Archive' },
+    restore: { zh: '恢复', en: 'Restore' },
+    trashAction: { zh: '移入回收站', en: 'Move to trash' },
+    deletedIn: { zh: '{n} 天后清除', en: 'Cleared in {n} days' },
+    unsavedClose: { zh: '还有未保存的修改。', en: 'There are unsaved changes.' },
+    keepEditing: { zh: '继续编辑', en: 'Keep editing' },
+    closeKeepDraft: { zh: '关闭', en: 'Close' },
+    conflict: { zh: '这条成员已被别处修改。', en: 'This member changed elsewhere.' },
+    loadLatest: { zh: '载入最新（放弃本地修改）', en: 'Load latest (discard local changes)' },
+    recordMissing: { zh: '这条成员已经不存在。', en: 'This member no longer exists.' },
+    titleRequired: { zh: '显示称呼不能为空。', en: 'A display name is required.' },
+    invalidText: { zh: '角色说明或备注超过长度上限。', en: 'The role or notes exceed the length limit.' },
+    trashRestoreHint: { zh: '回收站里的成员只读；恢复后才能修改。', en: 'Trashed members are read-only until restored.' },
+    duplicateHint: { zh: '称呼可以重复，分工按记录 id 保存。', en: 'Names may repeat; assignments store the record id.' }
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this)

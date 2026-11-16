@@ -113,7 +113,7 @@ export function readRecordsPackage(bytes: Buffer): RecordsPackage {
  */
 export function previewRecords(bytes: Buffer): ImportPreview {
   const pkg = readRecordsPackage(bytes)
-  const byKind: Record<RecordKind, number> = { meeting: 0, action: 0, manuscript: 0, literature: 0, research: 0, thesis: 0, project: 0, course: 0, chore: 0, topic: 0, run: 0, template: 0 }
+  const byKind: Record<RecordKind, number> = { meeting: 0, action: 0, manuscript: 0, literature: 0, research: 0, thesis: 0, project: 0, course: 0, chore: 0, topic: 0, run: 0, member: 0, template: 0 }
   let active = 0
   let archived = 0
   let trashed = 0
@@ -146,6 +146,22 @@ export function previewRecords(bytes: Buffer): ImportPreview {
 }
 
 /**
+ * 把一条分工里的成员 id 按导入映射改写。
+ *
+ * 指向包外成员的 id 保持原样：那一位可能仍在本机目录里，不由导入方判断存在性。
+ *
+ * @param entry - 带分工字段的条目或记录。
+ * @param mapping - 包内旧 id 到新 id 的映射。
+ */
+function remapAssignments(entry: { owner?: string, collaborators?: string[], confirmers?: string[] }, mapping: Map<string, string>): void {
+  if (typeof entry.owner === 'string') entry.owner = mapping.get(entry.owner) ?? entry.owner
+  for (const field of ['collaborators', 'confirmers'] as const) {
+    const ids = entry[field]
+    if (Array.isArray(ids)) entry[field] = ids.map(id => mapping.get(id) ?? id)
+  }
+}
+
+/**
  * 导入一个包：id 全部重映射，前向引用经同一张表改写，整批一次写入。
  *
  * @param store - 记录存储。
@@ -160,7 +176,7 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
   for (const record of pkg.records) mapping.set(record.id, randomUUID())
   const at = new Date(now).toISOString()
   const remapped = pkg.records.map((record) => {
-    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string, questions?: { actionId?: string }[], plan?: { kind: RecordKind, id: string }, results?: { sources?: string[] }[], versions?: { kind: RecordKind, id: string }[], reading?: { actionId?: string }[], revisions?: { actionId?: string }[], experiments?: { actionId?: string }[], chapters?: { links?: { kind: RecordKind, id: string }[] }[], requirements?: { sources?: { kind: RecordKind, id: string }[], actionId?: string }[], tasks?: { actionId?: string }[], issues?: { actionId?: string }[], deliverables?: { requirements?: { id: string, version: string }[] }[] }
+    const copy = JSON.parse(JSON.stringify(record)) as DomainRecord & { related?: { kind: RecordKind, id: string }[], source?: { kind: RecordKind, id: string }, derivedFrom?: string, questions?: { actionId?: string }[], plan?: { kind: RecordKind, id: string }, results?: { sources?: string[] }[], versions?: { kind: RecordKind, id: string }[], reading?: { actionId?: string }[], revisions?: { actionId?: string }[], experiments?: { actionId?: string }[], chapters?: { links?: { kind: RecordKind, id: string }[] }[], requirements?: { sources?: { kind: RecordKind, id: string }[], actionId?: string }[], tasks?: { actionId?: string, owner?: string, collaborators?: string[], confirmers?: string[] }[], issues?: { actionId?: string }[], deliverables?: { requirements?: { id: string, version: string }[] }[], participants?: string[], owner?: string, collaborators?: string[], confirmers?: string[], reviews?: { reviewer?: string }[], handovers?: { receiver?: string }[] }
     copy.id = mapping.get(record.id) as string
     copy.revision = 1
     copy.updatedAt = at
@@ -219,6 +235,7 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
     if (Array.isArray(copy.tasks)) {
       for (const entry of copy.tasks) {
         if (typeof entry.actionId === 'string') entry.actionId = mapping.get(entry.actionId) ?? entry.actionId
+        remapAssignments(entry, mapping)
       }
     }
     if (Array.isArray(copy.issues)) {
@@ -231,6 +248,18 @@ export async function importRecords(store: RecordsStore, bytes: Buffer, now: num
         if (Array.isArray(entry.requirements)) {
           entry.requirements = entry.requirements.map(ref => ({ ...ref, id: mapping.get(ref.id) ?? ref.id }))
         }
+      }
+    }
+    if (Array.isArray(copy.participants)) copy.participants = copy.participants.map(id => mapping.get(id) ?? id)
+    remapAssignments(copy, mapping)
+    if (Array.isArray(copy.reviews)) {
+      for (const entry of copy.reviews) {
+        if (typeof entry.reviewer === 'string') entry.reviewer = mapping.get(entry.reviewer) ?? entry.reviewer
+      }
+    }
+    if (Array.isArray(copy.handovers)) {
+      for (const entry of copy.handovers) {
+        if (typeof entry.receiver === 'string') entry.receiver = mapping.get(entry.receiver) ?? entry.receiver
       }
     }
     return copy as DomainRecord

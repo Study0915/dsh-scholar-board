@@ -1,0 +1,83 @@
+<div class="t-data mb" data-state="loading">
+  <header class="t-data__head">
+    <div>
+      <p class="t-data__kicker" data-field="kicker"></p>
+      <h2 class="t-data__title" data-field="title">成员</h2>
+    </div>
+    <div class="mb__head-aside">
+      <span class="t-data__meta mb__count" data-field="count"></span>
+      <button class="mb__primary t-pressable" type="button" data-action="new">新建</button>
+    </div>
+  </header>
+
+  <div class="mb__toolbar">
+    <div class="mb__tabs" role="tablist" aria-label="记录范围">
+      <button class="mb__tab" type="button" role="tab" data-view="active" aria-selected="true">活跃</button>
+      <button class="mb__tab" type="button" role="tab" data-view="archived" aria-selected="false">归档</button>
+      <button class="mb__tab" type="button" role="tab" data-view="trash" aria-selected="false">回收站</button>
+    </div>
+    <input class="mb__search" type="search" data-role="search" aria-label="搜索成员" placeholder="搜索称呼、角色与备注" />
+  </div>
+
+  <div class="mb__body">
+    <div class="t-data__scroll mb__list" data-role="list" hidden></div>
+    <div class="mb__note-wrap">
+      <p class="t-data__empty mb__note" data-role="note">正在读取成员…</p>
+      <button class="mb__ghost mb__retry" type="button" data-action="retry" hidden>重试</button>
+    </div>
+  </div>
+
+  <section class="mb__detail" data-role="detail" hidden aria-label="成员详情">
+    <div class="mb__detail-head">
+      <button class="mb__ghost mb__back" type="button" data-action="back">返回</button>
+      <span class="mb__state" data-role="detail-state"></span>
+      <span class="mb__spacer"></span>
+      <button class="mb__ghost" type="button" data-action="archive" hidden>归档</button>
+      <button class="mb__ghost" type="button" data-action="restore" hidden>恢复</button>
+      <button class="mb__ghost mb__danger" type="button" data-action="trash" hidden>移入回收站</button>
+    </div>
+    <div class="t-data__scroll mb__detail-body">
+      <p class="mb__hint" data-role="detail-hint" hidden></p>
+      <label class="mb__field">
+        <span class="mb__label" data-role="label-title">显示称呼</span>
+        <input class="mb__input" type="text" data-field="title-input" maxlength="80" autocomplete="off" />
+      </label>
+      <label class="mb__field">
+        <span class="mb__label" data-role="label-role">角色说明</span>
+        <input class="mb__input" type="text" data-field="role" maxlength="200" placeholder="如「负责仿真与数据」" autocomplete="off" />
+      </label>
+      <label class="mb__check">
+        <input type="checkbox" data-field="enabled" />
+        <span class="mb__label" data-role="label-enabled">启用</span>
+      </label>
+      <p class="mb__help" data-role="enabled-hint"></p>
+      <label class="mb__field">
+        <span class="mb__label" data-role="label-note">备注</span>
+        <textarea class="mb__input mb__textarea" rows="3" data-field="note"></textarea>
+      </label>
+
+      <div class="mb__detail-actions">
+        <button class="mb__primary" type="button" data-action="save">保存</button>
+        <button class="mb__ghost" type="button" data-action="close">关闭</button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="mb__dialog" data-role="confirm">
+    <p data-role="confirm-text"></p>
+    <div class="mb__dialog-actions">
+      <button class="mb__ghost" type="button" data-action="confirm-keep">继续编辑</button>
+      <button class="mb__primary" type="button" data-action="confirm-close">关闭</button>
+    </div>
+  </dialog>
+
+  <dialog class="mb__dialog" data-role="conflict">
+    <p data-role="conflict-text"></p>
+    <div class="mb__dialog-actions">
+      <button class="mb__ghost" type="button" data-action="conflict-keep">继续编辑</button>
+      <button class="mb__primary" type="button" data-action="conflict-reload">载入最新（放弃本地修改）</button>
+    </div>
+  </dialog>
+
+  <p class="w-sr" data-role="sr" aria-live="polite"></p>
+</div>

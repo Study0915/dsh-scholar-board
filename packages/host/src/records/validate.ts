@@ -31,16 +31,18 @@ import { evidenceOf, evidenceProblem, evidenceTextOf } from './evidence-validate
 import { literatureFieldsOf, literatureProblem } from './literature-validate'
 import { actionSourceOf, actionSourceProblem } from './action-source'
 import { isRecord } from '../guards'
-import { dueOf, fail, materialsOf, refsOf, textOf, titleOf } from './fields'
+import { boundedTextOf, dueOf, fail, idOf, idsOf, materialsOf, refsOf, textOf, titleOf } from './fields'
 import { chaptersOf, experimentsOf, thesisArraysProblem, thesisMilestonesOf, thesisResultsOf } from './thesis-validate'
 import { topicArraysProblem, topicQuestionsOf } from './topic-validate'
 import {
   projectArraysProblem,
   projectCommunicationsOf,
   projectDeliverablesOf,
+  projectHandoversOf,
   projectIssuesOf,
   projectMilestonesOf,
   projectRequirementsOf,
+  projectReviewsOf,
   projectTasksOf,
   requirementChangesOf,
 } from './project-validate'
@@ -60,21 +62,22 @@ export const RESEARCH_METHODS: readonly ResearchMethod[] = ['derivation', 'simul
 
 /** 每种记录可写的字段；系统字段与阶段历史不在这张表里。 */
 const WRITABLE: Record<RecordKind, readonly string[]> = {
-  meeting: ['title', 'date', 'topics', 'feedback', 'openQuestions', 'related', 'materials', 'derivedFrom'],
-  action: ['title', 'status', 'due', 'source', 'sourceEntry', 'related', 'blockedNote', 'doneNote', 'materials'],
+  meeting: ['title', 'date', 'topics', 'feedback', 'openQuestions', 'participants', 'related', 'materials', 'derivedFrom'],
+  action: ['title', 'status', 'due', 'source', 'sourceEntry', 'owner', 'collaborators', 'confirmers', 'related', 'blockedNote', 'doneNote', 'materials'],
   manuscript: ['title', 'question', 'stage', 'stageNote', 'nextStep', 'blockers', 'target', 'due', 'related', 'materials', 'figures', 'submissions', 'revisions'],
   literature: ['title', 'authors', 'venue', 'year', 'url', 'stage', 'understanding', 'questions', 'format', 'doi', 'arxivId', 'arxivVersion', 'versions', 'reading', 'external', 'related', 'materials'],
   research: ['title', 'method', 'question', 'purpose', 'hypothesis', 'steps', 'environment', 'seed', 'parameters', 'metrics', 'conclusion', 'conclusionBasis', 'conclusionScope', 'conclusionEvidence', 'related', 'materials', 'template'],
   thesis: ['title', 'question', 'chapters', 'results', 'experiments', 'milestones', 'related', 'materials'],
-  project: ['title', 'summary', 'requirements', 'requirementChanges', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'related', 'materials'],
+  project: ['title', 'summary', 'requirements', 'requirementChanges', 'tasks', 'deliverables', 'communications', 'milestones', 'issues', 'reviews', 'handovers', 'related', 'materials'],
   course: ['title', 'term', 'code', 'teacher', 'schedule', 'notes', 'work', 'related', 'materials'],
   chore: ['title', 'category', 'status', 'due', 'note', 'related', 'materials'],
   topic: ['title', 'question', 'goal', 'hypothesis', 'judgment', 'nextStep', 'questions', 'related', 'materials'],
   run: ['title', 'plan', 'status', 'code', 'datasets', 'checkpoints', 'config', 'environment', 'seed', 'evaluation', 'startedAt', 'endedAt', 'metrics', 'artifacts', 'failure', 'note', 'results', 'related', 'materials', 'template'],
+  member: ['title', 'role', 'enabled', 'note'],
   template: ['title', 'direction', 'fields'],
 }
 
-/** 每种记录允许指向的引用类型；模板不参与关联。 */
+/** 每种记录允许指向的引用类型；模板与成员不参与关联。 */
 const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   meeting: RELATION_KINDS,
   action: RELATION_KINDS,
@@ -87,6 +90,7 @@ const REFERRABLE: Record<RecordKind, readonly RecordKind[]> = {
   chore: RELATION_KINDS,
   topic: RELATION_KINDS,
   run: RELATION_KINDS,
+  member: [],
   template: [],
 }
 
@@ -140,6 +144,17 @@ function researchMethodOf(value: unknown): ResearchMethod {
     fail(`method 只能是 ${RESEARCH_METHODS.join('、')}`)
   }
   return value as ResearchMethod
+}
+
+/**
+ * 成员是否启用；停用后仍能被旧记录按 id 找到。
+ *
+ * @param value - 外来值。
+ * @returns 启用状态。
+ */
+function enabledOf(value: unknown): boolean {
+  if (typeof value !== 'boolean') fail('enabled 要是布尔值')
+  return value
 }
 
 /**
@@ -431,6 +446,7 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.topics !== undefined) out.topics = textOf(input.topics, 'topics')
   if (input.feedback !== undefined) out.feedback = textOf(input.feedback, 'feedback')
   if (input.openQuestions !== undefined) out.openQuestions = textOf(input.openQuestions, 'openQuestions')
+  if (input.participants !== undefined) out.participants = idsOf(input.participants, 'participants', RECORDS_LIMITS.assignmentRefs)
   if (input.summary !== undefined) out.summary = textOf(input.summary, 'summary')
   if (input.question !== undefined) out.question = textOf(input.question, 'question')
   if (input.goal !== undefined) out.goal = textOf(input.goal, 'goal')
@@ -471,6 +487,9 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.conclusionEvidence !== undefined) out.conclusionEvidence = evidenceOf(input.conclusionEvidence, 'conclusionEvidence')
   if (input.blockedNote !== undefined) out.blockedNote = textOf(input.blockedNote, 'blockedNote')
   if (input.doneNote !== undefined) out.doneNote = textOf(input.doneNote, 'doneNote')
+  if (input.owner !== undefined) out.owner = idOf(input.owner, 'owner')
+  if (input.collaborators !== undefined) out.collaborators = idsOf(input.collaborators, 'collaborators', RECORDS_LIMITS.assignmentRefs)
+  if (input.confirmers !== undefined) out.confirmers = idsOf(input.confirmers, 'confirmers', RECORDS_LIMITS.assignmentRefs)
   if (input.related !== undefined) out.related = refsOf(input.related, 'related', REFERRABLE[kind])
   if (input.materials !== undefined) out.materials = materialsOf(input.materials, 'materials')
   if (input.artifacts !== undefined) out.artifacts = materialsOf(input.artifacts, 'artifacts')
@@ -498,13 +517,19 @@ export function normalizeInput(kind: RecordKind, input: unknown, mode: 'create' 
   if (input.issues !== undefined) out.issues = projectIssuesOf(input.issues, 'issues')
   if (input.requirements !== undefined) out.requirements = projectRequirementsOf(input.requirements, 'requirements')
   if (input.requirementChanges !== undefined) out.requirementChanges = requirementChangesOf(input.requirementChanges, 'requirementChanges')
+  if (input.reviews !== undefined) out.reviews = projectReviewsOf(input.reviews, 'reviews')
+  if (input.handovers !== undefined) out.handovers = projectHandoversOf(input.handovers, 'handovers')
   if (input.term !== undefined || (kind === 'course' && mode === 'create')) out.term = courseTermOf(input.term, 'term')
   if (input.work !== undefined) out.work = courseWorkOf(input.work, 'work')
   if (input.code !== undefined) out.code = kind === 'run' ? runCodeOf(input.code) : textOf(input.code, 'code')
   if (input.teacher !== undefined) out.teacher = textOf(input.teacher, 'teacher')
+  if (input.role !== undefined) out.role = boundedTextOf(input.role, 'role', RECORDS_LIMITS.memberRoleLength)
+  if (kind === 'member' && (input.enabled !== undefined || mode === 'create')) {
+    out.enabled = input.enabled === undefined ? true : enabledOf(input.enabled)
+  }
   if (input.schedule !== undefined) out.schedule = textOf(input.schedule, 'schedule')
   if (input.notes !== undefined) out.notes = textOf(input.notes, 'notes')
-  if (input.note !== undefined) out.note = textOf(input.note, 'note')
+  if (input.note !== undefined) out.note = kind === 'member' ? boundedTextOf(input.note, 'note', RECORDS_LIMITS.memberNoteLength) : textOf(input.note, 'note')
   if (input.category !== undefined || (kind === 'chore' && mode === 'create')) out.category = categoryOf(input.category)
   if (input.derivedFrom !== undefined) {
     if (input.derivedFrom === null) out.derivedFrom = null
@@ -622,6 +647,11 @@ export function storedProblem(value: unknown): string | null {
     if (sourceProblem !== null) return sourceProblem
   }
   if (value.kind === 'chore' && (typeof value.status !== 'string' || !CHORE_STATUSES.includes(value.status as ChoreStatus))) return 'status 不认识'
+  if (value.kind === 'member') {
+    if (typeof value.enabled !== 'boolean') return '缺少启用状态'
+    if (value.role !== undefined && (typeof value.role !== 'string' || value.role.length > RECORDS_LIMITS.memberRoleLength)) return 'role 不合法'
+    if (value.note !== undefined && (typeof value.note !== 'string' || value.note.length > RECORDS_LIMITS.memberNoteLength)) return 'note 不合法'
+  }
   if (value.kind === 'topic') {
     const arraysProblem = topicArraysProblem(value)
     if (arraysProblem !== null) return arraysProblem

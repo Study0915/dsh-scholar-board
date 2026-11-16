@@ -72,6 +72,7 @@
     materialError: card.querySelector('[data-role="material-error"]'),
     titleInput: card.querySelector('[data-field="title-input"]'),
     dateInput: card.querySelector('[data-field="date-input"]'),
+    participants: card.querySelector('[data-field="participants"]'),
     topics: card.querySelector('[data-field="topics"]'),
     feedback: card.querySelector('[data-field="feedback"]'),
     questions: card.querySelector('[data-field="questions"]'),
@@ -91,6 +92,7 @@
   var labels = {
     title: card.querySelector('[data-role="label-title"]'),
     date: card.querySelector('[data-role="label-date"]'),
+    participants: card.querySelector('[data-role="label-participants"]'),
     topics: card.querySelector('[data-role="label-topics"]'),
     feedback: card.querySelector('[data-role="label-feedback"]'),
     questions: card.querySelector('[data-role="label-questions"]'),
@@ -114,6 +116,7 @@
     pendingLatest: null,
     draftId: null,
     materials: [],
+    participants: [],
     derivedFrom: null,
     derivedTitle: null,
     dirty: false,
@@ -153,6 +156,7 @@
     put(nodes.retry, t('retry'))
     put(labels.title, t('fieldTitle'))
     put(labels.date, t('date'))
+    put(labels.participants, t('participants'))
     put(labels.topics, t('topics'))
     put(labels.feedback, t('feedback'))
     put(labels.questions, t('openQuestions'))

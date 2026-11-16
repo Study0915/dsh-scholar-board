@@ -24,6 +24,8 @@ import { installMotionTemplates } from './motion'
 import { readMedia } from './media/read'
 import { createRecordRelations } from './record-relations'
 import type { RecordRelations, RecordRelationsOptions } from './record-relations'
+import { createMemberDirectory } from './member-directory'
+import type { MemberDirectory } from './member-directory'
 import { createTemplatePanel } from './template-panel'
 import type { TemplatePanel, TemplatePanelOptions } from './template-panel'
 import { templateApplication, templateCurrent, templateValuesOf } from './template-apply'
@@ -32,6 +34,7 @@ import type { TemplateApplication } from './template-apply'
 /** 组件的公共接口，写在编写指南里的那一份。 */
 export interface WidgetApi extends WidgetHandles {
   createRecordRelations(options: RecordRelationsOptions): RecordRelations
+  createMemberDirectory(): MemberDirectory
   createTemplatePanel(options: TemplatePanelOptions): TemplatePanel
   /** 模板字段落进记录：输入项、观测项与种子 / 评估集合 / 环境。 */
   templateApplication(fields: readonly TemplateField[], current: Record<string, string>, existing?: { inputs?: readonly ResearchEntry[]; metrics?: readonly ResearchEntry[] }): TemplateApplication
@@ -277,6 +280,7 @@ function subscribe<T>(list: Array<(value: T) => void>, handler: (value: T) => vo
 function install(): void {
   const api: WidgetApi = {
     createRecordRelations: options => createRecordRelations(api, options),
+    createMemberDirectory: () => createMemberDirectory(api),
     createTemplatePanel: options => createTemplatePanel(api, options),
     templateApplication,
     templateCurrent,

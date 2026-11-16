@@ -69,6 +69,25 @@ describe('跨类型关联与反向引用', () => {
     await expect(store.update(record.id, record.revision, { related: [] }, actor)).rejects.toMatchObject({ status: 409 })
   })
 
+  it('成员引用进入反向查询：参与者、负责人、评审与接手人只计一次', async () => {
+    const store = await setup()
+    const member = (await store.create({ kind: 'member', title: '成员', enabled: true }, actor)).record
+    const meeting = (await store.create({ kind: 'meeting', title: '会议', participants: [member.id] }, actor)).record
+    const action = (await store.create({ kind: 'action', title: '行动', status: 'todo', owner: member.id, collaborators: [member.id] }, actor)).record
+    const project = (await store.create({
+      kind: 'project',
+      title: '项目',
+      tasks: [{ id: 't1', title: '任务', status: 'todo', owner: member.id, confirmers: [member.id] }],
+      reviews: [{ id: 'r1', target: 'project', reviewer: member.id, opinion: '可以', decision: '通过' }],
+      handovers: [{ id: 'h1', receiver: member.id, confirmed: false }],
+    }, actor)).record
+    expect(recordReferences(action).filter((ref) => ref.kind === 'member')).toEqual([{ kind: 'member', id: member.id }])
+    const query = { references: { kind: 'member', id: member.id } }
+    expect(new Set(store.view(query).records.map((row) => row.id))).toEqual(new Set([meeting.id, action.id, project.id]))
+    await store.update(member.id, member.revision, { enabled: false }, actor)
+    expect(new Set(store.view(query).records.map((row) => row.id))).toEqual(new Set([meeting.id, action.id, project.id]))
+  })
+
   it('分页可读完超过单页上限的记录，排序稳定且不静默遗漏', async () => {
     const store = await setup()
     for (let index = 0; index < 205; index += 1) await store.create({ kind: 'meeting', title: `Synthetic ${index}` }, actor)
