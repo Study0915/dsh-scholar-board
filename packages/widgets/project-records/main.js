@@ -67,6 +67,9 @@
     communications: card.querySelector('[data-role="communications"]'),
     milestones: card.querySelector('[data-role="milestones"]'),
     issues: card.querySelector('[data-role="issues"]'),
+    requirements: card.querySelector('[data-role="requirements"]'),
+    changes: card.querySelector('[data-role="changes"]'),
+    chain: card.querySelector('[data-role="chain"]'),
     related: card.querySelector('[data-role="related"]'),
     relatedSelect: card.querySelector('[data-role="related-select"]'),
     rowsError: card.querySelector('[data-role="rows-error"]'),
@@ -95,6 +98,9 @@
     communications: card.querySelector('[data-role="label-communications"]'),
     milestones: card.querySelector('[data-role="label-milestones"]'),
     issues: card.querySelector('[data-role="label-issues"]'),
+    requirements: card.querySelector('[data-role="label-requirements"]'),
+    changes: card.querySelector('[data-role="label-changes"]'),
+    chain: card.querySelector('[data-role="label-chain"]'),
     related: card.querySelector('[data-role="label-related"]'),
     materials: card.querySelector('[data-role="label-materials"]')
   }
@@ -120,6 +126,8 @@
     communications: [],
     milestones: [],
     issues: [],
+    requirements: [],
+    requirementChanges: [],
     related: [],
     materials: [],
     records: [],
@@ -142,6 +150,20 @@
     view: view,
     onInput: function () { editor.onInput() }
   })
+
+  var deep = root.createProjectDeepRows({
+    app: app,
+    nodes: nodes,
+    widget: widget,
+    live: live,
+    t: t,
+    pure: pure,
+    rows: rows,
+    setStatus: setStatus,
+    onInput: function () { editor.onInput() }
+  })
+  view.rowExtra = function (kind, entry, index) { return deep.extraOf(kind, entry, index) }
+  rows.setOnFill(function () { deep.renderAll() })
 
   function persist(patch) {
     if (widget !== undefined && typeof widget.setState === 'function') widget.setState(patch)
@@ -174,15 +196,21 @@
     put(labels.communications, t('communications'))
     put(labels.milestones, t('milestones'))
     put(labels.issues, t('issues'))
+    put(labels.requirements, t('requirements'))
+    put(labels.changes, t('requirementChanges'))
+    put(labels.chain, t('chain'))
     put(labels.related, t('related'))
     put(labels.materials, t('material'))
     put(card.querySelector('[data-role="milestone-hint"]'), t('milestoneHint'))
+    put(card.querySelector('[data-role="chain-hint"]'), t('chainHint'))
     put(card.querySelector('[data-action="close"]'), t('close'))
     put(card.querySelector('[data-action="add-task"]'), t('addTask'))
     put(card.querySelector('[data-action="add-deliverable"]'), t('addDeliverable'))
     put(card.querySelector('[data-action="add-communication"]'), t('addCommunication'))
     put(card.querySelector('[data-action="add-milestone"]'), t('addMilestone'))
     put(card.querySelector('[data-action="add-issue"]'), t('addIssue'))
+    put(card.querySelector('[data-action="add-requirement"]'), t('addRequirement'))
+    put(card.querySelector('[data-action="add-change"]'), t('addChange'))
     put(card.querySelector('[data-action="add-related"]'), t('addRelated'))
     put(card.querySelector('[data-action="add-material"]'), t('addMaterial'))
     put(nodes.saveButton, t('save'))
@@ -386,6 +414,8 @@
   card.querySelector('[data-action="add-communication"]').addEventListener('click', function () { rows.add('communications') })
   card.querySelector('[data-action="add-milestone"]').addEventListener('click', function () { rows.add('milestones') })
   card.querySelector('[data-action="add-issue"]').addEventListener('click', function () { rows.add('issues') })
+  card.querySelector('[data-action="add-requirement"]').addEventListener('click', function () { deep.addRequirement() })
+  card.querySelector('[data-action="add-change"]').addEventListener('click', function () { deep.addChange() })
   card.querySelector('[data-action="add-related"]').addEventListener('click', function () { editor.addRelated() })
   card.querySelector('[data-action="add-material"]').addEventListener('click', function () { editor.addMaterial() })
   nodes.confirm.querySelector('[data-action="confirm-keep"]').addEventListener('click', function () { nodes.confirm.close() })

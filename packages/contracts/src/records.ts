@@ -7,6 +7,25 @@
 import type { Due } from './campus'
 import type { LiteratureFormat } from './literature-identifiers'
 import type { TemplateRecord, TemplateSnapshot } from './templates'
+import type { ProjectRecord } from './project-records'
+
+export type {
+  ProjectAcceptance,
+  ProjectCommunication,
+  ProjectDeliverable,
+  ProjectDeliverableStatus,
+  ProjectFrozenMaterials,
+  ProjectIssue,
+  ProjectIssueStatus,
+  ProjectItemStatus,
+  ProjectMilestone,
+  ProjectRequirement,
+  ProjectRequirementChange,
+  ProjectRequirementRef,
+  ProjectRequirementStatus,
+  ProjectRecord,
+  ProjectTask,
+} from './project-records'
 
 /** 记录存储的格式版本；读盘时不认识的版本保留原文件并报错。 */
 export const RECORDS_FORMAT = 1
@@ -44,6 +63,16 @@ export const RECORDS_LIMITS = {
   milestoneLabelLength: 60,
   projectItems: 100,
   projectMilestones: 50,
+  projectRequirements: 100,
+  requirementChanges: 200,
+  deliverableAcceptances: 20,
+  requirementNoLength: 40,
+  requirementText: 2000,
+  requirementMetricLength: 200,
+  requirementThresholdLength: 400,
+  requirementTestMethodLength: 1000,
+  deliverableLimitationsLength: 1000,
+  acceptanceOpinionLength: 1000,
   versionLength: 32,
   courseWork: 100,
   termLabelLength: 40,
@@ -481,72 +510,6 @@ export interface ThesisRecord extends RecordBase {
   materials?: MaterialRef[]
 }
 
-/** 横向项目里个人负责的一项事项；是否受阻由用户填。 */
-export type ProjectItemStatus = 'todo' | 'doing' | 'blocked' | 'done'
-
-export interface ProjectTask {
-  id: string
-  title: string
-  status: ProjectItemStatus
-  due?: Due
-  note?: string
-  materials?: MaterialRef[]
-}
-
-/** 交付物状态：草稿、评审中、已交付与已验收。 */
-export type ProjectDeliverableStatus = 'draft' | 'review' | 'delivered' | 'accepted'
-
-export interface ProjectDeliverable {
-  id: string
-  name: string
-  version: string
-  status: ProjectDeliverableStatus
-  due?: Due
-  note?: string
-  materials?: MaterialRef[]
-}
-
-/** 一次沟通的结论：一句话与可选日期；来源会议走 related。 */
-export interface ProjectCommunication {
-  id: string
-  summary: string
-  at?: Due
-  note?: string
-}
-
-/** 验收节点：名称与日期由用户维护，不预设合同规则。 */
-export interface ProjectMilestone {
-  id: string
-  label: string
-  status: 'todo' | 'doing' | 'done'
-  due?: Due
-  note?: string
-}
-
-/** 待确认问题：未解决与否由用户填。 */
-export type ProjectIssueStatus = 'open' | 'doing' | 'resolved'
-
-export interface ProjectIssue {
-  id: string
-  title: string
-  status: ProjectIssueStatus
-  note?: string
-}
-
-/** 横向项目：需求摘要、个人负责事项、交付物版本、沟通结论、验收节点与问题。 */
-export interface ProjectRecord extends RecordBase {
-  kind: 'project'
-  title: string
-  summary?: string
-  tasks?: ProjectTask[]
-  deliverables?: ProjectDeliverable[]
-  communications?: ProjectCommunication[]
-  milestones?: ProjectMilestone[]
-  issues?: ProjectIssue[]
-  related?: RecordRef[]
-  materials?: MaterialRef[]
-}
-
 /** 一门课的作业或考试；补交由用户显式标记，不按时间推断。 */
 export type CourseWorkKind = 'assignment' | 'exam'
 
@@ -658,7 +621,7 @@ export interface RecordQuery {
   /** 找到直接引用该记录的对象，不预先双写反向列表。 */
   references?: RecordRef
   /** 只看来源指向某条记录的行动项：反向引用由宿主现算，不双写。 */
-  source?: { kind: 'meeting' | 'manuscript' | 'topic' | 'literature', id: string }
+  source?: { kind: 'meeting' | 'manuscript' | 'topic' | 'literature' | 'project', id: string }
 }
 
 /** 一次读取最多给出多少条，以及序列化后的字节预算：消息上限 320 KB，留出余量。 */

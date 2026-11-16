@@ -7,6 +7,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import '../../widgets/project-records/project-model.js'
+import '../../widgets/project-records/requirements.js'
 import '../../widgets/project-records/copy.js'
 
 interface ProjectModel {
@@ -55,6 +56,28 @@ interface ProjectModel {
   materialValid(url: unknown, title: unknown): boolean
   openableUrl(url: unknown): boolean
   fill(text: string, values: Record<string, unknown>): string
+  REQUIREMENT_STATUSES: string[]
+  MAX_REQUIREMENTS: number
+  MAX_CHANGES: number
+  requirementKey(status: unknown): string
+  isRequirementStatus(status: unknown): boolean
+  requirementsOf(record: unknown): Array<Record<string, unknown>>
+  changesOf(record: unknown): Array<Record<string, unknown>>
+  requirementOf(record: unknown, id: string): Record<string, unknown> | null
+  changesFor(record: unknown, id: string): Array<Record<string, unknown>>
+  requirementLine(requirement: unknown): string
+  nextVersion(version: unknown): string
+  templates(): Array<Record<string, unknown>>
+  cleanRequirements(rows: unknown): Array<Record<string, unknown>> | null
+  cleanChanges(rows: unknown): Array<Record<string, unknown>> | null
+  applyChange(requirements: unknown, change: Record<string, unknown>): { requirements: Array<Record<string, unknown>>, change: Record<string, unknown> } | null
+  boundVersions(deliverable: unknown, requirementId: string): string
+  acceptanceState(deliverable: unknown): { passed: number, failed: number, last: Record<string, unknown> | null }
+  missingReferences(record: unknown): string[]
+  chainOf(record: unknown, requirementId: string): Record<string, unknown> | null
+  requirementProgress(record: unknown): { total: number, confirmed: number, cancelled: number, delivered: number, accepted: number }
+  evidenceLine(deliverable: unknown, text: { t: (key: string) => string, fill: (text: string, values: Record<string, unknown>) => string }): string
+  freezeOf(deliverable: unknown, date: string): Record<string, unknown> | null
 }
 
 const model = (globalThis as unknown as { ProjectRecords: ProjectModel }).ProjectRecords
@@ -299,6 +322,174 @@ describe('回收倒计时、地址与文案', () => {
   })
 })
 
+/** 一条需求。 */
+function requirement(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'r1',
+    no: 'R1',
+    title: '单小区干扰抑制',
+    version: 'v2',
+    status: 'confirmed',
+    metric: '相对基线提升',
+    unit: '%',
+    threshold: '不低于 10',
+    testMethod: '三组对照',
+    ...overrides,
+  }
+}
+
+/** 一次需求变更。 */
+function change(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return { id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: '范围收敛到单小区', ...overrides }
+}
+
+/** 需求、事项、交付依据、测试报告、验收与冻结材料都在的一条项目。 */
+function evidence(): Record<string, unknown> {
+  return project({
+    requirements: [requirement()],
+    requirementChanges: [change()],
+    tasks: [
+      { id: 'p1', title: '搭建仿真', status: 'doing', requirement: 'r1' },
+      { id: 'p2', title: '整理进展', status: 'todo' },
+    ],
+    deliverables: [
+      {
+        id: 'd1',
+        name: '仿真代码包',
+        version: 'v0.3',
+        status: 'delivered',
+        requirements: [{ id: 'r1', version: 'v1' }],
+        testReports: [{ id: 'tr1', url: 'https://example.com/report', title: '回归报告' }],
+        limitations: '只覆盖单小区',
+        deliveredAt: { kind: 'date', date: '2026-11-10', timeZone: 'Asia/Shanghai' },
+        acceptances: [
+          { id: 'a1', opinion: '首轮未通过', passed: false, pending: '补测试数据' },
+          { id: 'a2', opinion: '复验通过', passed: true },
+        ],
+        frozen: {
+          at: { kind: 'date', date: '2026-11-11', timeZone: 'Asia/Shanghai' },
+          materials: [{ id: 'tr1', url: 'https://example.com/report', title: '回归报告' }],
+        },
+      },
+    ],
+  })
+}
+
+describe('需求、变更与交付依据', () => {
+  it('需求要有编号、标题、版本与状态；来源与关联事项按 id 去重', () => {
+    expect(model.requirementsOf(evidence())).toHaveLength(1)
+    expect(model.requirementsOf(project({ requirements: [{ id: 'r1', title: ' ', version: 'v1', status: 'pending' }] }))).toHaveLength(0)
+    expect(model.cleanRequirements([
+      { id: 'r1', no: ' R1 ', title: ' 单小区抑制 ', version: 'v1', status: 'pending', sources: [{ kind: 'meeting', id: 'm1' }], tasks: ['p1'], actionId: 'a1' },
+    ])).toEqual([
+      { id: 'r1', no: 'R1', title: '单小区抑制', version: 'v1', status: 'pending', sources: [{ kind: 'meeting', id: 'm1' }], tasks: ['p1'], actionId: 'a1' },
+    ])
+    expect(model.cleanRequirements([{ id: 'r1', title: '抑制', version: 'v1', status: 'done' }])).toBeNull()
+    expect(model.cleanRequirements([{ id: 'r1', title: '抑制', version: 'v1', status: 'pending' }, { id: 'r1', title: '复核', version: 'v1', status: 'pending' }])).toBeNull()
+    expect(model.cleanRequirements([{ title: '没有 id', version: 'v1', status: 'pending' }])).toBeNull()
+    expect(model.cleanRequirements([{ id: 'r1', title: '抑制', version: 'v1', status: 'pending', sources: [{ kind: 'meeting', id: 'm1' }, { kind: 'meeting', id: 'm1' }] }])).toBeNull()
+    expect(model.cleanRequirements([{ id: 'r1', title: '抑制', version: 'v1', status: 'pending', materials: [{ url: 'file:///etc/passwd', title: '报表' }] }])).toBeNull()
+    expect(model.cleanRequirements([{ id: 'r1', title: '抑制', version: 'v1', status: 'pending', tasks: ['p1', 'p1'] }])).toBeNull()
+  })
+
+  it('变更要有需求、前后版本与原因；日期可留空，读不出来的日期整组拒绝', () => {
+    expect(model.changesOf(evidence())).toHaveLength(1)
+    expect(model.cleanChanges([
+      { id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: ' 范围收敛 ', impact: '只做单小区', at: '2026-11-08' },
+    ])).toEqual([
+      { id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: '范围收敛', impact: '只做单小区', at: expect.objectContaining({ kind: 'date', date: '2026-11-08' }) },
+    ])
+    expect(model.cleanChanges([{ id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: ' ' }])).toBeNull()
+    expect(model.cleanChanges([{ id: 'c1', requirementId: '', fromVersion: 'v1', toVersion: 'v2', reason: '收敛' }])).toBeNull()
+    expect(model.cleanChanges([{ id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: '收敛', at: '2026-11-8' }])).toBeNull()
+    expect(model.cleanChanges([{ requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: '收敛' }])).toBeNull()
+  })
+
+  it('需求升版留下变更，已建立的交付仍按建立时的版本判验收', () => {
+    const result = model.applyChange([requirement({ version: 'v1' })], { id: 'c2', requirementId: 'r1', toVersion: 'v2', reason: '范围收敛' })
+    expect(result).not.toBeNull()
+    expect(result?.requirements[0]).toMatchObject({ id: 'r1', version: 'v2' })
+    expect(result?.change).toMatchObject({ id: 'c2', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2' })
+    expect(model.applyChange([requirement({ version: 'v1' })], { id: 'c2', requirementId: 'r9', toVersion: 'v2' })).toBeNull()
+    expect(model.boundVersions((evidence().deliverables as Array<Record<string, unknown>>)[0], 'r1')).toBe('v1')
+    expect(model.boundVersions({}, 'r1')).toBe('')
+    expect(model.nextVersion('v1')).toBe('v2')
+    expect(model.nextVersion('草案 1')).toBe('草案 2')
+    expect(model.nextVersion('')).toBe('2')
+    expect(model.requirementLine(requirement())).toBe('R1 · 单小区干扰抑制 · v2')
+  })
+
+  it('验收失败保留一条记录，后续通过不覆盖，计数两类都在', () => {
+    const deliverable = (evidence().deliverables as Array<Record<string, unknown>>)[0]
+    const state = model.acceptanceState(deliverable)
+    expect(state).toMatchObject({ passed: 1, failed: 1 })
+    expect(state.last).toMatchObject({ id: 'a2' })
+    expect((deliverable.acceptances as Array<Record<string, unknown>>)).toHaveLength(2)
+    expect(model.acceptanceState({ acceptances: [{ id: 'a1', opinion: '未通过', passed: false }] })).toMatchObject({ passed: 0, failed: 1 })
+    expect(model.acceptanceState({})).toMatchObject({ passed: 0, failed: 0, last: null })
+  })
+
+  it('追溯链串起需求、事项、交付与变更，缺失引用单独列出', () => {
+    const chain = model.chainOf(evidence(), 'r1')
+    expect(chain).toMatchObject({ requirement: expect.objectContaining({ id: 'r1' }) })
+    expect((chain?.tasks as Array<Record<string, unknown>>).map((task) => task.id)).toEqual(['p1'])
+    expect(chain?.missingTasks).toEqual([])
+    expect((chain?.deliveries as Array<Record<string, unknown>>).map((item) => item.version)).toEqual(['v1'])
+    expect((chain?.changes as Array<Record<string, unknown>>).map((item) => item.id)).toEqual(['c1'])
+    expect(model.chainOf(evidence(), 'r9')).toBeNull()
+    const missing = model.chainOf(project({
+      requirements: [requirement({ tasks: ['p9'] })],
+      tasks: [{ id: 'p1', title: '搭建仿真', status: 'todo' }],
+    }), 'r1')
+    expect(missing?.tasks).toEqual([])
+    expect(missing?.missingTasks).toEqual(['p9'])
+    expect(model.missingReferences(project({
+      requirements: [requirement()],
+      tasks: [{ id: 'p1', title: '搭建仿真', status: 'todo', requirement: 'r9' }],
+      deliverables: [{ id: 'd1', name: '代码包', version: 'v1', status: 'draft', requirements: [{ id: 'r8', version: 'v1' }] }],
+      requirementChanges: [change({ id: 'c2', requirementId: 'r7' })],
+    }))).toEqual(['r9', 'r8', 'r7'])
+  })
+
+  it('交付依据一行写版本、报告数与验收数；冻结只收测试报告与材料', () => {
+    const line = { t: (key: string) => key, fill: model.fill }
+    expect(model.evidenceLine((evidence().deliverables as Array<Record<string, unknown>>)[0], line)).toBe('v1 · testReportsCount · acceptanceCount')
+    const frozen = model.freezeOf((evidence().deliverables as Array<Record<string, unknown>>)[0], '2026-11-12')
+    expect(frozen).toMatchObject({ at: expect.objectContaining({ date: '2026-11-12' }) })
+    expect((frozen?.materials as Array<Record<string, unknown>>)).toHaveLength(1)
+    expect(model.freezeOf({ testReports: [] }, '2026-11-12')).toBeNull()
+  })
+
+  it('六个模板只给形状，进度按确认、交付与验收累计', () => {
+    const templates = model.templates()
+    expect(templates.map((template) => template.key)).toEqual(['tplAlgorithm', 'tplSimulation', 'tplPrototype', 'tplTestReport', 'tplTechnical', 'tplDemo'])
+    for (const template of templates) {
+      expect(typeof template.metric).toBe('string')
+      expect(typeof template.unit).toBe('string')
+      expect(typeof template.threshold).toBe('string')
+      expect(typeof template.testMethod).toBe('string')
+    }
+    expect(model.requirementProgress(evidence())).toEqual({ total: 1, confirmed: 1, cancelled: 0, delivered: 1, accepted: 1 })
+  })
+
+  it('保存前保留事项与问题的行动项链接，以及交付物的深层依据', () => {
+    expect(model.cleanTasks([{ id: 'p1', title: '搭建仿真', status: 'todo', requirement: 'r1', actionId: 'a-1' }])).toEqual([
+      { id: 'p1', title: '搭建仿真', status: 'todo', requirement: 'r1', actionId: 'a-1' },
+    ])
+    expect(model.cleanIssues([{ id: 'i1', title: '范围待确认', status: 'open', actionId: 'a-2' }])).toEqual([
+      { id: 'i1', title: '范围待确认', status: 'open', actionId: 'a-2' },
+    ])
+    const cleaned = model.cleanDeliverables([(evidence().deliverables as Array<Record<string, unknown>>)[0]])
+    expect(cleaned?.[0]).toMatchObject({
+      requirements: [{ id: 'r1', version: 'v1' }],
+      testReports: [{ id: 'tr1', url: 'https://example.com/report', title: '回归报告' }],
+      limitations: '只覆盖单小区',
+      acceptances: [expect.objectContaining({ id: 'a1' }), expect.objectContaining({ id: 'a2' })],
+    })
+    expect((cleaned?.[0]?.frozen as Record<string, unknown>)).toMatchObject({ materials: [expect.objectContaining({ id: 'tr1' })] })
+  })
+})
+
 describe('样例与清单', () => {
   it('s 与 l 两个尺寸族都有样例', () => {
     const samples = JSON.parse(readFileSync(new URL('../../widgets/project-records/samples.json', import.meta.url), 'utf8')) as Record<string, unknown>
@@ -321,7 +512,7 @@ describe('样例与清单', () => {
       'widget-board:records.draft',
       'widget-board:records.open',
     ])
-    expect(manifest.scripts).toEqual(['project-model.js', 'copy.js', 'view.js', 'rows.js', 'editor.js'])
+    expect(manifest.scripts).toEqual(['project-model.js', 'requirements.js', 'copy.js', 'view.js', 'rows.js', 'deep-rows.js', 'editor.js'])
     expect(Object.keys(manifest.text).sort()).toEqual(Object.keys(copy).sort())
   })
 })

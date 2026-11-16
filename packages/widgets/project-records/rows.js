@@ -20,7 +20,8 @@
     var t = ctx.t
     var pure = ctx.pure
     var view = ctx.view
-    var text = { t: t }
+    var text = { t: t, requirements: function () { return app.requirements } }
+    var onFill = null
 
     function rowOfEvent(event) {
       if (!(event.target instanceof Element)) return null
@@ -39,7 +40,7 @@
       var list = app[hit.kind]
       if (!Array.isArray(list) || list[hit.index] === undefined) return
       var entry = list[hit.index]
-      if (part === 'due' || part === 'at') entry[part] = hit.target.value === '' ? null : hit.target.value
+      if (part === 'due' || part === 'at' || part === 'deliveredAt') entry[part] = hit.target.value === '' ? null : hit.target.value
       else entry[part] = hit.target.value
       ctx.onInput()
     }
@@ -102,7 +103,14 @@
     function each(kind, node, make) {
       if (node === null) return
       var items = []
-      for (var at = 0; at < app[kind].length; at += 1) items.push(make(app[kind][at], at, text))
+      for (var at = 0; at < app[kind].length; at += 1) {
+        var row = make(app[kind][at], at, text)
+        if (typeof view.rowExtra === 'function') {
+          var extra = view.rowExtra(kind, app[kind][at], at)
+          if (extra !== null && extra !== undefined) row.appendChild(extra)
+        }
+        items.push(row)
+      }
       node.replaceChildren.apply(node, items)
     }
 
@@ -243,9 +251,12 @@
       app.communications = copyList(record, 'communications')
       app.milestones = copyList(record, 'milestones')
       app.issues = copyList(record, 'issues')
+      app.requirements = copyList(record, 'requirements')
+      app.requirementChanges = copyList(record, 'requirementChanges')
       app.related = copyList(record, 'related')
       app.materials = copyList(record, 'materials')
       renderAll()
+      if (onFill !== null) onFill()
     }
 
     function copyList(record, field) {
@@ -284,7 +295,9 @@
       var communications = pure.cleanCommunications(app.communications)
       var milestones = pure.cleanMilestones(app.milestones)
       var issues = pure.cleanIssues(app.issues)
-      if (tasks === null || deliverables === null || communications === null || milestones === null || issues === null) return null
+      var requirements = pure.cleanRequirements(app.requirements)
+      var requirementChanges = pure.cleanChanges(app.requirementChanges)
+      if (tasks === null || deliverables === null || communications === null || milestones === null || issues === null || requirements === null || requirementChanges === null) return null
       var related = []
       for (var at = 0; at < app.related.length; at += 1) {
         var ref = app.related[at]
@@ -296,6 +309,8 @@
         communications: orNull(communications),
         milestones: orNull(milestones),
         issues: orNull(issues),
+        requirements: orNull(requirements),
+        requirementChanges: orNull(requirementChanges),
         related: orNull(related),
         materials: orNull(app.materials)
       }
@@ -323,7 +338,8 @@
       addRelated: addRelated,
       addMaterial: addMaterial,
       removeMaterial: removeMaterial,
-      cleaned: cleaned
+      cleaned: cleaned,
+      setOnFill: function (callback) { onFill = typeof callback === 'function' ? callback : null }
     }
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)

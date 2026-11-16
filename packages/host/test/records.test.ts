@@ -705,6 +705,100 @@ describe('记录存储', () => {
     await expect(store.create(project({ amount: '100000' }), ACTOR)).rejects.toMatchObject({ status: 400 })
   })
 
+  it('横向项目带需求、变更与交付依据，旧记录没有这些字段照常读写', async () => {
+    const { store } = await open()
+    const frozenAt = { kind: 'date', date: '2026-11-11', timeZone: 'Asia/Shanghai' }
+    const created = await store.create(project({
+      requirements: [{
+        id: 'r1',
+        no: 'R1',
+        title: '单小区抑制',
+        version: 'v1',
+        status: 'pending',
+        description: '只看单小区',
+        metric: '相对基线提升',
+        unit: '%',
+        threshold: '不低于 10',
+        testMethod: '三组对照',
+        sources: [{ kind: 'meeting', id: 'meeting-1' }],
+        tasks: ['p1'],
+        actionId: 'action-2',
+      }],
+      requirementChanges: [{
+        id: 'c1',
+        requirementId: 'r1',
+        fromVersion: 'v1',
+        toVersion: 'v2',
+        reason: '范围收敛',
+        impact: '只做单小区',
+        communication: '11 月沟通',
+        confirmation: '对方确认',
+        at: { kind: 'date', date: '2026-11-08', timeZone: 'Asia/Shanghai' },
+      }],
+      tasks: [{ id: 'p1', title: '搭建仿真', status: 'doing', requirement: 'r1', actionId: 'action-1' }],
+      deliverables: [{
+        id: 'd1',
+        name: '代码包',
+        version: 'v0.3',
+        status: 'delivered',
+        requirements: [{ id: 'r1', version: 'v1' }],
+        testReports: [{ id: 'tr1', url: 'https://example.com/report', title: '回归报告' }],
+        limitations: '只覆盖单小区',
+        deliveredAt: { kind: 'date', date: '2026-11-10', timeZone: 'Asia/Shanghai' },
+        acceptances: [{ id: 'a1', opinion: '首轮未通过', passed: false, pending: '补测试数据' }],
+        frozen: { at: frozenAt, materials: [{ id: 'tr1', url: 'https://example.com/report', title: '回归报告' }] },
+      }],
+    }), ACTOR)
+    const record = created.record as ProjectRecord
+    expect(record.requirements?.[0]).toMatchObject({
+      id: 'r1',
+      no: 'R1',
+      status: 'pending',
+      sources: [{ kind: 'meeting', id: 'meeting-1' }],
+      tasks: ['p1'],
+      actionId: 'action-2',
+    })
+    expect(record.requirementChanges?.[0]).toMatchObject({ id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: '范围收敛' })
+    expect(record.tasks?.[0]).toMatchObject({ requirement: 'r1', actionId: 'action-1' })
+    expect(record.deliverables?.[0].requirements).toEqual([{ id: 'r1', version: 'v1' }])
+    expect(record.deliverables?.[0].acceptances?.[0]).toMatchObject({ id: 'a1', passed: false, pending: '补测试数据' })
+    expect(record.deliverables?.[0].frozen?.materials).toHaveLength(1)
+    for (const term of ['单小区抑制', '三组对照', '范围收敛', '补测试数据', '只覆盖单小区', '回归报告']) {
+      expect(store.view({ search: term }).records.map((entry) => entry.id)).toEqual([record.id])
+    }
+
+    const moved = await store.update(record.id, 1, {
+      requirements: [{ ...(record.requirements?.[0] as Record<string, unknown>), version: 'v2' }],
+      deliverables: [{
+        ...(record.deliverables?.[0] as Record<string, unknown>),
+        acceptances: [
+          { id: 'a1', opinion: '首轮未通过', passed: false, pending: '补测试数据' },
+          { id: 'a2', opinion: '复验通过', passed: true },
+        ],
+      }],
+    }, ACTOR)
+    expect((moved.record as ProjectRecord).requirements?.[0].version).toBe('v2')
+    expect((moved.record as ProjectRecord).deliverables?.[0].requirements).toEqual([{ id: 'r1', version: 'v1' }])
+    expect((moved.record as ProjectRecord).deliverables?.[0].acceptances).toHaveLength(2)
+
+    // 旧记录没有需求字段时照常读、搜、写。
+    const legacy = await store.create(project({ title: '旧项目' }), ACTOR)
+    expect((legacy.record as ProjectRecord).requirements).toBeUndefined()
+    expect(store.view({ search: '旧项目' }).records.map((entry) => entry.id)).toEqual([legacy.record.id])
+
+    await expect(store.create(project({ requirements: [{ id: 'r1', title: '抑制', version: 'v1', status: 'done' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ requirements: [{ id: 'r1', title: '抑制', version: 'v1', status: 'pending' }, { id: 'r1', title: '复核', version: 'v1', status: 'pending' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ requirements: [{ id: 'r1', title: '抑制', version: 'v1', status: 'pending', description: 'x'.repeat(2001) }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ requirements: [{ id: 'r1', title: '抑制', version: 'v1', status: 'pending', sources: [{ kind: 'meeting', id: 'meeting-1' }, { kind: 'meeting', id: 'meeting-1' }] }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ requirements: [{ id: 'r1', title: '抑制', version: 'v1', status: 'pending', tasks: ['p1', 'p1'] }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ requirementChanges: [{ id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: ' ' }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ requirementChanges: [{ id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: '收敛', at: { kind: 'date', date: '2026-11-31', timeZone: 'Asia/Shanghai' } }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ deliverables: [{ id: 'd1', name: '代码包', version: 'v1', status: 'draft', requirements: [{ id: 'r1' }] }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ deliverables: [{ id: 'd1', name: '代码包', version: 'v1', status: 'draft', testReports: [{ id: 'tr1', url: 'file:///etc/passwd', title: '报告' }] }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ deliverables: [{ id: 'd1', name: '代码包', version: 'v1', status: 'draft', acceptances: [{ id: 'a1', passed: true }] }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+    await expect(store.create(project({ deliverables: [{ id: 'd1', name: '代码包', version: 'v1', status: 'draft', frozen: { materials: [] } }] }), ACTOR)).rejects.toMatchObject({ status: 400 })
+  })
+
   it('课程带学期、课程信息、作业考试与补交标记，搜索也看笔记、作业与材料', async () => {
     const { store } = await open()
     const created = await store.create(course(), ACTOR)
@@ -1298,6 +1392,54 @@ describe('记录存储', () => {
     expect(importedFirst.plan).toEqual({ kind: 'research', id: importedPlan.id })
     expect(importedSecond.plan).toEqual({ kind: 'research', id: importedPlan.id })
     expect(importedCombined.results?.[0].sources?.sort()).toEqual([importedFirst.id, importedSecond.id].sort())
+  })
+
+  it('横向项目导出再导入时，需求来源、行动项与交付依据跟着重映射，旧包照常导入', async () => {
+    const source = await open()
+    const meetingCreated = await source.store.create(meeting(), ACTOR)
+    const actionCreated = await source.store.create({
+      kind: 'action',
+      title: '跟进需求',
+      status: 'todo',
+      source: { kind: 'meeting', id: meetingCreated.record.id },
+    }, ACTOR)
+    await source.store.create(project({
+      requirements: [{
+        id: 'r1',
+        title: '抑制',
+        version: 'v1',
+        status: 'confirmed',
+        sources: [{ kind: 'meeting', id: meetingCreated.record.id }],
+        actionId: actionCreated.record.id,
+      }],
+      requirementChanges: [{ id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: '收敛' }],
+      tasks: [{ id: 'p1', title: '搭建仿真', status: 'todo', requirement: 'r1', actionId: actionCreated.record.id }],
+      issues: [{ id: 'i1', title: '范围待确认', status: 'open', actionId: actionCreated.record.id }],
+      deliverables: [{ id: 'd1', name: '代码包', version: 'v1', status: 'draft', requirements: [{ id: 'r1', version: 'v1' }] }],
+    }), ACTOR)
+    const bytes = exportRecords(source.store, { includeArchived: false, includeTrashed: false }, Date.now())
+
+    const target = await open()
+    await importRecords(target.store, bytes, Date.now())
+    const view = target.store.view({ includeArchived: true, includeTrashed: true })
+    const importedMeeting = view.records.find((record) => record.kind === 'meeting')
+    const importedAction = view.records.find((record) => record.kind === 'action')
+    const importedProject = view.records.find((record): record is ProjectRecord => record.kind === 'project')
+    if (importedMeeting === undefined || importedAction === undefined || importedProject === undefined) throw new Error('导入后找不到会议、行动项与横向项目')
+    expect(importedProject.requirements?.[0].sources).toEqual([{ kind: 'meeting', id: importedMeeting.id }])
+    expect(importedProject.requirements?.[0].actionId).toBe(importedAction.id)
+    expect(importedProject.tasks?.[0].actionId).toBe(importedAction.id)
+    expect(importedProject.issues?.[0].actionId).toBe(importedAction.id)
+    expect(importedProject.deliverables?.[0].requirements).toEqual([{ id: 'r1', version: 'v1' }])
+    expect(importedProject.requirementChanges?.[0].reason).toBe('收敛')
+
+    const legacy = await open()
+    await legacy.store.create(project({ title: '旧包项目' }), ACTOR)
+    const legacyBytes = exportRecords(legacy.store, { includeArchived: false, includeTrashed: false }, Date.now())
+    expect(await importRecords(target.store, legacyBytes, Date.now())).toBe(1)
+    const legacyImported = target.store.view({ includeArchived: true, includeTrashed: true }).records.find((record): record is ProjectRecord => record.kind === 'project' && record.title === '旧包项目')
+    if (legacyImported === undefined) throw new Error('旧包没有导入')
+    expect(legacyImported.requirements).toBeUndefined()
   })
 
   it('导入整批校验：坏文件、坏版本与容量不够都拒绝，不留半份', async () => {

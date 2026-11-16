@@ -1,5 +1,5 @@
 /** 领域记录的检索文本，供统一查询使用。 */
-import type { DomainRecord, ResearchEntry, ManuscriptFigure, RevisionItem, SubmissionRound, CourseWork, MaterialRef, ProjectCommunication, ProjectDeliverable, ProjectIssue, ProjectTask, ThesisChapter, ThesisExperiment, ThesisMilestone, ThesisResult } from '@dsh-scholar-board/contracts'
+import type { DomainRecord, ResearchEntry, ManuscriptFigure, RevisionItem, SubmissionRound, CourseWork, MaterialRef, ProjectCommunication, ProjectDeliverable, ProjectIssue, ProjectRequirement, ProjectRequirementChange, ProjectTask, ThesisChapter, ThesisExperiment, ThesisMilestone, ThesisResult } from '@dsh-scholar-board/contracts'
 
 /** 搜索和展示时要读的文本字段。 */
 const TEXT_FIELDS = ['title', 'summary', 'topics', 'feedback', 'openQuestions', 'question', 'goal', 'purpose', 'hypothesis', 'steps', 'judgment', 'nextStep', 'blockers', 'target', 'blockedNote', 'doneNote', 'authors', 'venue', 'understanding', 'questions', 'doi', 'arxivId', 'arxivVersion', 'environment', 'seed', 'evaluation', 'failure', 'conclusion', 'conclusionBasis', 'conclusionScope', 'code', 'teacher', 'schedule', 'notes', 'note', 'category', 'direction'] as const
@@ -144,8 +144,16 @@ export function searchTextOf(record: DomainRecord): string {
     if (typeof deliverable?.name === 'string') parts.push(deliverable.name)
     if (typeof deliverable?.version === 'string') parts.push(deliverable.version)
     if (typeof deliverable?.note === 'string') parts.push(deliverable.note)
+    if (typeof deliverable?.limitations === 'string') parts.push(deliverable.limitations)
     for (const material of Array.isArray(deliverable?.materials) ? deliverable.materials : []) {
       if (typeof material?.title === 'string') parts.push(material.title)
+    }
+    for (const report of Array.isArray(deliverable?.testReports) ? deliverable.testReports : []) {
+      if (typeof report?.title === 'string') parts.push(report.title)
+    }
+    for (const acceptance of Array.isArray(deliverable?.acceptances) ? deliverable.acceptances : []) {
+      if (typeof acceptance?.opinion === 'string') parts.push(acceptance.opinion)
+      if (typeof acceptance?.pending === 'string') parts.push(acceptance.pending)
     }
   }
   for (const communication of (Array.isArray(entry.communications) ? entry.communications : []) as ProjectCommunication[]) {
@@ -155,6 +163,21 @@ export function searchTextOf(record: DomainRecord): string {
   for (const issue of (Array.isArray(entry.issues) ? entry.issues : []) as ProjectIssue[]) {
     if (typeof issue?.title === 'string') parts.push(issue.title)
     if (typeof issue?.note === 'string') parts.push(issue.note)
+  }
+  for (const requirement of (Array.isArray(entry.requirements) ? entry.requirements : []) as ProjectRequirement[]) {
+    for (const field of ['no', 'title', 'description', 'version', 'metric', 'unit', 'threshold', 'testMethod'] as const) {
+      const value = requirement?.[field]
+      if (typeof value === 'string') parts.push(value)
+    }
+    for (const material of Array.isArray(requirement?.materials) ? requirement.materials : []) {
+      if (typeof material?.title === 'string') parts.push(material.title)
+    }
+  }
+  for (const change of (Array.isArray(entry.requirementChanges) ? entry.requirementChanges : []) as ProjectRequirementChange[]) {
+    for (const field of ['fromVersion', 'toVersion', 'reason', 'impact', 'communication', 'confirmation'] as const) {
+      const value = change?.[field]
+      if (typeof value === 'string') parts.push(value)
+    }
   }
   for (const work of (Array.isArray(entry.work) ? entry.work : []) as CourseWork[]) {
     if (typeof work?.title === 'string') parts.push(work.title)

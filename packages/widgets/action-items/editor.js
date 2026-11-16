@@ -67,7 +67,7 @@
         return
       }
       var source = record.source
-      var kindLabel = source.kind === 'meeting' ? t('sourceMeeting') : source.kind === 'manuscript' ? t('sourceManuscript') : t('sourceTopic')
+      var kindLabel = source.kind === 'meeting' ? t('sourceMeeting') : source.kind === 'manuscript' ? t('sourceManuscript') : source.kind === 'project' ? t('sourceProject') : t('sourceTopic')
       nodes.source.textContent = t('source') + '：' + kindLabel + '…'
       nodes.source.dataset.tone = 'open'
       if (!live) return

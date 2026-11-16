@@ -7,7 +7,7 @@ import { isRecord } from '../guards'
 import { fail } from './fields'
 
 /** 行动能挂靠的记录类型。 */
-export const ACTION_SOURCE_KINDS = ['meeting', 'manuscript', 'topic', 'literature'] as const
+export const ACTION_SOURCE_KINDS = ['meeting', 'manuscript', 'topic', 'literature', 'project'] as const
 export type ActionSourceKind = (typeof ACTION_SOURCE_KINDS)[number]
 
 /** 来源字段的规范化结果；未出现的字段不覆盖。 */

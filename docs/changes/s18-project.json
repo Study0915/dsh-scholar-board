@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 1,
+  "at": "2026-11-16",
+  "external": false,
+  "zh": "横向项目卡的 project 记录增加需求与版本变更：每条需求有稳定 id、编号、标题、描述、版本、待确认/已确认/已取消状态、来源记录与材料、验收指标、单位、阈值、测试方法、关联事项和转行动项；需求变更只追加前后版本、原因、日期、影响、沟通依据与确认情况，旧版本不被原位覆盖。交付物可绑定需求及建立时的版本、单列测试报告、写明已知限制与实际交付日期，并保留每一次验收（通过与否、意见、待补事项）与冻结的材料清单快照；需求后来升级不改写旧交付的依据。项目事项、待确认问题与需求都可以转成共享行动项，按稳定来源去重。宿主校验、检索、导出导入重映射、项目卡列表与详情、编辑面板和单元测试同步覆盖，旧记录没有这些字段照常读写。",
+  "en": "Project records now carry requirements and versioned requirement changes: each requirement has a stable id, number, title, description, version, pending/confirmed/cancelled status, source records and materials, acceptance metric, unit, threshold, test method, linked tasks and an action link; changes only append the from/to versions, reason, date, impact, communication basis and user-recorded confirmation, never overwriting older versions. Deliverables can bind requirement ids with the version at creation time, list test reports separately, record known limitations and the actual delivery date, and keep every acceptance (pass/fail, opinion, pending items) plus a frozen material snapshot, so a later requirement upgrade does not rewrite the basis of an older delivery. Project tasks, open questions and requirements can each become a shared action, deduplicated by stable source. Host validation, search, export/import remapping, the project card list and detail view, the editor and unit tests cover the new fields, and older records without them still load."
+}

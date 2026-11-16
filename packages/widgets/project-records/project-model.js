@@ -18,9 +18,12 @@
   var LOAD_TIMEOUT = 4000
   var MAX_ITEMS = 100
   var MAX_MILESTONES = 50
+  var MAX_ACCEPTANCES = 20
   var LABEL_LENGTH = 60
   var VERSION_LENGTH = 32
   var TITLE_LENGTH = 200
+  var TEXT_LENGTH = 2000
+  var OPINION_LENGTH = 1000
 
   /** 负责事项的状态文案键。 */
   function taskKey(status) {
@@ -253,6 +256,85 @@
     return text
   }
 
+  /** 指向记录或条目的 id：空白视为未填，超过 64 字符视为不合法。 */
+  function linkOf(value) {
+    var text = textOf(value)
+    return text.length > 64 ? '' : text
+  }
+
+  /** 一段可选的说明：去掉首尾空白，超过上限时拒绝。 */
+  function noteOf(value, limit) {
+    var text = textOf(value)
+    if ([...text].length > limit) return null
+    return text
+  }
+
+  /** 一组材料引用：地址只收 http/https，说明必填。 */
+  function materialsOfValue(rows, prefix) {
+    var list = Array.isArray(rows) ? rows : []
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var row = list[at]
+      if (row === null || typeof row !== 'object') return null
+      var url = textOf(row.url)
+      var title = labelOf(row.title, TITLE_LENGTH)
+      if (title === null || !materialValid(url, title)) return null
+      out.push({ id: textOf(row.id) !== '' ? textOf(row.id) : prefix + '-' + String(at), url: url, title: title })
+      if (out.length > MAX_ITEMS) return null
+    }
+    return out
+  }
+
+  /** 一组需求引用：每条要有 id 与版本，id 不重复。 */
+  function requirementRefsOfValue(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var out = []
+    var seen = {}
+    for (var at = 0; at < list.length; at += 1) {
+      var row = list[at]
+      if (row === null || typeof row !== 'object') return null
+      var id = linkOf(row.id)
+      var version = labelOf(row.version, VERSION_LENGTH)
+      if (id === '' || version === null || seen[id] === true) return null
+      seen[id] = true
+      out.push({ id: id, version: version })
+      if (out.length > MAX_ITEMS) return null
+    }
+    return out
+  }
+
+  /** 一次验收：意见必填、结论要有，日期与待补事项可留空。 */
+  function acceptancesOfValue(rows) {
+    var list = Array.isArray(rows) ? rows : []
+    var out = []
+    for (var at = 0; at < list.length; at += 1) {
+      var row = list[at]
+      if (row === null || typeof row !== 'object') return null
+      var opinion = labelOf(row.opinion, OPINION_LENGTH)
+      if (opinion === null || typeof row.passed !== 'boolean') return null
+      var entry = { id: textOf(row.id) !== '' ? textOf(row.id) : 'a-' + String(at), opinion: opinion, passed: row.passed }
+      var when = dueOf(row, 'at')
+      if (when === null) return null
+      if (when !== undefined) entry.at = when
+      var pending = noteOf(row.pending, OPINION_LENGTH)
+      if (pending === null) return null
+      if (pending !== '') entry.pending = pending
+      out.push(entry)
+      if (out.length > MAX_ACCEPTANCES) return null
+    }
+    return out
+  }
+
+  /** 一份冻结材料：冻结日期与材料都要有。 */
+  function frozenOfValue(value) {
+    if (value === null || typeof value !== 'object') return null
+    var when = dueOf(value, 'at')
+    if (when === null || when === undefined) return null
+    var materials = materialsOfValue(value.materials, 'fm')
+    if (materials === null || materials.length === 0) return null
+    return { at: when, materials: materials }
+  }
+
   /**
    * 负责事项：标题与状态；日期、说明可留空。
    *
@@ -272,6 +354,10 @@
       if (due === null) return null
       if (due !== undefined) entry.due = due
       if (textOf(row.note) !== '') entry.note = textOf(row.note)
+      var requirement = linkOf(row.requirement)
+      if (requirement !== '') entry.requirement = requirement
+      var actionId = linkOf(row.actionId)
+      if (actionId !== '') entry.actionId = actionId
       out.push(entry)
       if (out.length > MAX_ITEMS) return null
     }
@@ -298,6 +384,27 @@
       if (due === null) return null
       if (due !== undefined) entry.due = due
       if (textOf(row.note) !== '') entry.note = textOf(row.note)
+      var requirements = requirementRefsOfValue(row.requirements)
+      if (requirements === null) return null
+      if (requirements.length > 0) entry.requirements = requirements
+      var testReports = materialsOfValue(row.testReports, 'tr')
+      if (testReports === null) return null
+      if (testReports.length > 0) entry.testReports = testReports
+      var limitations = noteOf(row.limitations, OPINION_LENGTH)
+      if (limitations === null) return null
+      if (limitations !== '') entry.limitations = limitations
+      var deliveredAt = dueOf(row, 'deliveredAt')
+      if (deliveredAt === null) return null
+      if (deliveredAt !== undefined) entry.deliveredAt = deliveredAt
+      var acceptances = acceptancesOfValue(row.acceptances)
+      if (acceptances === null) return null
+      if (acceptances.length > 0) entry.acceptances = acceptances
+      var frozen = null
+      if (row.frozen !== null && row.frozen !== undefined) {
+        frozen = frozenOfValue(row.frozen)
+        if (frozen === null) return null
+        entry.frozen = frozen
+      }
       out.push(entry)
       if (out.length > MAX_ITEMS) return null
     }
@@ -370,6 +477,8 @@
       if (title === null || !isIssueStatus(row.status)) return null
       var entry = { id: String(row.id), title: title, status: row.status }
       if (textOf(row.note) !== '') entry.note = textOf(row.note)
+      var actionId = linkOf(row.actionId)
+      if (actionId !== '') entry.actionId = actionId
       out.push(entry)
       if (out.length > MAX_ITEMS) return null
     }
@@ -413,9 +522,12 @@
     LOAD_TIMEOUT: LOAD_TIMEOUT,
     MAX_ITEMS: MAX_ITEMS,
     MAX_MILESTONES: MAX_MILESTONES,
+    MAX_ACCEPTANCES: MAX_ACCEPTANCES,
     LABEL_LENGTH: LABEL_LENGTH,
     VERSION_LENGTH: VERSION_LENGTH,
     TITLE_LENGTH: TITLE_LENGTH,
+    TEXT_LENGTH: TEXT_LENGTH,
+    OPINION_LENGTH: OPINION_LENGTH,
     taskKey: taskKey,
     deliverableKey: deliverableKey,
     milestoneKey: milestoneKey,
@@ -430,6 +542,8 @@
     dateValue: dateValue,
     zone: zone,
     dateInputOf: dateInputOf,
+    dueOf: dueOf,
+    labelOf: labelOf,
     tasksOf: tasksOf,
     deliverablesOf: deliverablesOf,
     communicationsOf: communicationsOf,
@@ -451,6 +565,12 @@
     cleanIssues: cleanIssues,
     materialValid: materialValid,
     openableUrl: openableUrl,
+    linkOf: linkOf,
+    noteOf: noteOf,
+    materialsOfValue: materialsOfValue,
+    requirementRefsOfValue: requirementRefsOfValue,
+    acceptancesOfValue: acceptancesOfValue,
+    frozenOfValue: frozenOfValue,
     fill: fill
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)

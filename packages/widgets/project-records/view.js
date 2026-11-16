@@ -64,6 +64,8 @@
     sub.appendChild(line)
     var tags = document.createElement('span')
     tags.className = 'pj__tags'
+    var requirements = model.requirementsOf(record)
+    if (requirements.length > 0) tags.appendChild(tagOf(text.fill(text.t('requirementsCount'), { n: requirements.length }), 'reading'))
     var deliverable = model.deliverablesOf(record)[0]
     if (deliverable !== undefined) tags.appendChild(tagOf(model.deliverableLine(deliverable, text), 'reading'))
     var materials = Array.isArray(record.materials) ? record.materials.length : 0
@@ -136,20 +138,44 @@
   }
 
   /**
-   * 一行负责事项：标题、状态、日期与移除。
+   * 一行事项：标题、状态、关联需求、日期与移除。
    *
-   * @param {object} task - `{ title, status, due }`。
+   * @param {object} task - `{ title, status, due, requirement }`。
    * @param {number} index - 在组里的位置。
-   * @param {{ t: function(string): string }} text - 文案。
+   * @param {{ t: function(string): string, requirements: function(): Array }} text - 文案与当前需求。
    * @returns {HTMLLIElement} 事项行。
    */
   function taskRow(task, index, text) {
     var row = lineOf('tasks', index)
     row.appendChild(inputOf('title', task.title, text.t('taskTitle'), model.TITLE_LENGTH))
     row.appendChild(statusOf(task.status, 'status', model.TASK_STATUSES, model.taskKey, text))
+    var requirements = typeof text.requirements === 'function' ? model.requirementsOf({ requirements: text.requirements() }) : []
+    if (requirements.length > 0) row.appendChild(requirementOf(task.requirement, requirements, text))
     row.appendChild(dateOf('due', task.due, text.t('taskDue')))
     row.appendChild(removeOf(text.t('removeRow')))
     return row
+  }
+
+  /** 事项或问题指向哪一条需求；空选项表示不关联。 */
+  function requirementOf(value, requirements, text) {
+    var select = document.createElement('select')
+    select.className = 'pj__input pj__line-requirement-pick'
+    select.dataset.part = 'requirement'
+    select.setAttribute('aria-label', text.t('requirementPick'))
+    var empty = document.createElement('option')
+    empty.value = ''
+    empty.textContent = text.t('requirementPick')
+    select.appendChild(empty)
+    var matched = false
+    for (var at = 0; at < requirements.length; at += 1) {
+      var option = document.createElement('option')
+      option.value = requirements[at].id
+      option.textContent = model.requirementLine(requirements[at])
+      select.appendChild(option)
+      if (requirements[at].id === value) matched = true
+    }
+    select.value = matched ? value : ''
+    return select
   }
 
   /**
@@ -283,12 +309,18 @@
         kind: 'project',
         title: '低轨星座干扰抑制模块合作',
         summary: '为合作方整理干扰抑制模块的可复现实验与阶段交付。',
+        requirements: [
+          { id: 'r1', no: 'R1', title: '单小区干扰抑制', version: 'v2', status: 'confirmed', metric: '相对基线提升', unit: '%', threshold: '不低于 10' }
+        ],
+        requirementChanges: [
+          { id: 'c1', requirementId: 'r1', fromVersion: 'v1', toVersion: 'v2', reason: '范围收敛到单小区', at: { kind: 'date', date: '2026-11-08', timeZone: 'Asia/Shanghai' } }
+        ],
         tasks: [
-          { id: 'p1', title: '搭建链路级仿真', status: 'doing', due: { kind: 'date', date: '2026-11-20', timeZone: 'Asia/Shanghai' } },
+          { id: 'p1', title: '搭建链路级仿真', status: 'doing', due: { kind: 'date', date: '2026-11-20', timeZone: 'Asia/Shanghai' }, requirement: 'r1' },
           { id: 'p2', title: '整理月度进展', status: 'todo' }
         ],
         deliverables: [
-          { id: 'd1', name: '仿真代码包', version: 'v0.3', status: 'delivered' },
+          { id: 'd1', name: '仿真代码包', version: 'v0.3', status: 'delivered', requirements: [{ id: 'r1', version: 'v1' }] },
           { id: 'd2', name: '阶段报告', version: '草案 1', status: 'draft' }
         ],
         communications: [

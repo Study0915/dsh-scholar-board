@@ -40,6 +40,8 @@
         communications: app.communications,
         milestones: app.milestones,
         issues: app.issues,
+        requirements: app.requirements,
+        requirementChanges: app.requirementChanges,
         related: relations.value(),
         materials: app.materials
       }
@@ -67,9 +69,9 @@
       nodes.trashAction.hidden = record === null || trashed
       var fields = [nodes.titleInput, nodes.summary, nodes.materialUrl, nodes.materialTitle, nodes.relatedSelect]
       for (var at = 0; at < fields.length; at += 1) if (fields[at] !== null) fields[at].disabled = trashed
-      var buttons = ctx.card.querySelectorAll('[data-action="add-task"], [data-action="add-deliverable"], [data-action="add-communication"], [data-action="add-milestone"], [data-action="add-issue"], [data-action="add-related"], [data-action="add-material"]')
+      var buttons = ctx.card.querySelectorAll('[data-action="add-task"], [data-action="add-deliverable"], [data-action="add-communication"], [data-action="add-milestone"], [data-action="add-issue"], [data-action="add-requirement"], [data-action="add-change"], [data-action="add-related"], [data-action="add-material"]')
       for (var buttonAt = 0; buttonAt < buttons.length; buttonAt += 1) buttons[buttonAt].disabled = trashed
-      var nested = ctx.card.querySelectorAll('.pj__line input, .pj__line select, .pj__line-remove, .pj__related-remove, .pj__material-remove')
+      var nested = ctx.card.querySelectorAll('.pj__line input, .pj__line select, .pj__line textarea, .pj__line-remove, .pj__related-remove, .pj__material-remove, [data-deep-action], [data-remove-change]')
       for (var nestedAt = 0; nestedAt < nested.length; nestedAt += 1) nested[nestedAt].disabled = trashed
       nodes.saveButton.disabled = trashed
       nodes.saveButton.textContent = t('save')
@@ -248,6 +250,8 @@
         communications: cleaned.communications,
         milestones: cleaned.milestones,
         issues: cleaned.issues,
+        requirements: cleaned.requirements,
+        requirementChanges: cleaned.requirementChanges,
         related: cleaned.related,
         materials: cleaned.materials
       }
