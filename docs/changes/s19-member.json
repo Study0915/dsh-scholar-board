@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 1,
+  "at": "2026-11-16",
+  "external": false,
+  "zh": "新增第十二类记录 member 与成员卡：成员有稳定 id、显示称呼、角色说明、启用状态与备注，同名允许，停用后仍可查询且不级联删除历史分工。行动项、组会与横向项目的事项增加负责人、协作人与待确认人，项目增加评审记录（对象/版本、评审人、日期、意见、决定与后续行动）与交接清单（接手人、进度、材料、操作说明、已知问题、待办与用户手动确认）。成员字段只作个人记录，不表示账号、权限或审批身份。宿主校验、检索、导出导入重映射、成员卡与项目卡编辑面板、内置组件画廊与单元测试同步覆盖，旧包没有成员与分工字段时照常导入。",
+  "en": "Adds the twelfth record kind, member, with a member card: stable id, display name, role note, enabled flag and note; duplicate names are allowed, disabled members stay queryable and never cascade-delete past assignments. Actions, meetings and project tasks gain an owner plus collaborators and confirmers, and projects gain reviews (target/version, reviewer, date, opinion, decision and follow-up) and handovers (receiver, progress, materials, instructions, known issues, todos and a user-recorded confirmation). Member fields are personal notes, not accounts, permissions or approval identities. Host validation, search, export/import remapping, the member card and project editor, the built-in gallery and unit tests cover the new fields, and older packages without members or assignments still import cleanly."
+}

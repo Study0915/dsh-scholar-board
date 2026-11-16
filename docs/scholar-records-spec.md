@@ -19,7 +19,7 @@
 - 每条记录一个稳定不透明 id（UUID，与卡片实例同生成方式），永不复用。删除卡片不触碰记录；记录独立于任何卡片存在。
 - 每条记录带自己的 `revision`，每次成功写入加一。更新必须带 `expectedRevision`，宿主在写入队列内再核一次，过期回 `409 { code: 'stale-revision', revision, record }`（沿用 `content/routes.ts:240` 的形状）。创建不带 expectedRevision。
 - `createdAt`、`updatedAt` 由宿主记录，UTC ISO 字符串，组件不可写。`schemaVersion` 标记记录形状版本，首批为 1。
-- 每条记录有 `kind`（meeting、action、manuscript、literature、research、thesis、project、course、chore、topic、run、template）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
+- 每条记录有 `kind`（meeting、action、manuscript、literature、research、thesis、project、course、chore、topic、run、member、template）、`archived` 布尔与可选 `deletedAt`。三者组合出生命周期状态：
 
 | 状态 | 判据 | 默认列表 |
 |---|---|---|
@@ -53,8 +53,9 @@
 | related | `Ref[]` | 否 | 十一种可关联类型互指，模板不参与（S11、S13） |
 | materials | `MaterialRef[]` | 否 | 材料引用 |
 | derivedFrom | record id | 否 | 从上次记录准备新提纲时保留来源 |
+| participants | string[] | 否 | 参会成员 id（S19），去重，最多 20 位 |
 
-`related` 可指向十一种可关联类型（模板不参与关联，S11）。会议可同时关联多篇稿件。从反馈创建行动项时，行动项的 `source` 指向本会议 id。
+`related` 可指向十一种可关联类型（模板不参与关联，S11）。会议可同时关联多篇稿件。从反馈创建行动项时，行动项的 `source` 指向本会议 id。`participants` 是成员目录 id 的引用，不表示签到、身份或审批；成员停用或改名后仍按 id 显示当时的调用。
 
 ### 行动项 action
 
@@ -69,8 +70,11 @@
 | blockedNote | string | 否 | 阻碍说明 |
 | doneNote | string | 否 | 完成说明 |
 | materials | `MaterialRef[]` | 否 | 完成时附的结果材料 |
+| owner | string | 否 | 负责人：一位成员 id（S19） |
+| collaborators | string[] | 否 | 协作人：成员 id，去重，最多 20 位 |
+| confirmers | string[] | 否 | 待确认人：成员 id，去重，最多 20 位 |
 
-状态中文：待办 todo、进行中 doing、受阻 blocked、完成 done、取消 cancelled。取消、完成与删除是三件事：取消改 status，删除进回收站。完成项可查历史。
+状态中文：待办 todo、进行中 doing、受阻 blocked、完成 done、取消 cancelled。取消、完成与删除是三件事：取消改 status，删除进回收站。完成项可查历史。负责人、协作人与待确认人都是个人记录，不表示账号、权限或审批身份（S19）。
 
 来源是课题时，`source` 写 `{ kind: 'topic', id }` 且 `sourceEntry` 写问题条目 id；宿主按这组来源与条目幂等：已经存在未删除的同来源行动项时直接返回它，不重复创建。行动项完成不会自动把问题标为已解决，问题状态仍由用户填写。
 
@@ -298,18 +302,23 @@ S07 补齐。横向项目记录的是「我负责什么、交付到哪、和谁�
 | communications | `ProjectCommunication[]` | 否 | 沟通结论，来源会议走 `related` |
 | milestones | `ProjectMilestone[]` | 否 | 验收节点，由用户自行维护 |
 | issues | `ProjectIssue[]` | 否 | 待确认问题 |
+| reviews | `ProjectReview[]` | 否 | 评审记录（S19），最多 100 条 |
+| handovers | `ProjectHandover[]` | 否 | 交接清单（S19），最多 50 条 |
 | related | `Ref[]` | 否 | 十一种可关联类型互指，模板不参与（S11、S13） |
 | materials | `MaterialRef[]` | 否 | 需求摘要、方案与交付材料的链接 |
 
-- `ProjectTask` 为 `{ id, title ≤200, status, due?, note?, materials?, requirement?, actionId? }`。`status` 只能是待办 todo、进行中 doing、受阻 blocked、完成 done。`requirement` 指向本项目的一条需求 id，需求删除后保留原值并在详情标为缺失；`actionId` 指向由该事项转出的共享行动项，重复点击回到同一条。
+- `ProjectTask` 为 `{ id, title ≤200, status, due?, note?, materials?, requirement?, actionId?, owner?, collaborators?, confirmers? }`。`status` 只能是待办 todo、进行中 doing、受阻 blocked、完成 done。`requirement` 指向本项目的一条需求 id，需求删除后保留原值并在详情标为缺失；`actionId` 指向由该事项转出的共享行动项，重复点击回到同一条。`owner` 是一位成员 id，`collaborators` 与 `confirmers` 是成员 id 列表（各去重，最多 20 位）；停用或改名后按 id 显示成员目录里的最新称呼，不级联清空。
 - `ProjectDeliverable` 为 `{ id, name ≤200, version ≤32, status, due?, note?, materials?, requirements?, testReports?, limitations?, deliveredAt?, acceptances?, frozen? }`。`status` 只能是草稿 draft、评审中 review、已交付 delivered、已验收 accepted；版本按文字原样保存（如 `v0.3`、`草案 1`），宿主不解析也不排序。`requirements` 是建立交付物时绑定的需求 id 与版本，需求后来升级也不改写这份依据；`testReports` 是测试报告材料，与实现材料分开列；`limitations` 是已知限制（≤1000）；`deliveredAt` 是实际交付日期，与计划 `due` 分开；`acceptances` 是验收记录（每项含 id、可选日期、必填意见、通过与否、可选待补事项），失败也留档；`frozen` 是材料清单快照（必填冻结日期与材料引用），只存引用与当时字段，不复制外部正文。
 - `ProjectRequirement` 为 `{ id, no?, title ≤200, description?, version ≤32, status, sources?, materials?, metric?, unit?, threshold?, testMethod?, tasks?, actionId? }`。`status` 只能是待确认 pending、已确认 confirmed、已取消 cancelled；`description ≤2000`、`metric ≤200`、`unit ≤32`、`threshold ≤400`、`testMethod ≤1000`。`sources` 指向来源记录，`tasks` 指向服务这条需求的事项 id（去重，删除后保留并在追溯区标缺失）；`actionId` 指向由需求转出的共享行动项。每条记录的 `requirements` 最多 100 项。
 - `ProjectRequirementChange` 为 `{ id, requirementId, fromVersion ≤32, toVersion ≤32, at?, reason, impact?, communication?, confirmation? }`。`reason` 必填（≤2000），`impact` 与 `communication` 各 ≤2000，`confirmation ≤200`；变更只追加，不改写旧版本。每条记录最多 200 条变更。
 - `ProjectCommunication` 为 `{ id, summary ≤200, at?, note? }`。`summary` 是一句话结论；沟通来源的会议通过 `related` 指向会议记录，不复制会议正文。
 - `ProjectMilestone` 为 `{ id, label ≤60, status, due?, note? }`，`status` 只能是待办 todo、进行中 doing、完成 done。节点名称、日期与状态都由用户维护，不预设合同规则，也不判断合同履约。
 - `ProjectIssue` 为 `{ id, title ≤200, status, note?, actionId? }`，`status` 只能是待确认 open、沟通中 doing、已解决 resolved；`actionId` 指向由该问题转出的共享行动项。
+- `ProjectReview` 为 `{ id, target, targetId?, targetVersion?, reviewer?, at?, opinion, decision, followUp? }`。`target` 只能是项目 project、交付物 deliverable 或需求 requirement；评审交付物或需求时 `targetId` 必填并指向本项目条目 id，评审项目本身时留空。`targetVersion ≤32` 只记录对象当时的版本，不随对象升级改写；`reviewer` 是一位成员 id；`opinion ≤2000` 必填，`decision ≤200` 必填，`followUp ≤2000`。
+- `ProjectHandover` 为 `{ id, receiver?, at?, progress?, materials?, instructions?, issues?, todos?, confirmed, confirmedAt? }`。`receiver` 是一位成员 id；进度、材料、操作说明、已知问题与待办各 ≤2000；`confirmed` 必须由用户手动记录，未确认时不能写 `confirmedAt`，生成交接草稿不算确认。每条记录最多 100 条评审、50 条交接。
+- 评审人与接手人只按成员 id 记录个人分工，不构成审批、签收或合同验收；交接确认只说明用户自己记录过这次交接。
 - 默认模板不收合同金额、报价、付款节点与其他敏感业务详情；多人审批与经费管理另行决定。事项、交付物、节点与问题是否完成都由用户维护，界面不按日期推断。
-- 搜索匹配需求摘要、需求编号与验收口径、需求变更原因与影响、事项标题与说明、交付物名称、版本与已知限制、验收意见与待补事项、沟通结论与说明、节点名称、问题标题与说明，以及材料和关联记录（S18）。
+- 搜索匹配需求摘要、需求编号与验收口径、需求变更原因与影响、事项标题与说明、交付物名称、版本与已知限制、验收意见与待补事项、沟通结论与说明、节点名称、问题标题与说明、评审意见、决定与后续行动、交接进度、说明、已知问题与待办，以及材料和关联记录（S18、S19）。
 - 列表行显示事项进度、未解决问题数与最近的验收节点，以及第一件交付物及其版本；没有节点时写「没有未完成的验收节点」。
 
 ### 课程 course
@@ -354,6 +363,23 @@ S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查�
 - 完成 done 与取消 cancelled 是两种状态；完成后可以归档，归档不收进回收站，恢复后回到活跃列表。
 - 搜索匹配事务名、类别、说明与材料标题。
 - 校园事务卡继续可用；迁移由用户选择，不自动导入。
+
+### 成员目录 member
+
+S19 补齐。成员目录只记「我按什么称呼找人、他在这件事里做什么」，不是账号体系，也不产生权限：
+
+| 字段 | 形状 | 必填 | 说明 |
+|---|---|---|---|
+| title | string ≤80 | 是 | 显示称呼，由用户自己起；同名允许 |
+| role | string ≤200 | 否 | 角色说明，如「负责仿真与数据」；不是权限 |
+| enabled | boolean | 是 | 启用状态；停用后仍可查询，历史分工不级联删除 |
+| note | string ≤2000 | 否 | 备注 |
+
+- 成员 id 与其他记录一样稳定不透明，改名不改变 id；引用方按 id 显示最新称呼，历史冻结版本保留当时摘要。
+- 不要求也不保存真实姓名、电话、邮箱或任何认证材料；界面上的成员字段不能用来断言「已由某人审批」。
+- `lastEditedBy` 仍记组件来源与卡片，不冒充成员本人编辑。
+- 成员不参与 `related` 关联（与模板一样），分工只通过 action、meeting、project 的成员字段引用。
+- 停用成员不是删除：已有分工、评审与交接引用保留，列表仍可查到该成员。
 
 ### 材料引用 MaterialRef
 
@@ -478,6 +504,7 @@ S08 补齐。其他事务收纳不属于课程与论文的杂事，按期限查�
 - 新增独立记录导出格式 `.dshrecords`：gzip JSON，`{ format: 1, exportedAt, scope: { includeArchived, includeTrashed, kinds? }, records: [...] }`。默认只导出活跃记录，归档与回收站由用户勾选。材料是内嵌 URL，随文本导出，不复制文件（决定三）。
 - 实现走设置页的「记录备份」一栏与三条宿主路由：`POST /records/export` 回 gzip 文件，`POST /records/import/preview` 回条数、类型与生命周期分布，`POST /records/import` 整包一次写入。导入包按 gzip 读入，解压后超过 64 MiB 拒绝。
 - 导入校验 format、schema 与配额；提供预览与用户选择。ID 冲突策略：包内每条记录 id 重映射为新 UUID，并把所有前向引用 id 经同一映射表重写，保留关联（沿用 `board-package.ts:114-130` 的全量重映射思路）；不覆盖无关的已有记录。指向包外且不存在 id 的引用保留为悬空，显示「来源缺失」。
+- 成员与分工随记录一并导出：`member` 记录按普通记录进入包内，事项负责人、协作人、待确认人、会议参与者、评审人与接手人的成员 id 都经同一重映射表重写；成员停用状态与称呼照原样保留。旧包没有成员与分工字段时照常导入，字段缺省即「未填」。
 - 可选按内容哈希去重（campus 合并的 duplicateKey 先例，`item-import` merge）；更新保留旧 id 与 createdAt。导入在写入队列内原子提交，核配额与修订，过期 409。
 - 导出前明确包含范围；演示、截图、测试与分享用合成资料（产品规划私有材料一节）。
 - `template` 记录按普通记录导出导入：引用重映射同样作用于记录本身，内置模板不进入包内，研究或运行记录的快照只存 id、版本与取值。

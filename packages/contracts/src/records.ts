@@ -8,6 +8,7 @@ import type { Due } from './campus'
 import type { LiteratureFormat } from './literature-identifiers'
 import type { TemplateRecord, TemplateSnapshot } from './templates'
 import type { ProjectRecord } from './project-records'
+import type { MemberRecord } from './member-records'
 
 export type {
   ProjectAcceptance,
@@ -15,6 +16,7 @@ export type {
   ProjectDeliverable,
   ProjectDeliverableStatus,
   ProjectFrozenMaterials,
+  ProjectHandover,
   ProjectIssue,
   ProjectIssueStatus,
   ProjectItemStatus,
@@ -24,8 +26,11 @@ export type {
   ProjectRequirementRef,
   ProjectRequirementStatus,
   ProjectRecord,
+  ProjectReview,
+  ProjectReviewTarget,
   ProjectTask,
 } from './project-records'
+export type { MemberRecord } from './member-records'
 
 /** 记录存储的格式版本；读盘时不认识的版本保留原文件并报错。 */
 export const RECORDS_FORMAT = 1
@@ -102,16 +107,25 @@ export const RECORDS_LIMITS = {
   commentNoLength: 40,
   locationLength: 200,
   chapterLinks: 20,
+  memberRoleLength: 200,
+  memberNoteLength: 2000,
+  assignmentRefs: 20,
+  projectReviews: 100,
+  projectHandovers: 50,
+  reviewOpinionLength: 2000,
+  reviewDecisionLength: 200,
+  reviewFollowUpLength: 2000,
+  handoverText: 2000,
 } as const
 
-/** 领域记录的十二种类型；`template` 只由模板面板读写，不出现在关联选择器里。 */
-export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore' | 'topic' | 'run' | 'template'
+/** 领域记录的十三种类型；`template` 只由模板面板读写，`member` 是成员目录，两者不出现在关联选择器里。 */
+export type RecordKind = 'meeting' | 'action' | 'manuscript' | 'literature' | 'research' | 'thesis' | 'project' | 'course' | 'chore' | 'topic' | 'run' | 'member' | 'template'
 
 /** 记录类型的唯一列表，校验、筛选和关系查询共用。 */
-export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore', 'topic', 'run', 'template']
+export const RECORD_KINDS: readonly RecordKind[] = ['meeting', 'action', 'manuscript', 'literature', 'research', 'thesis', 'project', 'course', 'chore', 'topic', 'run', 'member', 'template']
 
-/** 可以互相引用的记录类型；模板不是可关联的对象。 */
-export const RELATION_KINDS: readonly RecordKind[] = RECORD_KINDS.filter(kind => kind !== 'template')
+/** 可以互相引用的记录类型；模板与成员不是可关联的对象。 */
+export const RELATION_KINDS: readonly RecordKind[] = RECORD_KINDS.filter(kind => kind !== 'template' && kind !== 'member')
 
 /** 文献的阅读阶段；读懂与问题由用户填写，订阅条目加入时是待读。 */
 export type LiteratureStage = 'queued' | 'reading' | 'understood'
@@ -299,6 +313,8 @@ export interface MeetingRecord extends RecordBase {
   topics?: string
   feedback?: string
   openQuestions?: string
+  /** 参会成员：成员 id 列表；只是记录，不是签到或权限。 */
+  participants?: string[]
   related?: RecordRef[]
   materials?: MaterialRef[]
   derivedFrom?: string
@@ -312,6 +328,11 @@ export interface ActionRecord extends RecordBase {
   due?: Due
   source?: RecordRef
   sourceEntry?: string
+  /** 负责人：一位成员 id。 */
+  owner?: string
+  /** 协作人与待确认人：成员 id 列表；只是记录，不是审批身份。 */
+  collaborators?: string[]
+  confirmers?: string[]
   related?: RecordRef[]
   blockedNote?: string
   doneNote?: string
@@ -589,7 +610,7 @@ export interface TopicRecord extends RecordBase {
 }
 
 /** 一条领域记录。 */
-export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord | CourseRecord | ChoreRecord | TopicRecord | RunRecord | TemplateRecord
+export type DomainRecord = MeetingRecord | ActionRecord | ManuscriptRecord | LiteratureRecord | ResearchRecord | ThesisRecord | ProjectRecord | CourseRecord | ChoreRecord | TopicRecord | RunRecord | MemberRecord | TemplateRecord
 
 /** 工作区当前的用量；到九成时 `warning` 为真，到顶阻止新建。 */
 export interface RecordsQuota {

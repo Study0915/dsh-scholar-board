@@ -21,6 +21,12 @@ export interface ProjectTask {
   requirement?: string
   /** 由这条事项转出的共享行动项；重复点击回到同一条。 */
   actionId?: string
+  /** 负责人：一位成员 id；成员停用后仍按原 id 显示当时的调用。 */
+  owner?: string
+  /** 协作人：成员 id 列表，去重。 */
+  collaborators?: string[]
+  /** 待确认人：成员 id 列表；只是记录，不是审批身份。 */
+  confirmers?: string[]
 }
 
 /** 交付物状态：草稿、评审中、已交付与已验收。 */
@@ -135,6 +141,41 @@ export interface ProjectIssue {
   actionId?: string
 }
 
+/** 评审指向的对象：项目本身、一份交付物或一条需求。 */
+export type ProjectReviewTarget = 'project' | 'deliverable' | 'requirement'
+
+/** 一次评审：对象、当时的版本、评审人、意见、决定与后续行动。 */
+export interface ProjectReview {
+  id: string
+  target: ProjectReviewTarget
+  /** 交付物或需求的条目 id；评审整个项目时留空。 */
+  targetId?: string
+  /** 被评审对象当时的版本；只记录，不随对象升级改写。 */
+  targetVersion?: string
+  /** 评审人：成员 id。 */
+  reviewer?: string
+  at?: Due
+  opinion: string
+  decision: string
+  followUp?: string
+}
+
+/** 一次交接：接手人、当前进度、材料、操作说明、已知问题、待办与确认情况。 */
+export interface ProjectHandover {
+  id: string
+  /** 接手人：成员 id。 */
+  receiver?: string
+  at?: Due
+  progress?: string
+  materials?: string
+  instructions?: string
+  issues?: string
+  todos?: string
+  /** 交接确认由用户手动记录，生成交接草稿不算确认。 */
+  confirmed: boolean
+  confirmedAt?: Due
+}
+
 /** 横向项目：需求、需求变更、个人负责事项、交付物版本、沟通结论、验收节点与问题。 */
 export interface ProjectRecord extends RecordBase {
   kind: 'project'
@@ -147,6 +188,8 @@ export interface ProjectRecord extends RecordBase {
   communications?: ProjectCommunication[]
   milestones?: ProjectMilestone[]
   issues?: ProjectIssue[]
+  reviews?: ProjectReview[]
+  handovers?: ProjectHandover[]
   related?: RecordRef[]
   materials?: MaterialRef[]
 }

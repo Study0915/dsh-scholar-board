@@ -25,10 +25,49 @@
     var WRITE = 'widget-board:records.write'
     var DRAFT = 'widget-board:records.draft'
     var draftTimer = null
+    var directory = widget !== undefined && typeof widget.createMemberDirectory === 'function' ? widget.createMemberDirectory() : null
+    var membersReady = null
+    var membersLoaded = false
+    var locked = false
     var relations = widget.createRecordRelations({ container: nodes.detail,
       current: function () { return app.baseline },
       onChange: function (refs) { app.related = refs; onInput() }
     })
+
+    /** 成员目录读一次；读失败时下次打开再试，已选的 id 不丢。 */
+    function loadMembers() {
+      if (directory === null) return Promise.resolve(false)
+      if (membersReady === null) {
+        membersReady = directory.load().then(function () {
+          membersLoaded = true
+          return true
+        }, function () {
+          membersReady = null
+          return false
+        })
+      }
+      return membersReady
+    }
+
+    /** 分工控件由成员目录造：负责人单选，协作人与待确认人多选。 */
+    function renderAssignment() {
+      var host = nodes.assign
+      if (host === null) return
+      if (directory === null) {
+        host.replaceChildren()
+        return
+      }
+      host.replaceChildren(directory.assign(app.assignment, onInput))
+      if (locked) {
+        var selects = host.querySelectorAll('select')
+        for (var at = 0; at < selects.length; at += 1) selects[at].disabled = true
+      }
+      if (!membersLoaded) {
+        loadMembers().then(function (loaded) {
+          if (loaded) renderAssignment()
+        })
+      }
+    }
 
     function statuses() {
       return ctx.card.querySelectorAll('.at__status')
@@ -53,8 +92,14 @@
       nodes.done.value = typeof form.done === 'string' ? form.done : ''
       app.status = pure.isStatus(form.status) ? form.status : 'todo'
       app.materials = Array.isArray(form.materials) ? form.materials : []
+      app.assignment = {
+        owner: typeof form.owner === 'string' ? form.owner : undefined,
+        collaborators: Array.isArray(form.collaborators) ? form.collaborators.slice() : undefined,
+        confirmers: Array.isArray(form.confirmers) ? form.confirmers.slice() : undefined
+      }
       setStatusButtons()
       renderMaterials()
+      renderAssignment()
       ctx.setStatus('', 'neutral')
       if (nodes.detailHint !== null) nodes.detailHint.hidden = true
     }
@@ -98,6 +143,8 @@
       if (nodes.list !== null) nodes.list.hidden = true
       if (nodes.noteWrap !== null) nodes.noteWrap.hidden = true
       var trashed = record !== null && typeof record.deletedAt === 'string'
+      locked = trashed
+      renderAssignment()
       nodes.archiveAction.hidden = trashed || (record !== null && record.archived === true)
       nodes.restoreAction.hidden = record === null || (!trashed && record.archived !== true)
       nodes.trashAction.hidden = trashed
@@ -136,6 +183,9 @@
         due: dueInputOf(record),
         blocked: record.blockedNote,
         done: record.doneNote,
+        owner: record.owner,
+        collaborators: record.collaborators,
+        confirmers: record.confirmers,
         materials: Array.isArray(record.materials) ? record.materials.slice() : []
       })
       showDetail(record, true)
@@ -151,7 +201,7 @@
       app.draftId = null
       app.dirty = false
       app.saving = false
-      fillForm({ title: '', status: 'todo', due: '', blocked: '', done: '', materials: [] })
+      fillForm({ title: '', status: 'todo', due: '', blocked: '', done: '', owner: undefined, collaborators: undefined, confirmers: undefined, materials: [] })
       showDetail(null, true)
       restoreDraft('new').then(function (restored) {
         if (restored) ctx.setStatus(t('draftRestored'), 'neutral')
@@ -222,6 +272,9 @@
         due: nodes.dueInput.value,
         blocked: nodes.blocked.value,
         done: nodes.done.value,
+        owner: app.assignment.owner,
+        collaborators: app.assignment.collaborators,
+        confirmers: app.assignment.confirmers,
         materials: app.materials
       }
     }
@@ -271,6 +324,9 @@
           due: form.due,
           blocked: form.blocked,
           done: form.done,
+          owner: form.owner,
+          collaborators: form.collaborators,
+          confirmers: form.confirmers,
           materials: form.materials
         })
         app.dirty = true
@@ -296,6 +352,9 @@
         due: nodes.dueInput.value === '' ? null : pure.dateValue(nodes.dueInput.value, pure.zone()),
         blockedNote: app.status === 'blocked' && nodes.blocked.value.trim() !== '' ? nodes.blocked.value.trim() : null,
         doneNote: app.status === 'done' && nodes.done.value.trim() !== '' ? nodes.done.value.trim() : null,
+        owner: app.assignment.owner === undefined ? null : app.assignment.owner,
+        collaborators: app.assignment.collaborators === undefined ? null : app.assignment.collaborators,
+        confirmers: app.assignment.confirmers === undefined ? null : app.assignment.confirmers,
         materials: app.materials.length === 0 ? null : app.materials
       }
       var expected = app.baseline === null ? null : app.baseline.revision
@@ -329,6 +388,9 @@
           due: dueInputOf(record),
           blocked: record.blockedNote,
           done: record.doneNote,
+          owner: record.owner,
+          collaborators: record.collaborators,
+          confirmers: record.confirmers,
           materials: Array.isArray(record.materials) ? record.materials.slice() : []
         })
         showDetail(record, false)
@@ -412,6 +474,9 @@
         due: dueInputOf(latest),
         blocked: latest.blockedNote,
         done: latest.doneNote,
+        owner: latest.owner,
+        collaborators: latest.collaborators,
+        confirmers: latest.confirmers,
         materials: Array.isArray(latest.materials) ? latest.materials.slice() : []
       })
       app.dirty = false

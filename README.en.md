@@ -2,7 +2,7 @@
 
 [中文](README.md) · [Live demo](https://study0915.github.io/dsh-scholar-board/)
 
-A scholar board plugin for DeepSeek Harness. A page of draggable, resizable widget cards, plus a set of research record cards for graduate students in communications: group meetings, action items, manuscripts, literature, research notes, the thesis, projects, courses and errands live on one page. Cards reference each other, and the host stores every record.
+A scholar board plugin for DeepSeek Harness. A page of draggable, resizable widget cards, plus a set of research record cards for graduate students in communications: group meetings, action items, manuscripts, literature, research notes, the thesis, projects, members and assignments, courses and errands live on one page. Cards reference each other, and the host stores every record.
 
 <p align="center">
   <img src="docs/images/scholar-light.png" alt="The Scholar board in light mode: group-meeting briefs, submission countdown, calendar, academic links, to-dos, milestones and the paper feed" width="49%">

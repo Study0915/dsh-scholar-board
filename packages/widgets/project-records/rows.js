@@ -251,6 +251,8 @@
       app.communications = copyList(record, 'communications')
       app.milestones = copyList(record, 'milestones')
       app.issues = copyList(record, 'issues')
+      app.reviews = copyList(record, 'reviews')
+      app.handovers = copyList(record, 'handovers')
       app.requirements = copyList(record, 'requirements')
       app.requirementChanges = copyList(record, 'requirementChanges')
       app.related = copyList(record, 'related')

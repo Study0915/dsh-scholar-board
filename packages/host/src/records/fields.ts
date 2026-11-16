@@ -225,6 +225,41 @@ function dateTextOf(value: unknown, field: string): string {
 }
 
 /**
+ * 一条可选记录 id：非空、最多 64 字符；`null` 表示清除。
+ *
+ * 与 `refsOf` 的分工：需要类型时用引用，分工字段只记一个成员 id。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @returns id；清除时是 `null`。
+ */
+export function idOf(value: unknown, field: string): string | null {
+  if (value === null) return null
+  if (typeof value !== 'string' || value === '' || value.length > 64) fail(`${field} 不合法`)
+  return value
+}
+
+/**
+ * 一组成员 id：非空、最多 64 字符、不重复。
+ *
+ * 成员停用或删除后 id 仍留在记录里，由界面按目录显示名字；宿主不据此判断身份或权限。
+ *
+ * @param value - 外来值。
+ * @param field - 出错时指人。
+ * @param limit - 最多几项。
+ * @returns id 表；未填时是 `null`。
+ */
+export function idsOf(value: unknown, field: string, limit: number): string[] | null {
+  const seen = new Set<string>()
+  return arrayOf(value, field, limit, (entry, index) => {
+    if (typeof entry !== 'string' || entry === '' || entry.length > 64) fail(`${field}[${String(index)}] 不合法`)
+    if (seen.has(entry)) fail(`${field} 里的 id 重复`)
+    seen.add(entry)
+    return entry
+  })
+}
+
+/**
  * 一组带稳定 id 的条目：数组、容量与 id 唯一由这里统一把关。
  *
  * @param value - 外来值。

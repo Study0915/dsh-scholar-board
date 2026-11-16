@@ -32,6 +32,8 @@
     materialInvalid: { zh: '材料地址只收 http/https 的完整地址，说明不能为空。', en: 'Material links must be complete http/https addresses with a title.' },
     fieldTitle: { zh: '标题', en: 'Title' },
     date: { zh: '日期', en: 'Date' },
+    participants: { zh: '参与者', en: 'Participants' },
+    participantsEmpty: { zh: '还没有成员；先在成员目录里添加。', en: 'No members yet; add them in the member directory first.' },
     topics: { zh: '汇报要点', en: 'Brief' },
     feedback: { zh: '讨论反馈', en: 'Feedback' },
     openQuestions: { zh: '未决问题', en: 'Open questions' },

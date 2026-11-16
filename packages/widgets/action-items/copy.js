@@ -31,6 +31,7 @@
     dueNone: { zh: '无期限', en: 'No due date' },
     overdue: { zh: '已逾期', en: 'Overdue' },
     dueToday: { zh: '今天到期', en: 'Due today' },
+    assign: { zh: '分工', en: 'Assignments' },
     source: { zh: '来源', en: 'Source' },
     sourceMeeting: { zh: '来自会议', en: 'From meeting' },
     sourceManuscript: { zh: '来自小论文', en: 'From manuscript' },

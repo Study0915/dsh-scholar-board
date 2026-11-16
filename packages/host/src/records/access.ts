@@ -90,6 +90,7 @@ const WIDGET_KINDS: Record<string, RecordKind> = {
   'research-records': 'research',
   'thesis-records': 'thesis',
   'project-records': 'project',
+  'member-records': 'member',
   'course-records': 'course',
   'chore-records': 'chore',
   'topic-records': 'topic',

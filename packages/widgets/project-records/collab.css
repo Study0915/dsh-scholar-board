@@ -1,0 +1,83 @@
+/* 横向项目卡的分工与交接：事项行上的成员控件，以及项目评审与交接记录。 */
+.pj__line[data-kind="tasks"] {
+  flex-wrap: wrap;
+}
+
+.pj__extras {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  gap: var(--w-space-xs, 4px);
+  min-width: 0;
+}
+
+.pj__assign {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.pj__assign .w-member-assign {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--w-space-xs, 4px);
+}
+
+.pj__assign .w-member-assign__field {
+  display: flex;
+  flex: 1 1 120px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pj__assign select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--w-color-border, #e5e7eb) 90%, transparent);
+  border-radius: var(--w-radius-sm, 8px);
+  background: var(--w-color-bg, #f7f8fa);
+  color: var(--w-color-fg, #0b1016);
+  font: inherit;
+  font-size: var(--w-type-caption, 12px);
+  line-height: 18px;
+}
+
+.pj__collab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--w-space-xs, 4px);
+  padding: 6px 0;
+  border-top: 1px dashed color-mix(in srgb, var(--w-color-fg, #0b1016) 10%, transparent);
+}
+
+.pj__collab-head,
+.pj__collab-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--w-space-xs, 4px);
+}
+
+.pj__collab-field {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pj__collab-label {
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.pj__collab-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--w-color-muted, #6b7684);
+  font-size: 11px;
+  line-height: 16px;
+}
